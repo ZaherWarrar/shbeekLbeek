@@ -11,8 +11,7 @@ import 'package:app/core/shared/custom_app_bar.dart';
 import 'package:app/core/shared/custom_button.dart';
 import 'package:app/core/shared/custom_text_form_fild.dart';
 import 'package:app/main.dart';
-
-class LoginView extends StatelessWidget {
+ class LoginView extends StatelessWidget {
   const LoginView({super.key});
 
   @override

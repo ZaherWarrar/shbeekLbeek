@@ -40,6 +40,7 @@ class MyTranslation extends Translations {
       "15": "Create an account",
       "16": "Create",
       "17": "I have an account : ",
+      "18": "dcsdsdcd",
     },
   };
 }

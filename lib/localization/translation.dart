@@ -20,8 +20,7 @@ class MyTranslation extends Translations {
       "14": "هل لديك حساب ؟ ",
       "15": "إنشاء حساب ",
       "16": "إنشاء",
-      "17" : "لدي حساب : ",
-      
+      "17": "لدي حساب : ",
     },
     "en": {
       "1": "Login",
@@ -40,7 +39,8 @@ class MyTranslation extends Translations {
       "14": "Do you have an account?",
       "15": "Create an account",
       "16": "Create",
-      "17" : "I have an account : ",
+      "17": "I have an account : ",
+      "18": "44444",
     },
   };
 }

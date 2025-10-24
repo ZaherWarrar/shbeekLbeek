@@ -21,7 +21,6 @@ class MyTranslation extends Translations {
       "15": "إنشاء حساب ",
       "16": "إنشاء",
       "17": "لدي حساب : ",
-      "18" : "vmkvkjv"
     },
     "en": {
       "1": "Login",

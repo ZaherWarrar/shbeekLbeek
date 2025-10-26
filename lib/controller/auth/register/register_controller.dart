@@ -34,7 +34,10 @@ class RegisterControllerImb extends RegisterController {
       statusRequest = handelingData(response);
 
       if (StatusRequest.success == statusRequest) {
-        print(response["message"]);
+        Get.offAllNamed(
+          AppRoutes.otp,
+          arguments: {"phone_number": phoneNumber.text},
+        );
       } else {
         statusRequest = StatusRequest.failure;
         Get.defaultDialog(

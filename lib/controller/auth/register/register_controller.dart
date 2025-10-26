@@ -2,12 +2,14 @@ import 'package:app/core/class/statusrequest.dart';
 import 'package:app/core/constant/routes/app_routes.dart';
 import 'package:app/core/function/handelingdata.dart';
 import 'package:app/data/datasorce/remot/register_data.dart';
+import 'package:app/view/auth/register/widgets/go_to_login.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 abstract class RegisterController extends GetxController {
   register();
   goToLogin();
+  goToOtp();
 }
 
 class RegisterControllerImb extends RegisterController {
@@ -62,5 +64,10 @@ class RegisterControllerImb extends RegisterController {
   @override
   goToLogin() {
     Get.offAllNamed(AppRoutes.login);
+  }
+
+  @override
+  goToOtp() {
+    Get.offAllNamed(AppRoutes.otp);
   }
 }

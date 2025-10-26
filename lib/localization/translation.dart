@@ -21,6 +21,7 @@ class MyTranslation extends Translations {
       "15": "إنشاء حساب ",
       "16": "إنشاء",
       "17": "لدي حساب : ",
+      "18": "تأكيد الرقم",
     },
     "en": {
       "1": "Login",
@@ -40,6 +41,7 @@ class MyTranslation extends Translations {
       "15": "Create an account",
       "16": "Create",
       "17": "I have an account : ",
+      "18": "vetify phone number",
     },
   };
 }

@@ -26,7 +26,7 @@ class MyTranslation extends Translations {
       "20": "تأكيد",
       "21": "إعادة الإرسال",
       "22": "تم إرسال الرسالة",
-      "23": "إعادة إرسال الرمز",
+      "23": "إعادة إرسال الرمز"
     },
     "en": {
       "1": "Login",
@@ -52,6 +52,7 @@ class MyTranslation extends Translations {
       "21": "resend..",
       "22": "message has been sent",
       "23": "resend the code",
+
     },
   };
 }

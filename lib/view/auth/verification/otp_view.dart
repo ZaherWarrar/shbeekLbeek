@@ -17,6 +17,11 @@ class OtpView extends GetView<OtpController> {
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
+          children: [
+            const SizedBox(height: 40),
+            const Text(
+              "أدخل رمز التفعيل المرسل الى رقمك: ",
+              style: TextStyle(fontSize: 18),
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
@@ -30,6 +35,21 @@ class OtpView extends GetView<OtpController> {
             const SizedBox(height: 30),
 
             //=========الباكيج تبعيت  otp ====
+            Pinput(
+              length: 6,
+              onChanged: (value) => controller.otpCode.value = value,
+              onCompleted: (value) => controller.otpCode.value = value,
+              defaultPinTheme: PinTheme(
+                width: 50,
+                height: 60,
+                textStyle: const TextStyle(fontSize: 22, color: Colors.black),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey.shade400),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+            SizedBox(height: 20),
             Directionality(
               textDirection: TextDirection.ltr,
               child: Pinput(
@@ -63,6 +83,7 @@ class OtpView extends GetView<OtpController> {
                 ),
                 child: controller.isloading.value
                     ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text('تأكيد'),
                     : Text('20'.tr),
               );
             }),
@@ -70,6 +91,10 @@ class OtpView extends GetView<OtpController> {
 
             TextButton(
               onPressed: () {
+                Get.snackbar("resend..", "message has been sent");
+                //=========api اعادة ارسال الotp====
+              },
+              child: const Text("resend the code"),
                 Get.snackbar("21".tr, "22".tr);
                 //=========api اعادة ارسال الotp==== "22".tr
               },

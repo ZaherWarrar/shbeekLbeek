@@ -1,5 +1,4 @@
 import 'package:app/controller/auth/login/login_controller.dart';
-import 'package:app/core/constant/routes/app_routes.dart';
 import 'package:app/view/auth/login/widgets/go_to_register.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -12,8 +11,7 @@ import 'package:app/core/shared/custom_app_bar.dart';
 import 'package:app/core/shared/custom_button.dart';
 import 'package:app/core/shared/custom_text_form_fild.dart';
 import 'package:app/main.dart';
-
-class LoginView extends StatelessWidget {
+ class LoginView extends StatelessWidget {
   const LoginView({super.key});
 
   @override
@@ -95,14 +93,6 @@ class LoginView extends StatelessWidget {
                     title: "1".tr,
                     onTap: () {
                       controller.login();
-                    },
-                  ),
-
-                  //====================additional=================
-                  FloatingActionButton(
-                    backgroundColor: Colors.red,
-                    onPressed: () {
-                      Get.offAllNamed(AppRoutes.otp);
                     },
                   ),
                 ],

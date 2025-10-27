@@ -22,6 +22,11 @@ class MyTranslation extends Translations {
       "16": "إنشاء",
       "17": "لدي حساب : ",
       "18": "تأكيد الرقم",
+      "19": "أدخل رمز التفعيل المرسل الى رقمك: ",
+      "20": "تأكيد",
+      "21": "إعادة الإرسال",
+      "22": "تم إرسال الرسالة",
+      "23": "إعادة إرسال الرمز"
     },
     "en": {
       "1": "Login",
@@ -42,6 +47,12 @@ class MyTranslation extends Translations {
       "16": "Create",
       "17": "I have an account : ",
       "18": "vetify phone number",
+      "19": "Enter the activation code sent to your number:",
+      "20": "verify",
+      "21": "resend..",
+      "22": "message has been sent",
+      "23": "resend the code",
+
     },
   };
 }

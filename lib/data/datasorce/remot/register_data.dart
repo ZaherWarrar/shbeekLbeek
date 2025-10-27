@@ -6,7 +6,7 @@ class RegisterData {
 
   RegisterData(this.crud);
 
-  registerData(String name,  String phoneNumber) async {
+  Future<Object> registerData(String name,  String phoneNumber) async {
     var response = await crud
         .postData(ApiLinks.createAccount, {"name": name, "phone_number": phoneNumber});
     return response.fold((l) => l, (r) => r);

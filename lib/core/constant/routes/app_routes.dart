@@ -10,6 +10,7 @@ class AppRoutes {
   static const String register = '/register';
   static const String otp = '/otp';
   static const String project = '/project';
+  static const String otp = '/otp';
   static const String userProject = "/userProject";
   static const String learneMore = "/learnMore";
 

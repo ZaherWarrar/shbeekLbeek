@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 abstract class RegisterController extends GetxController {
   register();
   goToLogin();
+  goToOtp();
 }
 
 class RegisterControllerImb extends RegisterController {
@@ -33,7 +34,10 @@ class RegisterControllerImb extends RegisterController {
       statusRequest = handelingData(response);
 
       if (StatusRequest.success == statusRequest) {
-        print(response["message"]);
+        Get.offAllNamed(
+          AppRoutes.otp,
+          arguments: {"phone_number": phoneNumber.text},
+        );
       } else {
         statusRequest = StatusRequest.failure;
         Get.defaultDialog(
@@ -62,5 +66,10 @@ class RegisterControllerImb extends RegisterController {
   @override
   goToLogin() {
     Get.offAllNamed(AppRoutes.login);
+  }
+
+  @override
+  goToOtp() {
+    Get.offAllNamed(AppRoutes.otp);
   }
 }

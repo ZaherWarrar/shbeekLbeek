@@ -1,5 +1,4 @@
 import 'package:app/binding/otp_binding.dart';
-import 'package:app/view/auth/login/login_view.dart';
 import 'package:app/view/auth/register/register_view.dart';
 import 'package:app/view/auth/verification/otp_view.dart';
 import 'package:app/view/home_page/home_page_view.dart';

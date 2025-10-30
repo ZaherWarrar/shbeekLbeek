@@ -2,6 +2,7 @@ import 'package:app/binding/otp_binding.dart';
 import 'package:app/view/auth/login/login_view.dart';
 import 'package:app/view/auth/register/register_view.dart';
 import 'package:app/view/auth/verification/otp_view.dart';
+import 'package:app/view/home_page/home_page_view.dart';
 import 'package:get/get.dart';
 
 class AppRoutes {
@@ -14,7 +15,7 @@ class AppRoutes {
   static const String learneMore = "/learnMore";
 
   static final routes = [
-    GetPage(name: splash, page: () => const LoginView()),
+    GetPage(name: splash, page: () => const HomePageView()),
     GetPage(name: register, page: () => const RegisterView()),
     GetPage(binding: OtpBinding(), name: otp, page: () => const OtpView()),
     // GetPage(name: login, page: () => LoginView()),

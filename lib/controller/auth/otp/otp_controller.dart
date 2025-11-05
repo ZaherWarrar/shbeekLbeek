@@ -11,7 +11,7 @@ class OtpController extends GetxController {
   late String phoneNumber;
   late StatusRequest statusRequest;
   OtpData otpData = OtpData(Get.find());
-  var data;
+  dynamic data;
   // هنا يجب ادخال عنوان الapi الصحيح للotp
   final String apiUrl = "";
 
@@ -28,14 +28,11 @@ class OtpController extends GetxController {
       statusRequest = handelingData(response);
       if (statusRequest == StatusRequest.success) {
         data = (response["user"]);
+        // ignore: unused_local_variable
         var token = response["token"];
         Get.snackbar('نجاح ✅', 'تم التحقق بنجاح');
-
-        print(token);
       } else {
         Get.snackbar('فشل ❌', 'رمز غير صالح');
-
-        print(response["message"]);
       }
       update();
     } catch (e) {
@@ -46,7 +43,6 @@ class OtpController extends GetxController {
   @override
   void onInit() {
     phoneNumber = Get.arguments["phone_number"];
-    print(phoneNumber);
     super.onInit();
   }
 }

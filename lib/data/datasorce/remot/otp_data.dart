@@ -6,6 +6,7 @@ class OtpData {
 
   OtpData(this.crud);
 
+  // ignore: strict_top_level_inference
   otpData(String otpCode, String phoneNumber ) async {
     var response = await crud
         .postData(ApiLinks.verifyCode, {"otp": otpCode, "phone_number": phoneNumber, });

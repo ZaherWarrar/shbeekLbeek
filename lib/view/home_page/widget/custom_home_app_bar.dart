@@ -10,7 +10,21 @@ class CustomDeliveryAppBar extends StatelessWidget
 
     return SafeArea(
       child: Container(
-        color: Colors.white,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.only(
+            bottomLeft: Radius.circular(15),
+            bottomRight: Radius.circular(15),
+          ),
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey,
+              blurRadius: 5,
+              blurStyle: BlurStyle.outer,
+            ),
+          ],
+        ),
+
         padding: EdgeInsets.symmetric(
           horizontal: screenWidth * 0.04, // نسبة من العرض
           vertical: 8,
@@ -35,11 +49,11 @@ class CustomDeliveryAppBar extends StatelessWidget
             ),
 
             // ====== الجهة اليمين (العنوان والموقع) ======
-            Flexible(
+            FittedBox(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Flexible(
+                  FittedBox(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
@@ -59,7 +73,7 @@ class CustomDeliveryAppBar extends StatelessWidget
                               size: 18,
                               color: Colors.black87,
                             ),
-                            Flexible(
+                            FittedBox(
                               child: Text(
                                 "شارع الأمير محمد ", // تجربة طول
                                 style: TextStyle(

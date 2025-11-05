@@ -7,6 +7,7 @@ class Changelocal extends GetxController {
   Locale? language;
   MyServices myServices = Get.find();
   ThemeData appTheme = themeEnglish;
+  // ignore: strict_top_level_inference
   changelang(String langcode) {
     Locale locale = Locale(langcode);
     appTheme = langcode == "ar" ? themeArabec : themeEnglish;

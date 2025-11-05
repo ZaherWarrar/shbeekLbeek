@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:app/core/function/sizecnf.dart';
 
+// ignore: strict_top_level_inference
 double getResponsiveFontSize(context, {required double fontSize}) {
   double scaleFactor = getScaleFactor(context);
   double responsiveFontSize = fontSize * scaleFactor;
@@ -12,6 +13,7 @@ double getResponsiveFontSize(context, {required double fontSize}) {
   return responsiveFontSize.clamp(lowerLimit, upperLimit);
 }
 
+// ignore: strict_top_level_inference
 double getScaleFactor(context) {
   // var dispatcher = PlatformDispatcher.instance;
   // var physicalWidth = dispatcher.views.first.physicalSize.width;

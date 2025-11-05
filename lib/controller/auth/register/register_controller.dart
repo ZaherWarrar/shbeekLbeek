@@ -6,8 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 abstract class RegisterController extends GetxController {
+  // ignore: strict_top_level_inference
   register();
+  // ignore: strict_top_level_inference
   goToLogin();
+  // ignore: strict_top_level_inference
   goToOtp();
 }
 

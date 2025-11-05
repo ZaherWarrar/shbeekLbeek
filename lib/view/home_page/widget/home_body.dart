@@ -1,3 +1,5 @@
+import 'package:app/core/constant/app_color.dart';
+import 'package:app/view/home_page/widget/category_slider.dart';
 import 'package:app/view/home_page/widget/custom_home_app_bar.dart';
 import 'package:flutter/material.dart';
 
@@ -6,6 +8,10 @@ class HomeBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(appBar: CustomDeliveryAppBar());
+    return Scaffold(
+      backgroundColor: AppColor().backgroundColor,
+      appBar: CustomDeliveryAppBar(),
+      body: ListView(children: [CategorySlider()]),
+    );
   }
 }

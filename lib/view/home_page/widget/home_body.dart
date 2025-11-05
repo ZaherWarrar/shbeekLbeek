@@ -9,8 +9,22 @@ class HomeBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomDeliveryAppBar(),
-      body: ListView(children: [
-         
+      body: ListView(
+        children: [
+          SizedBox(height: 10),
+          //====================سلايدر الاعلانات ========
+          SliderWidget(
+            imageWidth: 310,
+            height: 175, // يمكنك تعديل الارتفاع
+            borderRadius: 20, // تعديل الحواف
+            interval: Duration(seconds: 5), // المدة بين الصور
+            onTapActions: [
+              () => print("فتح المنتج الأول"),
+              () => print("فتح المنتج الثاني"),
+              () => print("فتح المنتج الثالث"),
+              () => print("فتح المنتج الرابع"),
+            ],
+          ),
         ],
       ),
     );

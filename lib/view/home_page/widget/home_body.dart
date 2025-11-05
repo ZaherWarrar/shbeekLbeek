@@ -32,7 +32,9 @@ class HomeBody extends StatelessWidget {
           ),
           SizedBox(height: 10),
           CategorySlider(),
+          SizedBox(height: 25),
           CategoryType(),
+          SizedBox(height: 25),
         ],
       ),
     );

@@ -1,6 +1,7 @@
 import 'package:app/core/constant/app_color.dart';
 import 'package:app/core/shared/custom_slider.dart';
 import 'package:app/view/home_page/widget/category_slider.dart';
+import 'package:app/view/home_page/widget/category_type/category_type.dart';
 import 'package:app/view/home_page/widget/custom_home_app_bar.dart';
 import 'package:flutter/material.dart';
 
@@ -31,6 +32,7 @@ class HomeBody extends StatelessWidget {
           ),
           SizedBox(height: 10),
           CategorySlider(),
+          CategoryType(),
         ],
       ),
     );

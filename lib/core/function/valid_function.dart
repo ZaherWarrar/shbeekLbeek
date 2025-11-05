@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 
-validTextForm(String val, String type, int max, int min) {
+String validTextForm(String val, String type, int max, int min) {
   if (val.isEmpty) {
     return "9".tr;
   }
@@ -16,4 +16,5 @@ validTextForm(String val, String type, int max, int min) {
       return "6".tr;
     }
   }
+  return "";
 }

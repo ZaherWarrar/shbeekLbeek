@@ -6,9 +6,9 @@ import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 
 abstract class LoginController extends GetxController {
-  login();
-  chingeshow();
-  goRegister();
+ dynamic  login();
+  dynamic chingeshow();
+  dynamic goRegister();
 }
 
 class LoginControllerImb extends LoginController {
@@ -24,7 +24,7 @@ class LoginControllerImb extends LoginController {
   List data = [];
   // ================     login function =======================================
   @override
-  login() async {
+   login() async {
     var formData = formStat.currentState;
     // ==============       status valid =======================================
     if ((formData?.validate() ?? false)) {
@@ -38,7 +38,6 @@ class LoginControllerImb extends LoginController {
       statusRequest = handelingData(response);
 
       if (StatusRequest.success == statusRequest) {
-        print(response["message"]);
       } else {
         statusRequest = StatusRequest.failure;
         Get.defaultDialog(

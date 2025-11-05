@@ -1,13 +1,17 @@
-import 'dart:convert';
-
+import 'package:app/core/class/statusrequest.dart';
+import 'package:app/core/function/handelingdata.dart';
+import 'package:app/data/datasorce/remot/otp_data.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
 
 class OtpController extends GetxController {
   var otpCode = ''.obs;
 
   var isloading = false.obs;
 
+  late String phoneNumber;
+  late StatusRequest statusRequest;
+  OtpData otpData = OtpData(Get.find());
+  dynamic data;
   // هنا يجب ادخال عنوان الapi الصحيح للotp
   final String apiUrl = "";
 
@@ -16,38 +20,29 @@ class OtpController extends GetxController {
       Get.snackbar("تنبيه", "الرجاء ادخال رمز التفعيل الكامل");
       return;
     }
-
     try {
-      isloading.value = true;
-
-      final Map<String, dynamic> requestData = {
-        'otp': otpCode.value,
-        'phone': '+963900000000',
-      };
-
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(requestData),
-      );
-      //===========بحالة نجاح التحقق ==========
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-
-        if (data['success'] == true) {
-          Get.snackbar('نجاح ✅', data['message'] ?? 'تم التحقق بنجاح');
-          // =========يمكنك الانتقال لصفحة أخرى:=========
-          // Get.offAllNamed(AppRoutes.home);
-        } else {
-          Get.snackbar('فشل ❌', data['message'] ?? 'رمز غير صالح');
-        }
+      statusRequest = StatusRequest.loading;
+      data = [];
+      update();
+      final response = await otpData.otpData(otpCode.value, phoneNumber);
+      statusRequest = handelingData(response);
+      if (statusRequest == StatusRequest.success) {
+        data = (response["user"]);
+        // ignore: unused_local_variable
+        var token = response["token"];
+        Get.snackbar('نجاح ✅', 'تم التحقق بنجاح');
       } else {
-        Get.snackbar('خطأ ⚠️', 'فشل الاتصال بالسيرفر (${response.statusCode})');
+        Get.snackbar('فشل ❌', 'رمز غير صالح');
       }
+      update();
     } catch (e) {
-      Get.snackbar("حدث خطأ أثناء التحقق", 'خطأ : $e');
-    } finally {
-      isloading.value = false;
+      Get.snackbar("حدث حطأ غير معروف ", "خطأ");
     }
+  }
+
+  @override
+  void onInit() {
+    phoneNumber = Get.arguments["phone_number"];
+    super.onInit();
   }
 }

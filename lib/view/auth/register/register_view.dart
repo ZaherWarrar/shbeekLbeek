@@ -79,7 +79,7 @@ class RegisterView extends StatelessWidget {
                     fontsize: 25,
                     padding: 10,
                     title: "16".tr,
-                    onTap: () => controller.goToOtp(),
+                    onTap: () => controller.register(),
                     //controller.register(),
                   ),
                 ],

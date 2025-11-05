@@ -19,7 +19,7 @@ class CategorySlider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: SizedBox(
         width: w,
         child: Column(
@@ -27,11 +27,14 @@ class CategorySlider extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             FittedBox(
-              child: Text(
-                "الأصناف",
-                style: TextStyle(
-                  fontSize: getResponsiveFontSize(context, fontSize: 35),
-                  fontWeight: FontWeight.bold,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Text(
+                  "الأصناف",
+                  style: TextStyle(
+                    fontSize: getResponsiveFontSize(context, fontSize: 35),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),

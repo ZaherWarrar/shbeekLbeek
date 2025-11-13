@@ -40,7 +40,7 @@ class CategorySlider extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             SizedBox(
-              height: 110,
+              height: 95,
               child: ListView.builder(
                 itemCount: data.length,
                 scrollDirection: Axis.horizontal,

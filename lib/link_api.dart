@@ -5,4 +5,6 @@ class ApiLinks {
   static const String login = '$baseUrl/login';
   static const String createAccount = '$baseUrl/register';
   static const String verifyCode = '$baseUrl/verify';
+  // home page Endpoints
+  static const String home = '$baseUrl/home/';
 }

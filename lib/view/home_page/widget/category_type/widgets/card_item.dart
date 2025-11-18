@@ -1,11 +1,11 @@
-import 'package:app/controller/category/category_type_controller.dart';
+import 'package:app/controller/home/home_controller.dart';
 import 'package:app/core/constant/app_color.dart';
 import 'package:app/core/function/fontsize.dart';
 import 'package:flutter/material.dart';
 
 class CardItem extends StatelessWidget {
   const CardItem({super.key, required this.controller, required this.index});
-  final CategoryTypeControllerImb controller;
+  final HomeControllerImp controller;
   final int index;
   @override
   Widget build(BuildContext context) {
@@ -25,8 +25,8 @@ class CardItem extends StatelessWidget {
                 topLeft: Radius.circular(25),
                 topRight: Radius.circular(25),
               ),
-              child: Image.asset(
-                controller.dataCategory[index]["image"],
+              child: Image.network(
+                controller.dataCategory[index].imageUrl!,
                 height: 130,
                 width: 300,
                 fit: BoxFit.fill,
@@ -38,7 +38,7 @@ class CardItem extends StatelessWidget {
               child: FittedBox(
                 fit: BoxFit.scaleDown,
                 child: Text(
-                  controller.dataCategory[index]["title"],
+                  controller.dataCategory[index].name!,
                   style: TextStyle(
                     fontSize: getResponsiveFontSize(context, fontSize: 25),
                   ),
@@ -51,7 +51,7 @@ class CardItem extends StatelessWidget {
               child: FittedBox(
                 fit: BoxFit.scaleDown,
                 child: Text(
-                  controller.dataCategory[index]["dis"],
+                  controller.dataCategory[index].deliveryTime!,
                   style: TextStyle(
                     fontSize: getResponsiveFontSize(context, fontSize: 15),
                     color: AppColor().descriptionColor,
@@ -73,14 +73,14 @@ class CardItem extends StatelessWidget {
                     ),
                     SizedBox(width: 5),
                     Text(
-                      controller.dataCategory[index]["rate"].toString(),
+                      controller.dataCategory[index].ratingValue!.toString(),
                       style: TextStyle(
                         fontSize: getResponsiveFontSize(context, fontSize: 20),
                       ),
                     ),
                     SizedBox(width: 10),
                     Text(
-                      "(${controller.dataCategory[index]["count"]})",
+                      "(${controller.dataCategory[index].ratingCount!})",
                       style: TextStyle(
                         fontSize: getResponsiveFontSize(context, fontSize: 20),
                       ),

@@ -1,5 +1,5 @@
 // lib/app/shared/widgets/slider_widget.dart
-import 'package:app/controller/image_slider/slider_image_controller.dart';
+import 'package:app/controller/home/home_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -11,6 +11,7 @@ class SliderWidget extends StatelessWidget {
   final bool autoPlay;
   final double imageWidth;
   final List<void Function()>? onTapActions;
+    final HomeControllerImp controller ;
 
   const SliderWidget({
     super.key,
@@ -20,12 +21,12 @@ class SliderWidget extends StatelessWidget {
     this.interval,
     this.autoPlay = true,
     this.imageWidth = 300,
-    this.onTapActions,
+    this.onTapActions, required this.controller,
   });
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(SliderController());
+   
 
     if (interval != null) {
       controller.autoPlayDelay = interval!;
@@ -67,7 +68,7 @@ class SliderWidget extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(borderRadius),
-                    child: Image.network(slide.imageUrl, fit: BoxFit.cover),
+                    child: Image.network(slide.imageUrl!, fit: BoxFit.cover),
                   ),
                 ),
               );

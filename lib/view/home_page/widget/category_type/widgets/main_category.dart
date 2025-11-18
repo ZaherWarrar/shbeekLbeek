@@ -1,16 +1,16 @@
-import 'package:app/controller/category/category_type_controller.dart';
+import 'package:app/controller/home/home_controller.dart';
 import 'package:app/core/constant/app_color.dart';
 import 'package:flutter/material.dart';
 
 class MainCategory extends StatelessWidget {
   const MainCategory({super.key, required this.controller});
-  final CategoryTypeControllerImb controller;
+  final HomeControllerImp controller;
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       height: 40,
       child: ListView.builder(
-        itemCount: controller.data.length,
+        itemCount: controller.categoryType.length,
         scrollDirection: Axis.horizontal,
         itemBuilder: (context, index) {
           return GestureDetector(
@@ -31,7 +31,7 @@ class MainCategory extends StatelessWidget {
                 child: Center(
                   child: FittedBox(
                     fit: BoxFit.scaleDown,
-                    child: Text(controller.data[index]["category"]),
+                    child: Text(controller.categoryType[index].toString()),
                   ),
                 ),
               ),

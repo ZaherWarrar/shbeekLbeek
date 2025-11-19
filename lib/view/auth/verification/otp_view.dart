@@ -2,6 +2,7 @@ import 'package:app/controller/auth/otp/otp_controller.dart';
 import 'package:app/core/constant/app_color.dart';
 import 'package:app/core/function/fontsize.dart';
 import 'package:app/core/shared/custom_app_bar.dart';
+import 'package:app/main.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pinput/pinput.dart';

@@ -1,7 +1,9 @@
+
 import 'package:app/controller/home/home_controller.dart';
 import 'package:app/core/constant/app_color.dart';
 import 'package:app/core/shared/custom_loding_page.dart';
 import 'package:app/core/shared/custom_slider.dart';
+import 'package:app/view/home_page/widget/all_shops_widget.dart';
 import 'package:app/view/home_page/widget/category_slider.dart';
 import 'package:app/view/home_page/widget/category_type/category_type.dart';
 import 'package:app/view/home_page/widget/custom_home_app_bar.dart';
@@ -16,7 +18,7 @@ class HomeBody extends StatelessWidget {
     // Register once; GetBuilder will rebuild when update() is called in the controller.
     Get.put(HomeControllerImp());
     return Scaffold(
-      backgroundColor: AppColor().backgroundColor,
+      backgroundColor: const Color.fromARGB(255, 240, 240, 240),
       appBar: CustomDeliveryAppBar(),
       body: GetBuilder<HomeControllerImp>(
         builder: (controller) {
@@ -49,8 +51,6 @@ class HomeBody extends StatelessWidget {
               CategoryType(),
               const SizedBox(height: 25),
             ],
-          );
-        },
       ),
     );
   }

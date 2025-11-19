@@ -1,8 +1,10 @@
 import 'package:app/core/class/statusrequest.dart';
 import 'package:app/core/function/handelingdata.dart';
+import 'package:app/data/datasorce/model/item_model.dart';
 import 'package:app/data/datasorce/model/main_categores.dart';
 import 'package:app/data/datasorce/model/new_arrival_model.dart';
 import 'package:app/data/datasorce/model/slider_model.dart';
+import 'package:app/data/datasorce/remot/all_item_data.dart';
 import 'package:app/data/datasorce/remot/main_categores_data.dart';
 import 'package:app/data/datasorce/remot/new_arrival_data.dart';
 import 'package:app/data/datasorce/remot/slider_data.dart';
@@ -17,6 +19,8 @@ abstract class HomeController extends GetxController {
   Future<void> fetchNewArrival();
   Future<void> fetchTopRating();
   Future<void> fetchTopOrdered();
+  Future<void> fetchAllItem();
+  // ignore: strict_top_level_inference
   selectType(int index);
 }
 
@@ -53,7 +57,12 @@ class HomeControllerImp extends HomeController {
   int selectedType = 0;
   List<Map<String, dynamic>> data = [];
   List<NewArrivalModel> dataCategory = [];
-  // ==============  Slider =================================================
+  // ============== All Item Var ===============================================
+  StatusRequest allItemState = StatusRequest.none;
+  AllItemData allItemData = AllItemData(Get.find());
+  List<ItemModel> items = [];
+  // ==============  Slider ====================================================
+
   @override
   Future<void> fetchSliders() async {
     sliderStat = StatusRequest.loading;
@@ -143,32 +152,6 @@ class HomeControllerImp extends HomeController {
   //   dataCategory = data[index]["data"];
   //   update();
   // }
-  @override
-  void onInit() async {
-    super.onInit();
-    await fetchSliders();
-    await fetchMainCategores();
-    await fetchTopOrdered();
-    dataCategory = [];
-    dataCategory = topOrdered;
-    if (slides.isEmpty) {
-      pageController = PageController(initialPage: 0);
-      extendedSlides = [];
-      return;
-    }
-    extendedSlides = [slides.last, ...slides, slides.first];
-
-    pageController = PageController(initialPage: initialPage);
-    _startAutoPlay();
-    update();
-  }
-
-  @override
-  void onClose() {
-    _isDisposed = true;
-    pageController.dispose();
-    super.onClose();
-  }
 
   @override
   Future<void> fetchNewArrival() async {
@@ -230,6 +213,26 @@ class HomeControllerImp extends HomeController {
     }
   }
 
+  // ================== All Item Function ======================================
+  @override
+  Future<void> fetchAllItem() async {
+    allItemState = StatusRequest.loading;
+    update();
+    var response = await allItemData.allItemData(1) as Map<String, dynamic>;
+    allItemState = handelingData(response);
+    if (allItemState == StatusRequest.success) {
+      List<dynamic> itemList = response["data"];
+      items = [];
+      for (var item in itemList) {
+        items.add(ItemModel.fromJson(item));
+      }
+      update();
+    } else {
+      allItemState = StatusRequest.failure;
+      update();
+    }
+  }
+
   @override
   selectType(int index) async {
     selectedType = index;
@@ -248,5 +251,32 @@ class HomeControllerImp extends HomeController {
       dataCategory = topRating;
     }
     update();
+  }
+
+  @override
+  void onInit() async {
+    super.onInit();
+    await fetchSliders();
+    await fetchMainCategores();
+    await fetchTopOrdered();
+    dataCategory = [];
+    dataCategory = topOrdered;
+    if (slides.isEmpty) {
+      pageController = PageController(initialPage: 0);
+      extendedSlides = [];
+      return;
+    }
+    extendedSlides = [slides.last, ...slides, slides.first];
+
+    pageController = PageController(initialPage: initialPage);
+    _startAutoPlay();
+    update();
+  }
+
+  @override
+  void onClose() {
+    _isDisposed = true;
+    pageController.dispose();
+    super.onClose();
   }
 }

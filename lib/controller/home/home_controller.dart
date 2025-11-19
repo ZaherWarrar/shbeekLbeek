@@ -259,6 +259,7 @@ class HomeControllerImp extends HomeController {
     await fetchSliders();
     await fetchMainCategores();
     await fetchTopOrdered();
+    await fetchAllItem();
     dataCategory = [];
     dataCategory = topOrdered;
     if (slides.isEmpty) {

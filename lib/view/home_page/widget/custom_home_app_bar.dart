@@ -19,6 +19,7 @@ class CustomDeliveryAppBar extends StatelessWidget
           color: AppColor().backgroundColor,
           boxShadow: [
             BoxShadow(
+              // ignore: deprecated_member_use
               color: Colors.grey.withOpacity(0.4),
               blurRadius: 5,
               spreadRadius: 0,

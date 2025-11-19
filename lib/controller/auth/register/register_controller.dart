@@ -27,7 +27,7 @@ class RegisterControllerImb extends RegisterController {
     update();
     var formData = formStat.currentState;
     // ==============       status valid =======================================
-    if ((formData?.validate() ?? false)) {
+    if ((formData?.validate()??true)) {
       statusRequest = StatusRequest.loading;
       update();
       var response = await registerData.registerData(

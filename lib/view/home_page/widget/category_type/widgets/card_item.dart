@@ -10,7 +10,7 @@ class CardItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 260,
+      width: 300,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(25),
         color: AppColor().backgroundColorCard,
@@ -40,7 +40,7 @@ class CardItem extends StatelessWidget {
                 child: Text(
                   controller.dataCategory[index].name!,
                   style: TextStyle(
-                    fontSize: getResponsiveFontSize(context, fontSize: 25),
+                    fontSize: getResponsiveFontSize(context, fontSize: 35),
                   ),
                 ),
               ),
@@ -53,7 +53,7 @@ class CardItem extends StatelessWidget {
                 child: Text(
                   controller.dataCategory[index].deliveryTime!,
                   style: TextStyle(
-                    fontSize: getResponsiveFontSize(context, fontSize: 15),
+                    fontSize: getResponsiveFontSize(context, fontSize: 25),
                     color: AppColor().descriptionColor,
                   ),
                 ),
@@ -69,7 +69,7 @@ class CardItem extends StatelessWidget {
                     Icon(
                       Icons.star_border,
                       color: AppColor().primaryColor,
-                      size: 20,
+                      size: 25,
                     ),
                     SizedBox(width: 5),
                     Text(

@@ -1,7 +1,6 @@
 // lib/app/shared/widgets/slider_widget.dart
 import 'package:app/controller/home/home_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 class SliderWidget extends StatelessWidget {
   final double height;

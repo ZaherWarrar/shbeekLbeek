@@ -50,7 +50,7 @@ import 'package:app/main.dart';
                     hint: "2".tr,
                     controller: controller.email,
                     valid: (val) {
-                      return validTextForm(val ?? '', "name", 100, 3);
+                      return validTextForm(val ?? '', "email", 100, 3);
                     },
                     lable: "3".tr,
                     iconData: Icons.email_outlined,
@@ -91,8 +91,8 @@ import 'package:app/main.dart';
                     fontsize: 25,
                     padding: 10,
                     title: "1".tr,
-                    onTap: () {
-                      controller.login();
+                    onTap: () async{
+                      await controller.login();
                     },
                   ),
                 ],

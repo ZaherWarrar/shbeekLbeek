@@ -19,7 +19,7 @@ class CategorySlider extends StatelessWidget {
           children: [
             FittedBox(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                padding: const EdgeInsets.symmetric(horizontal: 15),
                 child: Text(
                   "الأصناف",
                   style: TextStyle(

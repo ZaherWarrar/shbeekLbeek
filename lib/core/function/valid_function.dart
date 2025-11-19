@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 
-String validTextForm(String val, String type, int max, int min) {
+// ignore: strict_top_level_inference
+validTextForm(String val, String type, int max, int min) {
   if (val.isEmpty) {
     return "9".tr;
   }
@@ -16,5 +17,4 @@ String validTextForm(String val, String type, int max, int min) {
       return "6".tr;
     }
   }
-  return "";
 }

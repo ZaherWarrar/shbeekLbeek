@@ -1,4 +1,5 @@
 import 'package:app/core/class/statusrequest.dart';
+import 'package:app/core/constant/routes/app_routes.dart';
 import 'package:app/core/function/handelingdata.dart';
 import 'package:app/data/datasorce/remot/otp_data.dart';
 import 'package:get/get.dart';
@@ -31,6 +32,7 @@ class OtpController extends GetxController {
         // ignore: unused_local_variable
         var token = response["token"];
         Get.snackbar('نجاح ✅', 'تم التحقق بنجاح');
+        Get.toNamed(AppRoutes.home);
       } else {
         Get.snackbar('فشل ❌', 'رمز غير صالح');
       }

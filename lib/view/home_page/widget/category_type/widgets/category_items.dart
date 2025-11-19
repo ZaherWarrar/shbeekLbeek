@@ -5,16 +5,15 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class CategoryItems extends StatelessWidget {
-  const CategoryItems({super.key,});
+  const CategoryItems({super.key});
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 220,
+      height: 158,
       child: GetBuilder<HomeControllerImp>(
         builder: (controller) {
           return CustomLodingPage(
-            body: 
-             ListView.builder(
+            body: ListView.builder(
               scrollDirection: Axis.horizontal,
               itemCount: controller.dataCategory.length,
               itemBuilder: (context, index) {
@@ -29,7 +28,7 @@ class CategoryItems extends StatelessWidget {
             ),
             statusRequest: controller.newArrivalStat,
           );
-        }
+        },
       ),
     );
   }

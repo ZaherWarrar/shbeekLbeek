@@ -1,3 +1,4 @@
+import 'package:app/core/constant/app_color.dart';
 import 'package:flutter/material.dart';
 
 class CustomDeliveryAppBar extends StatelessWidget
@@ -12,15 +13,16 @@ class CustomDeliveryAppBar extends StatelessWidget
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.only(
-            bottomLeft: Radius.circular(15),
-            bottomRight: Radius.circular(15),
+            bottomLeft: Radius.circular(10),
+            bottomRight: Radius.circular(10),
           ),
-          color: Colors.white,
+          color: AppColor().backgroundColor,
           boxShadow: [
             BoxShadow(
-              color: Colors.grey,
+              color: Colors.grey.withOpacity(0.4),
               blurRadius: 5,
-              blurStyle: BlurStyle.outer,
+              spreadRadius: 0,
+              offset: Offset(0, 2),
             ),
           ],
         ),

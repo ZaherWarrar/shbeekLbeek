@@ -1,21 +1,12 @@
-import 'package:app/core/constant/app_images.dart';
+import 'package:app/controller/home/home_controller.dart';
 import 'package:app/core/function/fontsize.dart';
+import 'package:app/data/datasorce/model/main_categores.dart';
 import 'package:app/main.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 
-// ignore: must_be_immutable
 class CategorySlider extends StatelessWidget {
-  CategorySlider({super.key});
-  List data = [
-    {"image": Assets.imagesCategory1, "title": "مطاعم"},
-    {"image": Assets.imagesCategory2, "title": "بقالة"},
-    {"image": Assets.imagesCategory3, "title": "صيدلية"},
-    {"image": Assets.imagesCategory4, "title": "قهوة"},
-    {"image": Assets.imagesCategory1, "title": "مطاعم"},
-    {"image": Assets.imagesCategory2, "title": "بقالة"},
-    {"image": Assets.imagesCategory3, "title": "صيدلية"},
-    {"image": Assets.imagesCategory4, "title": "قهوة"},
-  ];
+  const CategorySlider({super.key, required this.controller});
+  final HomeControllerImp controller;
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -42,9 +33,10 @@ class CategorySlider extends StatelessWidget {
             SizedBox(
               height: 95,
               child: ListView.builder(
-                itemCount: data.length,
+                itemCount: controller.mainCat.length,
                 scrollDirection: Axis.horizontal,
                 itemBuilder: (context, index) {
+                  MainCategoriesModel data = controller.mainCat[index];
                   return Padding(
                     padding: const EdgeInsets.only(right: 15),
                     child: FittedBox(
@@ -56,13 +48,22 @@ class CategorySlider extends StatelessWidget {
                             height: 80,
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(60),
-                              child: Image.asset(data[index]["image"]),
+                              child: Image.network(
+                                data.imageUrl ?? '',
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return const Icon(
+                                    Icons.image_not_supported_outlined,
+                                    size: 40,
+                                  );
+                                },
+                              ),
                             ),
                           ),
                           const SizedBox(height: 8),
                           FittedBox(
                             child: Text(
-                              data[index]["title"],
+                              data.name!,
                               style: TextStyle(
                                 fontSize: getResponsiveFontSize(
                                   context,

@@ -18,7 +18,7 @@ class Crud {
   };
 
   // دالة POST للبيانات العادية
-  Future<Either<StatusRequest, Map>> postData(
+  Future<Either<StatusRequest, dynamic>> postData(
     String linkurl,
     Map data, {
     Map<String, String>? headers,
@@ -46,7 +46,7 @@ class Crud {
   }
 
   // دالة POST للملفات
-  Future<Either<StatusRequest, Map>> postFile(
+  Future<Either<StatusRequest, dynamic>> postFile(
     String linkurl,
     Map data,
     File file, {
@@ -94,10 +94,9 @@ class Crud {
   }
 
   // دالة GET للاستعلام عن البيانات
-  Future<Either<StatusRequest, Map>> getData(
+  Future<Either<StatusRequest, dynamic>> getData(
     String linkurl,
-    Map<String, dynamic> map,
-     {
+    Map<String, dynamic> map, {
     Map<String, String>? headers,
     Map<String, dynamic>? queryParameters,
     Duration? timeout,
@@ -126,7 +125,7 @@ class Crud {
   }
 
   // دالة PUT لتحديث البيانات
-  Future<Either<StatusRequest, Map>> putData(
+  Future<Either<StatusRequest, dynamic>> putData(
     String linkurl,
     Map data, {
     Map<String, String>? headers,
@@ -154,7 +153,7 @@ class Crud {
   }
 
   // دالة PATCH لتحديث جزئي للبيانات
-  Future<Either<StatusRequest, Map>> patchData(
+  Future<Either<StatusRequest, dynamic>> patchData(
     String linkurl,
     Map data, {
     Map<String, String>? headers,
@@ -182,7 +181,7 @@ class Crud {
   }
 
   // دالة DELETE لحذف البيانات
-  Future<Either<StatusRequest, Map>> deleteData(
+  Future<Either<StatusRequest, dynamic>> deleteData(
     String linkurl, {
     Map<String, String>? headers,
     Duration? timeout,
@@ -205,7 +204,7 @@ class Crud {
   }
 
   // دالة لرفع عدة ملفات
-  Future<Either<StatusRequest, Map>> postMultipleFiles(
+  Future<Either<StatusRequest, dynamic>> postMultipleFiles(
     String linkurl,
     Map data,
     List<File> files, {
@@ -301,10 +300,10 @@ class Crud {
   }
 
   // دالة مساعدة لمعالجة الاستجابة
-  Either<StatusRequest, Map> _handleResponse(http.Response response) {
+  Either<StatusRequest, dynamic> _handleResponse(http.Response response) {
     if (response.statusCode >= 200 && response.statusCode < 300) {
       try {
-        Map responseBody = jsonDecode(response.body);
+        dynamic responseBody = jsonDecode(response.body);
         return Right(responseBody);
       } catch (e) {
         // إذا لم يكن JSON صالح، إرجاع النص

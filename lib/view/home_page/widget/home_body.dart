@@ -1,5 +1,5 @@
 import 'package:app/controller/home/home_controller.dart';
-import 'package:app/core/function/fontsize.dart';
+import 'package:app/core/constant/routes/app_routes.dart';
 import 'package:app/core/shared/custom_loding_page.dart';
 import 'package:app/core/shared/custom_slider.dart';
 import 'package:app/view/home_page/widget/all_shops_widget.dart';
@@ -17,12 +17,18 @@ class HomeBody extends StatelessWidget {
     // Register once; GetBuilder will rebuild when update() is called in the controller.
     Get.put(HomeControllerImp());
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.orange,
+        child: const Icon(Icons.shopping_cart, color: Colors.white),
+        onPressed: () {
+          Get.toNamed(AppRoutes.cartView);
+        },
+      ),
       backgroundColor: const Color.fromARGB(255, 240, 240, 240),
       appBar: CustomDeliveryAppBar(),
       body: GetBuilder<HomeControllerImp>(
         builder: (controller) {
           return ListView(
-            
             children: [
               const SizedBox(height: 10),
               //==================== السلايدر الرئيسي ========
@@ -54,7 +60,6 @@ class HomeBody extends StatelessWidget {
               const SizedBox(height: 25),
               CategoryType(),
               const SizedBox(height: 25),
-             
 
               AllShops(),
             ],

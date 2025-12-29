@@ -1,5 +1,4 @@
 import 'package:app/controller/home/home_controller.dart';
-import 'package:app/core/function/fontsize.dart';
 import 'package:app/core/shared/custom_loding_page.dart';
 import 'package:app/core/shared/custom_slider.dart';
 import 'package:app/view/home_page/widget/all_shops_widget.dart';

@@ -1,5 +1,6 @@
 import 'package:app/controller/home/home_controller.dart';
 import 'package:app/core/constant/app_color.dart';
+import 'package:app/core/constant/app_images.dart';
 import 'package:app/core/function/fontsize.dart';
 import 'package:app/main.dart';
 import 'package:flutter/material.dart';
@@ -55,8 +56,14 @@ class ListAllShopsWidget extends StatelessWidget {
                           child: AspectRatio(
                             aspectRatio: 1,
                             child: Image.network(
-                              item.imageUrl!,
+                              item.imageUrl ?? " ",
                               fit: BoxFit.fill,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Image.asset(
+                                  Assets.imagesLogo,
+                                  fit: BoxFit.cover,
+                                );
+                              },
                             ),
                           ),
                         ),
@@ -96,13 +103,13 @@ class ListAllShopsWidget extends StatelessWidget {
                                   ),
                                   SizedBox(width: 5),
                                   Text(
-                                    "${item.ratingValue}",
+                                    "4.5",
                                     //     style: TextStyle(fontSize: h * 0.02),
                                   ),
                                   SizedBox(width: 5),
 
                                   Text(
-                                    "(${item.ratingCount})",
+                                    "(200)",
                                     style: TextStyle(
                                       color: AppColor().descriptionColor,
                                     ),
@@ -119,7 +126,7 @@ class ListAllShopsWidget extends StatelessWidget {
                                   ),
                                   SizedBox(width: 4),
                                   Text(
-                                    "${item.deliveryTime}",
+                                    "15-25 دقيقة",
                                     style: TextStyle(
                                       color: Colors.grey[700],
                                       //   fontSize: h * 0.018,

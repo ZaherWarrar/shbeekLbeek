@@ -8,7 +8,7 @@ class AllItemData {
 
   Future<Object> allItemData(int cityId) async {
     var response = await crud
-        .getData("${ApiLinks.home}$cityId/products", {});
+        .getData("${ApiLinks.home}$cityId/stores", {});
     return response.fold((l) => l, (r) => r);
   }
 }

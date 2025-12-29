@@ -1,4 +1,5 @@
 import 'package:app/controller/auth/login/login_controller.dart';
+import 'package:app/core/constant/routes/app_routes.dart';
 import 'package:app/view/auth/login/widgets/go_to_register.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -11,7 +12,8 @@ import 'package:app/core/shared/custom_app_bar.dart';
 import 'package:app/core/shared/custom_button.dart';
 import 'package:app/core/shared/custom_text_form_fild.dart';
 import 'package:app/main.dart';
- class LoginView extends StatelessWidget {
+
+class LoginView extends StatelessWidget {
   const LoginView({super.key});
 
   @override
@@ -91,8 +93,21 @@ import 'package:app/main.dart';
                     fontsize: 25,
                     padding: 10,
                     title: "1".tr,
-                    onTap: () async{
+                    onTap: () async {
                       await controller.login();
+                    },
+                  ),
+
+                  MaterialButton(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                        10,
+                      ), // تحكم بنعومة الدائرة
+                    ),
+                    color: Colors.grey,
+                    child: Text("الدخول كضيف"),
+                    onPressed: () {
+                      Get.toNamed(AppRoutes.chooseCity);
                     },
                   ),
                 ],

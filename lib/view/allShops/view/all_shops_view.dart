@@ -1,3 +1,4 @@
+import 'package:app/core/constant/app_color.dart';
 import 'package:app/core/constant/routes/app_routes.dart';
 import 'package:app/core/shared/custom_app_bar.dart';
 import 'package:app/view/allShops/filter/controller/shop_filter_controller.dart';
@@ -9,7 +10,6 @@ import 'package:get/get.dart';
 class StoresPage extends StatelessWidget {
   const StoresPage({super.key});
 
-  // ✅ بيانات وهمية جاهزة للـ API
   final List<Map<String, dynamic>> stores = const [
     {
       "name": "مطعم برجر فاكتوري",
@@ -32,6 +32,13 @@ class StoresPage extends StatelessWidget {
     final controller = Get.put(FilterController());
 
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: AppColor().primaryColor,
+        child: Icon(Icons.shopping_cart, color: AppColor().iconColors),
+        onPressed: () {
+          Get.toNamed(AppRoutes.cartView);
+        },
+      ),
       appBar: CustomAppBar(title: "كل المتاجر"),
       body: Column(
         children: [
@@ -41,26 +48,52 @@ class StoresPage extends StatelessWidget {
               onSelect: controller.changeFilter,
             ),
           ),
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: stores.length,
-              itemBuilder: (context, index) {
-                final store = stores[index];
+         Expanded(
+  child: LayoutBuilder(
+    builder: (context, constraints) {
+      int crossAxisCount;
+      double aspectRatio;
 
-                return StoreCardWidget(
-                  name: store['name'],
-                  category: store['category'],
-                  rating: store['rating'],
-                  image: store['image'],
-                  deliveryTime: store['deliveryTime'],
-                  onTap: () {
-                    Get.toNamed(AppRoutes.resturantDetails);
-                  },
-                );
-              },
-            ),
-          ),
+      if (constraints.maxWidth < 360) {
+        crossAxisCount = 2;
+        aspectRatio = 0.62; // موبايلات صغيرة جدًا
+      } else if (constraints.maxWidth < 600) {
+        crossAxisCount = 2;
+        aspectRatio = 0.68;
+      } else if (constraints.maxWidth < 900) {
+        crossAxisCount = 3;
+        aspectRatio = 0.75;
+      } else {
+        crossAxisCount = 4;
+        aspectRatio = 0.8;
+      }
+
+      return GridView.builder(
+        padding: const EdgeInsets.all(12),
+        itemCount: stores.length,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: crossAxisCount,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+          childAspectRatio: aspectRatio,
+        ),
+        itemBuilder: (context, index) {
+          final store = stores[index];
+          return StoreCardWidget(
+            name: store['name'],
+            category: store['category'],
+            rating: store['rating'],
+            image: store['image'],
+            deliveryTime: store['deliveryTime'],
+            onTap: () {
+              Get.toNamed(AppRoutes.resturantDetails);
+            },
+          );
+        },
+      );
+    },
+  ),
+),
         ],
       ),
     );

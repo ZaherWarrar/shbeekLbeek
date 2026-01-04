@@ -7,4 +7,5 @@ class AppColor {
   Color titleColor = Colors.black;
   Color textButomColor = Colors.white;
   Color descriptionColor = Colors.blueGrey;
+  Color iconColors = Colors.white;
 }

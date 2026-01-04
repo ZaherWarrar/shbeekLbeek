@@ -10,7 +10,7 @@ class InformationShopCard extends StatelessWidget {
                       height: 180,
                       width: 350,
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: AppColor().backgroundColor,
                         borderRadius: BorderRadius.circular(25),
                       ),
                       child: Padding(
@@ -31,10 +31,17 @@ class InformationShopCard extends StatelessWidget {
                                   style: TextStyle(
                                     fontSize: 22,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
+                                    color: AppColor().titleColor,
                                   ),
                                 ),
-
+  //////////////////////////////////////////////////////////////////////////////////////////////
+  ///
+  ///
+  ///
+  ///
+  ///
+  ///
+  ///
                                 Container(
                                   height: 32,
                                   width: 32,
@@ -50,7 +57,7 @@ class InformationShopCard extends StatelessWidget {
                                   child: Center(
                                     child: IconButton(
                                       padding: EdgeInsets
-                                          .zero, // مهم جداً لحتى ما يكبر الأيقونة
+                                          .zero, 
                                       onPressed: () {},
                                       icon: Icon(
                                         Icons.favorite_border,
@@ -60,6 +67,9 @@ class InformationShopCard extends StatelessWidget {
                                     ),
                                   ),
                                 ),
+
+
+///////////////////////////////////////////////////////////////////                                
                               ],
                             ),
                             SizedBox(height: 10),

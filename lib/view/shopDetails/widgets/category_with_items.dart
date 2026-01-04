@@ -1,5 +1,6 @@
 import 'package:app/core/constant/app_color.dart';
 import 'package:app/core/function/fontsize.dart';
+import 'package:app/main.dart';
 import 'package:flutter/material.dart';
 
 class CategoryWithItems extends StatelessWidget {
@@ -53,8 +54,9 @@ class CategoryWithItems extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 20),
-            // عنوان التصنيف
+            SizedBox(height: h * 0.02),
+
+            /// عنوان التصنيف
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Align(
@@ -69,25 +71,25 @@ class CategoryWithItems extends StatelessWidget {
               ),
             ),
 
-            // Loop on items inside category
+            /// العناصر داخل التصنيف
             Column(
               children: category["items"].map<Widget>((item) {
                 return Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Container(
-                    height: 150,
+                    height: h * 0.18, // Responsive height
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: AppColor().backgroundColor,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 15,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: w * 0.03,
+                        vertical: h * 0.015,
                       ),
                       child: Row(
                         children: [
-                          // النصوص
+                          /// النصوص
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -96,23 +98,27 @@ class CategoryWithItems extends StatelessWidget {
                                   item["title"],
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                SizedBox(height: 5),
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: Text(
-                                    item["desc"],
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey[700],
+                                    fontSize: getResponsiveFontSize(
+                                      context,
+                                      fontSize: 18,
                                     ),
-                                    maxLines: 3,
-                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
-                                SizedBox(height: 10),
+                                SizedBox(height: h * 0.005),
+                                Text(
+                                  item["desc"],
+                                  style: TextStyle(
+                                    fontSize: getResponsiveFontSize(
+                                      context,
+                                      fontSize: 14,
+                                    ),
+                                    color: Colors.grey[700],
+                                  ),
+                                  maxLines: 3,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                SizedBox(height: h * 0.01),
+
                                 Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
@@ -120,25 +126,31 @@ class CategoryWithItems extends StatelessWidget {
                                     Text(
                                       "${item["price"]} ريال",
                                       style: TextStyle(
-                                        color: Colors.deepOrange,
+                                        color: AppColor().primaryColor,
                                         fontWeight: FontWeight.bold,
-                                        fontSize: 16,
+                                        fontSize: getResponsiveFontSize(
+                                          context,
+                                          fontSize: 18,
+                                        ),
                                       ),
                                     ),
 
-                                    // العداد
+                                    /// العداد
                                     Row(
                                       children: [
                                         IconButton(
                                           onPressed: () {},
                                           icon: Icon(Icons.remove),
                                           color: AppColor().primaryColor,
-                                          iconSize: 25,
+                                          iconSize: w * 0.06,
                                         ),
                                         Text(
                                           "0",
                                           style: TextStyle(
-                                            fontSize: 20,
+                                            fontSize: getResponsiveFontSize(
+                                              context,
+                                              fontSize: 20,
+                                            ),
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
@@ -146,7 +158,7 @@ class CategoryWithItems extends StatelessWidget {
                                           onPressed: () {},
                                           icon: Icon(Icons.add),
                                           color: AppColor().primaryColor,
-                                          iconSize: 25,
+                                          iconSize: w * 0.06,
                                         ),
                                       ],
                                     ),
@@ -156,12 +168,12 @@ class CategoryWithItems extends StatelessWidget {
                             ),
                           ),
 
-                          SizedBox(width: 3),
+                          SizedBox(width: w * 0.02),
 
-                          // الصورة
+                          /// الصورة
                           SizedBox(
-                            height: 140,
-                            width: 120,
+                            height: h * 0.16,
+                            width: w * 0.28,
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(20),
                               child: Image.network(

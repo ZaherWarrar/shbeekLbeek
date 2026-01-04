@@ -1,4 +1,5 @@
 import 'package:app/controller/home/home_controller.dart';
+import 'package:app/core/constant/app_color.dart';
 import 'package:app/core/constant/routes/app_routes.dart';
 import 'package:app/core/shared/custom_loding_page.dart';
 import 'package:app/core/shared/custom_slider.dart';
@@ -6,6 +7,7 @@ import 'package:app/view/home_page/widget/all_shops_widget.dart';
 import 'package:app/view/home_page/widget/category_slider.dart';
 import 'package:app/view/home_page/widget/category_type/category_type.dart';
 import 'package:app/view/home_page/widget/custom_home_app_bar.dart';
+import 'package:app/view/profile/profile_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -26,6 +28,23 @@ class HomeBody extends StatelessWidget {
       ),
       backgroundColor: const Color.fromARGB(255, 240, 240, 240),
       appBar: CustomDeliveryAppBar(),
+      drawer: Drawer(
+        child: Column(
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                Get.to(ProfileView());
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  color: AppColor().primaryColor,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
       body: GetBuilder<HomeControllerImp>(
         builder: (controller) {
           return ListView(

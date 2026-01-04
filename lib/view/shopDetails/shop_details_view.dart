@@ -113,7 +113,7 @@ class ShopDetailsView extends StatelessWidget {
             //=================== Loop on categories ===================
             CategoryWithItems(),
             const SizedBox(height: 30),
-
+            
             //================التقييمات للمطعم=============
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,

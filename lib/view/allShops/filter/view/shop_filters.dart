@@ -1,5 +1,4 @@
 import 'package:app/core/constant/app_color.dart';
-import 'package:app/main.dart';
 import 'package:flutter/material.dart';
 
 class FiltersRowWidget extends StatelessWidget {
@@ -16,35 +15,64 @@ class FiltersRowWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+
+    final double horizontalPadding = width < 360
+        ? 10
+        : width < 600
+        ? 14
+        : 18;
+
+    final double verticalPadding = width < 360
+        ? 6
+        : width < 600
+        ? 8
+        : 10;
+
+    final double fontSize = width < 360
+        ? 11
+        : width < 600
+        ? 13
+        : 14;
+
+    final double spacing = width < 360
+        ? 6
+        : width < 600
+        ? 10
+        : 12;
+
     return SizedBox(
-      height: w * 0.12,
+      height: 45, // ⬅ أصغر
       child: ListView.separated(
-        padding: EdgeInsets.symmetric(horizontal: w * 0.04),
+        padding: const EdgeInsets.symmetric(horizontal: 10),
         scrollDirection: Axis.horizontal,
         itemCount: filters.length,
-        separatorBuilder: (_, __) => SizedBox(width: w * 0.025),
+        separatorBuilder: (_, _) => SizedBox(width: spacing),
         itemBuilder: (context, index) {
           final isSelected = index == selectedIndex;
 
           return GestureDetector(
             onTap: () => onSelect(index),
-            child: Container(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
               padding: EdgeInsets.symmetric(
-                horizontal: w * 0.05,
-                vertical: w * 0.025,
+                horizontal: horizontalPadding,
+                vertical: verticalPadding,
               ),
               decoration: BoxDecoration(
                 color: isSelected ? AppColor().primaryColor : Colors.white,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(18), // ⬅ أصغر
                 border: Border.all(
-                  color: isSelected ? Colors.black : Colors.grey.shade300,
+                  color: isSelected
+                      ? AppColor().primaryColor
+                      : Colors.grey.shade300,
                 ),
               ),
               child: Center(
                 child: Text(
                   filters[index],
                   style: TextStyle(
-                    fontSize: w * 0.035,
+                    fontSize: fontSize,
                     fontWeight: FontWeight.w500,
                     color: isSelected ? Colors.white : Colors.black87,
                   ),

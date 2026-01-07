@@ -10,7 +10,7 @@ class SliderWidget extends StatelessWidget {
   final bool autoPlay;
   final double imageWidth;
   final List<void Function()>? onTapActions;
-    final HomeControllerImp controller ;
+  final HomeControllerImp controller;
 
   const SliderWidget({
     super.key,
@@ -20,24 +20,33 @@ class SliderWidget extends StatelessWidget {
     this.interval,
     this.autoPlay = true,
     this.imageWidth = 300,
-    this.onTapActions, required this.controller,
+    this.onTapActions,
+    required this.controller,
   });
 
   @override
   Widget build(BuildContext context) {
-   
-
     if (interval != null) {
       controller.autoPlayDelay = interval!;
+    }
+
+    // إذا لم تكن هناك slides، لا نعرض السلايدر
+    if (controller.extendedSlides.isEmpty) {
+      return const SizedBox.shrink();
     }
 
     final screenWidth = MediaQuery.of(context).size.width;
     final calculatedFraction = imageWidth / screenWidth;
 
-    controller.pageController = PageController(
-      initialPage: controller.initialPage,
-      viewportFraction: calculatedFraction,
-    );
+    // تهيئة pageController فقط إذا لم يكن موجوداً أو تم dispose
+    if (controller.pageController == null ||
+        !controller.pageController!.hasClients) {
+      controller.pageController?.dispose();
+      controller.pageController = PageController(
+        initialPage: controller.initialPage,
+        viewportFraction: calculatedFraction,
+      );
+    }
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -45,34 +54,39 @@ class SliderWidget extends StatelessWidget {
         SizedBox(
           height: height,
           width: width,
-          child: PageView.builder(
-            controller: controller.pageController,
-            itemCount: controller.extendedSlides.length,
-            onPageChanged: controller.onPageChanged,
-            itemBuilder: (context, index) {
-              final slide = controller.extendedSlides[index];
+          child: controller.pageController != null
+              ? PageView.builder(
+                  controller: controller.pageController!,
+                  itemCount: controller.extendedSlides.length,
+                  onPageChanged: controller.onPageChanged,
+                  itemBuilder: (context, index) {
+                    final slide = controller.extendedSlides[index];
 
-              // حساب index الحقيقي داخل القائمة الأصلية
-              final realIndex = (index - 1) % controller.slides.length;
+                    // حساب index الحقيقي داخل القائمة الأصلية
+                    final realIndex = (index - 1) % controller.slides.length;
 
-              return GestureDetector(
-                onTap: () {
-                  if (onTapActions != null &&
-                      realIndex >= 0 &&
-                      realIndex < onTapActions!.length) {
-                    onTapActions![realIndex]();
-                  }
-                },
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(borderRadius),
-                    child: Image.network(slide.imageUrl!, fit: BoxFit.cover),
-                  ),
-                ),
-              );
-            },
-          ),
+                    return GestureDetector(
+                      onTap: () {
+                        if (onTapActions != null &&
+                            realIndex >= 0 &&
+                            realIndex < onTapActions!.length) {
+                          onTapActions![realIndex]();
+                        }
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(borderRadius),
+                          child: Image.network(
+                            slide.imageUrl!,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                )
+              : const SizedBox.shrink(),
         ),
         const SizedBox(height: 16),
       ],

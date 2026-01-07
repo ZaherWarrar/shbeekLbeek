@@ -1,3 +1,4 @@
+import 'package:app/core/constant/app_images.dart';
 import 'package:flutter/material.dart';
 
 class StoreCardWidget extends StatelessWidget {
@@ -39,6 +40,30 @@ class StoreCardWidget extends StatelessWidget {
                 height: 180,
                 width: double.infinity,
                 fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    height: 180,
+                    width: double.infinity,
+                    color: Colors.grey[200],
+                    child: Image.asset(Assets.imagesLogo, fit: BoxFit.contain),
+                  );
+                },
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Container(
+                    height: 180,
+                    width: double.infinity,
+                    color: Colors.grey[200],
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        value: loadingProgress.expectedTotalBytes != null
+                            ? loadingProgress.cumulativeBytesLoaded /
+                                  loadingProgress.expectedTotalBytes!
+                            : null,
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
 

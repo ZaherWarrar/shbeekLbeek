@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:get/get.dart';
 import 'package:app/core/services/services.dart';
 
@@ -71,6 +73,46 @@ class UserPreferences {
   Future<void> clearAll() async {
     await myServices.sharedPreferences.clear();
   }
+
+  // ===================== save Cart ============================
+  Future<void> saveCart(List<Map<String, dynamic>> cartItems) async {
+    String cartJson = jsonEncode(cartItems);
+    await myServices.sharedPreferences.setString('cart_items', cartJson);
+  }
+
+  // ===================== get Cart ============================
+  List<Map<String, dynamic>> getCart() {
+    String? cartJson = myServices.sharedPreferences.getString('cart_items');
+    if (cartJson == null) return [];
+    try {
+      List<dynamic> decoded = jsonDecode(cartJson);
+      return decoded.map((item) => Map<String, dynamic>.from(item)).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  // ===================== clear Cart ============================
+  Future<void> clearCart() async {
+    await myServices.sharedPreferences.remove('cart_items');
+    await myServices.sharedPreferences.remove('cart_discount_code');
+  }
+
+  // ===================== save Discount Code ============================
+  Future<void> saveDiscountCode(String code) async {
+    await myServices.sharedPreferences.setString('cart_discount_code', code);
+  }
+
+  // ===================== get Discount Code ============================
+  String? getDiscountCode() {
+    return myServices.sharedPreferences.getString('cart_discount_code');
+  }
+
+  // ===================== remove Discount Code ============================
+  Future<void> removeDiscountCode() async {
+    await myServices.sharedPreferences.remove('cart_discount_code');
+  }
+
   // // حفظ بيانات المستخدم (كـ JSON)
   // static Future<void> saveUser(Map<String, dynamic> user) async {
   //   final prefs = await SharedPreferences.getInstance();

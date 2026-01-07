@@ -28,7 +28,7 @@ class HomeControllerImp extends HomeController {
   List<SliderModel> slides = [];
   List<SliderModel> extendedSlides = [];
   var currentIndex = 0.obs;
-  late PageController pageController;
+  PageController? pageController;
   Duration autoPlayDelay = const Duration(seconds: 2);
   final Duration transitionSpeed = const Duration(milliseconds: 500);
   final int initialPage = 1;
@@ -81,16 +81,17 @@ class HomeControllerImp extends HomeController {
   void _startAutoPlay() async {
     while (!_isDisposed) {
       await Future.delayed(autoPlayDelay);
-      if (_isDisposed || !pageController.hasClients) continue;
+      if (_isDisposed || pageController == null || !pageController!.hasClients)
+        continue;
 
-      final currentPage = pageController.page;
+      final currentPage = pageController!.page;
       if (currentPage == null) continue;
 
       int nextPage = currentPage.toInt() + 1;
       if (nextPage > extendedSlides.length - 1) {
         nextPage = 0;
       }
-      pageController.animateToPage(
+      pageController!.animateToPage(
         nextPage,
         duration: transitionSpeed,
         curve: Curves.easeInOut,
@@ -102,13 +103,19 @@ class HomeControllerImp extends HomeController {
   void onPageChanged(int index) {
     currentIndex.value = index;
 
+    if (pageController == null || !pageController!.hasClients) return;
+
     if (index == 0) {
       Future.delayed(transitionSpeed, () {
-        pageController.jumpToPage(slides.length);
+        if (pageController != null && pageController!.hasClients) {
+          pageController!.jumpToPage(slides.length);
+        }
       });
     } else if (index == slides.length + 1) {
       Future.delayed(transitionSpeed, () {
-        pageController.jumpToPage(1);
+        if (pageController != null && pageController!.hasClients) {
+          pageController!.jumpToPage(1);
+        }
       });
     }
   }
@@ -234,7 +241,7 @@ class HomeControllerImp extends HomeController {
   @override
   void onClose() {
     _isDisposed = true;
-    pageController.dispose();
+    pageController?.dispose();
     super.onClose();
   }
 

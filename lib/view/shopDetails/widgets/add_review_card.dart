@@ -1,3 +1,4 @@
+import 'package:app/core/constant/app_color.dart';
 import 'package:flutter/material.dart';
 
 class AddReviewCardWidget extends StatelessWidget {
@@ -12,7 +13,7 @@ class AddReviewCardWidget extends StatelessWidget {
       margin: EdgeInsets.symmetric(horizontal: w * 0.05),
       padding: EdgeInsets.all(w * 0.04),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColor().backgroundColor,
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
@@ -39,7 +40,7 @@ class AddReviewCardWidget extends StatelessWidget {
               return Icon(
                 Icons.star,
                 size: h * 0.035,
-                color: index >= 3 ? Colors.grey[300] : Colors.orange,
+                color: index >= 3 ? Colors.grey[300] : AppColor().primaryColor,
               );
             }),
           ),
@@ -72,7 +73,7 @@ class AddReviewCardWidget extends StatelessWidget {
             height: h * 0.065,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
+                backgroundColor: AppColor().primaryColor,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),

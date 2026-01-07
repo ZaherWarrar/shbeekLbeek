@@ -34,6 +34,7 @@ class ShopDetailsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final h = MediaQuery.of(context).size.height;
     // Controller يتم تهيئته من خلال Binding
     return GetBuilder<ShopDetailsController>(
       builder: (controller) {

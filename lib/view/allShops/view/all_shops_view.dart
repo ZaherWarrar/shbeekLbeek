@@ -6,7 +6,6 @@ import 'package:app/core/shared/custom_loding_page.dart';
 import 'package:app/view/allShops/filter/controller/shop_filter_controller.dart';
 import 'package:app/view/allShops/filter/view/shop_filters.dart';
 import 'package:app/view/allShops/view/widget/empty_state_widget.dart';
-import 'package:app/view/allShops/view/widget/search_bar_widget.dart';
 import 'package:app/view/allShops/view/widget/store_card_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -19,87 +18,80 @@ class StoresPage extends StatelessWidget {
     final filterController = Get.put(FilterController());
 
     return Scaffold(
-      backgroundColor: AppColor().backgroundColor,
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: AppColor().primaryColor,
+        child: Icon(Icons.shopping_cart, color: AppColor().iconColors),
+        onPressed: () {
+          Get.toNamed(AppRoutes.cartView);
+        },
+      ),
       appBar: CustomAppBar(title: "كل المتاجر"),
       body: GetBuilder<AllShopsController>(
         builder: (controller) {
-          return Column(
-            children: [
-              // شريط البحث
-              const SearchBarWidget(),
-
-              // الفلاتر
-              Obx(
-                () => FiltersRowWidget(
-                  selectedIndex: filterController.selectedIndex.value,
-                  onSelect: filterController.changeFilter,
+          return CustomLodingPage(
+            statusRequest: controller.allShopsState,
+            body: Column(
+              children: [
+                Obx(
+                  () => FiltersRowWidget(
+                    selectedIndex: filterController.selectedIndex.value,
+                    onSelect: filterController.changeFilter,
+                  ),
                 ),
-              ),
+                Expanded(
+                  child: controller.filteredShops.isEmpty
+                      ? const EmptyStateWidget()
+                      : LayoutBuilder(
+                          builder: (context, constraints) {
+                            int crossAxisCount;
+                            double aspectRatio;
 
-              // قائمة المتاجر
-              Expanded(
-                child: CustomLodingPage(
-                  statusRequest: controller.allShopsState,
-                  body: controller.filteredShops.isEmpty
-                      ? EmptyStateWidget(
-                          message: controller.searchQuery.isNotEmpty
-                              ? "لا توجد نتائج للبحث"
-                              : "لا توجد متاجر متاحة",
-                          onRetry: () {
-                            controller.refreshData();
+                            if (constraints.maxWidth < 360) {
+                              crossAxisCount = 2;
+                              aspectRatio = 0.62; // موبايلات صغيرة جدًا
+                            } else if (constraints.maxWidth < 600) {
+                              crossAxisCount = 2;
+                              aspectRatio = 0.68;
+                            } else if (constraints.maxWidth < 900) {
+                              crossAxisCount = 3;
+                              aspectRatio = 0.75;
+                            } else {
+                              crossAxisCount = 4;
+                              aspectRatio = 0.8;
+                            }
+
+                            return GridView.builder(
+                              padding: const EdgeInsets.all(12),
+                              itemCount: controller.filteredShops.length,
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: crossAxisCount,
+                                    crossAxisSpacing: 12,
+                                    mainAxisSpacing: 12,
+                                    childAspectRatio: aspectRatio,
+                                  ),
+                              itemBuilder: (context, index) {
+                                final store = controller.filteredShops[index];
+                                return StoreCardWidget(
+                                  name: store.name ?? "متجر",
+                                  category: store.type ?? "عام",
+                                  rating: 4.5, // يمكن إضافة rating لاحقاً
+                                  image: store.imageUrl ?? "",
+                                  deliveryTime: store.deliveryFee ?? "مجاني",
+                                  onTap: () {
+                                    Get.toNamed(
+                                      AppRoutes.resturantDetails,
+                                      arguments: store,
+                                    );
+                                  },
+                                );
+                              },
+                            );
                           },
-                        )
-                      : RefreshIndicator(
-                          onRefresh: () async {
-                            await controller.refreshData();
-                          },
-                          child: ListView.builder(
-                            padding: const EdgeInsets.all(16),
-                            itemCount: controller.filteredShops.length,
-                            itemBuilder: (context, index) {
-                              final shop = controller.filteredShops[index];
-
-                              // بناء category string من type أو products
-                              String category = shop.type ?? "متجر";
-                              if (shop.products != null &&
-                                  shop.products!.isNotEmpty) {
-                                final categories = shop.products!
-                                    .map((p) => p.categoryId)
-                                    .whereType<int>()
-                                    .toSet();
-                                if (categories.isNotEmpty) {
-                                  category =
-                                      "${shop.type ?? "متجر"} · ${categories.length} فئة";
-                                }
-                              }
-
-                              // deliveryTime - يمكن استخدام deliveryFee أو قيمة افتراضية
-                              String deliveryTime = shop.deliveryFee != null
-                                  ? "رسوم: ${shop.deliveryFee}"
-                                  : "20-30 دقيقة";
-
-                              // rating - حالياً قيمة افتراضية (يمكن إضافتها لاحقاً)
-                              double rating = 4.5;
-
-                              return StoreCardWidget(
-                                name: shop.name ?? "متجر",
-                                category: category,
-                                rating: rating,
-                                image: shop.imageUrl ?? "",
-                                deliveryTime: deliveryTime,
-                                onTap: () {
-                                  Get.toNamed(
-                                    AppRoutes.resturantDetails,
-                                    arguments: shop,
-                                  );
-                                },
-                              );
-                            },
-                          ),
                         ),
                 ),
-              ),
-            ],
+              ],
+            ),
           );
         },
       ),

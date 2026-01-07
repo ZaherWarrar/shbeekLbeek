@@ -7,7 +7,9 @@ import 'package:app/view/allShops/view/all_shops_view.dart';
 import 'package:app/view/auth/login/login_view.dart';
 import 'package:app/view/auth/register/register_view.dart';
 import 'package:app/view/auth/verification/otp_view.dart';
+import 'package:app/view/bottomNavBar/main_view.dart';
 import 'package:app/view/city/choose_city.dart';
+import 'package:app/view/favorets/favorites_view.dart';
 import 'package:app/view/home_page/home_page_view.dart';
 import 'package:app/view/shopDetails/shop_details_view.dart';
 import 'package:get/get.dart';
@@ -21,11 +23,11 @@ class AppRoutes {
   static const String resturantDetails = '/resDe';
   static const String allShops = '/allSho';
   static const String cartView = '/carVi';
+  static const String favorates = '/fav';
   static final routes = [
     GetPage(name: register, page: () => const RegisterView()),
     GetPage(binding: OtpBinding(), name: otp, page: () => const OtpView()),
     GetPage(name: login, page: () => LoginView()),
-    GetPage(name: home, page: () => HomePageView()),
     GetPage(name: chooseCity, page: () => ChooseCity()),
     GetPage(
       binding: AllShopsBinding(),
@@ -42,5 +44,7 @@ class AppRoutes {
       name: resturantDetails,
       page: () => const ShopDetailsView(),
     ),
+    GetPage(name: home, page: () => HomePageView()),
+    GetPage(name: favorates, page: () => FavoritesView()),
   ];
 }

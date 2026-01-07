@@ -94,11 +94,11 @@ class CustomDeliveryAppBar extends StatelessWidget
                     ),
                   ),
                   const SizedBox(width: 6),
-                  const Icon(
-                    Icons.location_on_outlined,
-                    color: Colors.black87,
-                    size: 26,
-                  ),
+                  // const Icon(
+                  //   Icons.location_on_outlined,
+                  //   color: Colors.black87,
+                  //   size: 26,
+                  // ),
                 ],
               ),
             ),

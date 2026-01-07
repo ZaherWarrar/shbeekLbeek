@@ -1,3 +1,4 @@
+import 'package:app/core/constant/app_color.dart';
 import 'package:flutter/material.dart';
 
 class ReviewItemWidget extends StatelessWidget {
@@ -23,7 +24,7 @@ class ReviewItemWidget extends StatelessWidget {
       margin: EdgeInsets.symmetric(horizontal: w * 0.05),
       padding: EdgeInsets.all(w * 0.04),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColor().backgroundColor,
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
@@ -59,10 +60,7 @@ class ReviewItemWidget extends StatelessWidget {
                     ),
                     Text(
                       time,
-                      style: TextStyle(
-                        fontSize: h * 0.015,
-                        color: Colors.grey,
-                      ),
+                      style: TextStyle(fontSize: h * 0.015, color: Colors.grey),
                     ),
                   ],
                 ),
@@ -86,10 +84,7 @@ class ReviewItemWidget extends StatelessWidget {
           SizedBox(height: h * 0.01),
 
           /// التعليق
-          Text(
-            comment,
-            style: TextStyle(fontSize: h * 0.017),
-          ),
+          Text(comment, style: TextStyle(fontSize: h * 0.017)),
         ],
       ),
     );

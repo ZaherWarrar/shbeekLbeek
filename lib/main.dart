@@ -43,6 +43,10 @@ class MyApp extends StatelessWidget {
       initialBinding: InitialBindings(),
       initialRoute: initialRoute,
       getPages: AppRoutes.routes,
+      // جعل التطبيق RTL بشكل دائم
+      builder: (context, child) {
+        return Directionality(textDirection: TextDirection.rtl, child: child!);
+      },
     );
   }
 }

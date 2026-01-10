@@ -10,7 +10,7 @@ class Changelocal extends GetxController {
   // ignore: strict_top_level_inference
   changelang(String langcode) {
     Locale locale = Locale(langcode);
-    appTheme = themeArabec ;
+    appTheme = themeArabec;
     myServices.sharedPreferences.setString("language", langcode);
     Get.updateLocale(locale);
     Get.changeTheme(appTheme);
@@ -18,18 +18,11 @@ class Changelocal extends GetxController {
 
   @override
   void onInit() {
-    String? sharedPreLang = myServices.sharedPreferences.getString("language");
-    if (sharedPreLang == "ar") {
-      language = Locale("ar");
-      appTheme = themeArabec;
-    } else if (sharedPreLang == "en") {
-      language = Locale("en");
-      appTheme = themeEnglish;
-    } else {
-      final deviceLocaleCode = Get.deviceLocale?.languageCode ?? 'en';
-      language = Locale(deviceLocaleCode);
-      appTheme = deviceLocaleCode == 'ar' ? themeArabec : themeEnglish;
-    }
+    // فرض اللغة العربية و RTL بشكل دائم
+    language = const Locale("ar");
+    appTheme = themeArabec;
+    // حفظ اللغة العربية في SharedPreferences
+    myServices.sharedPreferences.setString("language", "ar");
     super.onInit();
   }
 }

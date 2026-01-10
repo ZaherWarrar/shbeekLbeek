@@ -208,6 +208,34 @@ class UserPreferences {
     return myServices.sharedPreferences.getString(_keyActiveOrderId) != null;
   }
 
+  // ===================== save Addresses ============================
+  Future<void> saveAddresses(List<Map<String, dynamic>> addresses) async {
+    String addressesJson = jsonEncode(addresses);
+    await myServices.sharedPreferences.setString(
+      'user_addresses',
+      addressesJson,
+    );
+  }
+
+  // ===================== get Addresses ============================
+  List<Map<String, dynamic>> getAddresses() {
+    String? addressesJson = myServices.sharedPreferences.getString(
+      'user_addresses',
+    );
+    if (addressesJson == null) return [];
+    try {
+      List<dynamic> decoded = jsonDecode(addressesJson);
+      return decoded.map((item) => Map<String, dynamic>.from(item)).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  // ===================== clear Addresses ============================
+  Future<void> clearAddresses() async {
+    await myServices.sharedPreferences.remove('user_addresses');
+  }
+
   // // حفظ بيانات المستخدم (كـ JSON)
   // static Future<void> saveUser(Map<String, dynamic> user) async {
   //   final prefs = await SharedPreferences.getInstance();

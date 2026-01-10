@@ -5,22 +5,48 @@ import 'package:get/get.dart';
 import '../controller/address_controller.dart';
 import 'widget/map_picker_widget.dart';
 
-class AddAddressPage extends GetView<AddressController> {
-  AddAddressPage({super.key});
+class EditAddressPage extends StatefulWidget {
+  final AddressModel address;
 
-  final titleController = TextEditingController();
-  final descController = TextEditingController();
+  const EditAddressPage({super.key, required this.address});
+
+  @override
+  State<EditAddressPage> createState() => _EditAddressPageState();
+}
+
+class _EditAddressPageState extends State<EditAddressPage> {
+  late TextEditingController titleController;
+  late TextEditingController descController;
+  late AddressController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.find<AddressController>();
+    titleController = TextEditingController(text: widget.address.title);
+    descController = TextEditingController(text: widget.address.description);
+
+    // تعيين الموقع الحالي في الخريطة
+    controller.setLocation(widget.address.lat, widget.address.lng);
+  }
+
+  @override
+  void dispose() {
+    titleController.dispose();
+    descController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColor().backgroundColor,
       appBar: AppBar(
-        title: const Text("إضافة عنوان"),
+        title: const Text("تعديل عنوان"),
         backgroundColor: AppColor().backgroundColor,
         elevation: 0,
         centerTitle: true,
-        iconTheme: const IconThemeData(color: Colors.black),
+        iconTheme: IconThemeData(color: AppColor().titleColor),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -66,24 +92,24 @@ class AddAddressPage extends GetView<AddressController> {
                   return;
                 }
 
-                await controller.addAddress(
-                  AddressModel(
-                    id: DateTime.now().millisecondsSinceEpoch.toString(),
-                    title: titleController.text.trim(),
-                    description: descController.text.trim(),
-                    lat: controller.selectedLat.value,
-                    lng: controller.selectedLng.value,
-                  ),
+                final updatedAddress = AddressModel(
+                  id: widget.address.id,
+                  title: titleController.text.trim(),
+                  description: descController.text.trim(),
+                  lat: controller.selectedLat.value,
+                  lng: controller.selectedLng.value,
+                  isDefault: widget.address.isDefault,
                 );
+
+                await controller.updateAddress(updatedAddress);
                 Get.back();
                 Get.snackbar(
                   'نجاح',
-                  'تم حفظ العنوان بنجاح',
+                  'تم تحديث العنوان بنجاح',
                   snackPosition: SnackPosition.BOTTOM,
                 );
               },
-
-              child: const Text("حفظ العنوان"),
+              child: const Text("حفظ التعديلات"),
             ),
           ],
         ),

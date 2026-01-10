@@ -45,5 +45,10 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- أذونات الموقع -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>نحتاج إلى الوصول لموقعك لتحديد العنوان بدقة</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>نحتاج إلى الوصول لموقعك لتحديد العنوان بدقة</string>
 </dict>
 </plist>

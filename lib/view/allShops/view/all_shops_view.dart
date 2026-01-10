@@ -6,6 +6,7 @@ import 'package:app/core/shared/custom_loding_page.dart';
 import 'package:app/view/allShops/filter/controller/shop_filter_controller.dart';
 import 'package:app/view/allShops/filter/view/shop_filters.dart';
 import 'package:app/view/allShops/view/widget/empty_state_widget.dart';
+import 'package:app/view/allShops/view/widget/search_bar_widget.dart';
 import 'package:app/view/allShops/view/widget/store_card_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -34,6 +35,8 @@ class StoresPage extends StatelessWidget {
               statusRequest: controller.allShopsState,
               body: Column(
                 children: [
+                  // شريط البحث
+                  const SearchBarWidget(),
                   Obx(
                     () => FiltersRowWidget(
                       selectedIndex: filterController.selectedIndex.value,

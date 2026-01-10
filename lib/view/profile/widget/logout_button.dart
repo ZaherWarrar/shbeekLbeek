@@ -30,6 +30,7 @@ class LogoutButton extends StatelessWidget {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
+
           ),
         ),
       );

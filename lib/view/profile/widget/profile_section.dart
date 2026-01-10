@@ -5,11 +5,7 @@ class ProfileSection extends StatelessWidget {
   final String title;
   final List<ProfileItemData> items;
 
-  const ProfileSection({
-    super.key,
-    required this.title,
-    required this.items,
-  });
+  const ProfileSection({super.key, required this.title, required this.items});
 
   @override
   Widget build(BuildContext context) {
@@ -18,11 +14,15 @@ class ProfileSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              )),
+          Text(
+            title,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: Colors.orange,
+            ),
+          ),
+
           const SizedBox(height: 8),
 
           Container(
@@ -31,9 +31,7 @@ class ProfileSection extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
-              children: items
-                  .map((e) => ProfileItem(data: e))
-                  .toList(),
+              children: items.map((e) => ProfileItem(data: e)).toList(),
             ),
           ),
         ],

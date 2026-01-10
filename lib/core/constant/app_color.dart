@@ -7,5 +7,5 @@ class AppColor {
   Color titleColor = Colors.black;
   Color textButomColor = Colors.white;
   Color descriptionColor = Colors.blueGrey;
-  Color iconColors = Colors.white;
+  Color iconColors = const Color.fromARGB(255, 250, 240, 240);
 }

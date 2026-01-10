@@ -1,4 +1,5 @@
 import 'package:app/controller/profile/profile_controller.dart';
+import 'package:app/core/constant/app_color.dart';
 import 'package:app/view/profile/widget/logout_button.dart';
 import 'package:app/view/profile/widget/profile_header.dart';
 import 'package:app/view/profile/widget/profile_item.dart';
@@ -14,13 +15,16 @@ class ProfileView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F7F5),
+      backgroundColor: AppColor().backgroundColor,
       appBar: AppBar(
-        title: const Text('ملفي الشخصي', style: TextStyle(fontSize: 18)),
+        title: const Text(
+          'ملفي الشخصي',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+        ),
         centerTitle: true,
-        backgroundColor: Colors.white,
+        backgroundColor: AppColor().backgroundColor,
         elevation: 0,
-        foregroundColor: Colors.black,
+        foregroundColor: AppColor().titleColor,
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -30,12 +34,13 @@ class ProfileView extends StatelessWidget {
             ProfileSection(
               title: 'الحساب',
               items: [
-                ProfileItemData(title: 'سجل الطلبات', icon: Icons.history),
+                ProfileItemData(title: 'سجل الطلبات', icon: Icons.history,route:'/OrderHistoryPage'),
                 ProfileItemData(
                   title: 'العناوين المحفوظة',
                   icon: Icons.location_on_outlined,
+                  route: '/AddressList'
                 ),
-                ProfileItemData(title: 'طرق الدفع', icon: Icons.credit_card),
+                ProfileItemData(title: 'طرق الدفع', icon: Icons.credit_card,route: '/PaymentBinding'),
               ],
             ),
 
@@ -43,9 +48,31 @@ class ProfileView extends StatelessWidget {
               title: 'عام',
               items: [
                 ProfileItemData(title: 'الإعدادات', icon: Icons.settings),
+              ],
+            ),
+
+            ProfileSection(
+              title: 'الدعم والمعلومات',
+              items: [
                 ProfileItemData(
-                  title: 'مركز المساعدة',
-                  icon: Icons.help_outline,
+                  title: 'سياسة الخصوصية',
+                  icon: Icons.privacy_tip_outlined,
+                  route: '/privacy',
+                ),
+                ProfileItemData(
+                  title: 'الشروط والأحكام',
+                  icon: Icons.description_outlined,
+                  route: '/terms',
+                ),
+                ProfileItemData(
+                  title: 'تواصل معنا',
+                  icon: Icons.support_agent,
+                  route: '/contact',
+                ),
+                ProfileItemData(
+                  title: 'عن التطبيق',
+                  icon: Icons.info_outline,
+                  route: '/about',
                 ),
               ],
             ),

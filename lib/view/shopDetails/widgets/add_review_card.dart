@@ -17,7 +17,7 @@ class AddReviewCardWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: AppColor().titleColor.withOpacity(0.06),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -40,7 +40,7 @@ class AddReviewCardWidget extends StatelessWidget {
               return Icon(
                 Icons.star,
                 size: h * 0.035,
-                color: index >= 3 ? Colors.grey[300] : AppColor().primaryColor,
+                color: index >= 3 ? AppColor().descriptionColor : AppColor().primaryColor,
               );
             }),
           ),
@@ -52,7 +52,7 @@ class AddReviewCardWidget extends StatelessWidget {
             height: h * 0.12,
             padding: EdgeInsets.all(w * 0.03),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.shade300),
+              border: Border.all(color: AppColor().descriptionColor),
               borderRadius: BorderRadius.circular(12),
             ),
             child: TextField(

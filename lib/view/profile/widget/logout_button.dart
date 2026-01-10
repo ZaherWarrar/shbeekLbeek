@@ -1,3 +1,4 @@
+import 'package:app/core/constant/app_color.dart';
 import 'package:flutter/material.dart';
 
 class LogoutButton extends StatelessWidget {
@@ -14,7 +15,7 @@ class LogoutButton extends StatelessWidget {
         icon: const Icon(Icons.logout),
         label: const Text('تسجيل الخروج'),
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.red.shade50,
+          backgroundColor: AppColor().backgroundColor,
           foregroundColor: Colors.red,
           elevation: 0,
           minimumSize: const Size(double.infinity, 48),

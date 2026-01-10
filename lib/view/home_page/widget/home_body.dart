@@ -1,6 +1,5 @@
 import 'package:app/controller/home/home_controller.dart';
 import 'package:app/core/constant/app_color.dart';
-import 'package:app/core/constant/routes/app_routes.dart';
 import 'package:app/core/shared/custom_loding_page.dart';
 import 'package:app/core/shared/custom_slider.dart';
 import 'package:app/view/home_page/widget/all_shops_widget.dart';
@@ -41,6 +40,7 @@ class HomeBody extends StatelessWidget {
       body: GetBuilder<HomeControllerImp>(
         builder: (controller) {
           return ListView(
+            
             children: [
               const SizedBox(height: 10),
               //==================== السلايدر الرئيسي ========
@@ -72,7 +72,6 @@ class HomeBody extends StatelessWidget {
               const SizedBox(height: 25),
               CategoryType(),
               const SizedBox(height: 25),
-
               AllShops(),
             ],
           );

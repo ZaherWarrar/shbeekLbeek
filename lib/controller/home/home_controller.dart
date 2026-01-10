@@ -1,27 +1,24 @@
 import 'package:app/core/class/statusrequest.dart';
 import 'package:app/core/function/handelingdata.dart';
+import 'package:app/data/datasorce/model/home_section_model.dart';
 import 'package:app/data/datasorce/model/item_model.dart';
 import 'package:app/data/datasorce/model/main_categores.dart';
-import 'package:app/data/datasorce/model/new_arrival_model.dart';
+import 'package:app/data/datasorce/model/section_model.dart';
 import 'package:app/data/datasorce/model/slider_model.dart';
 import 'package:app/data/datasorce/remot/all_item_data.dart';
+import 'package:app/data/datasorce/remot/home_section_data.dart';
 import 'package:app/data/datasorce/remot/main_categores_data.dart';
-import 'package:app/data/datasorce/remot/new_arrival_data.dart';
 import 'package:app/data/datasorce/remot/slider_data.dart';
-import 'package:app/data/datasorce/remot/top_ordered_data.dart';
-import 'package:app/data/datasorce/remot/top_rating_data.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 abstract class HomeController extends GetxController {
   Future<void> fetchSliders();
   Future<void> fetchMainCategores();
-  Future<void> fetchNewArrival();
-  Future<void> fetchTopRating();
-  Future<void> fetchTopOrdered();
   Future<void> fetchAllItem();
-  // ignore: strict_top_level_inference
-  selectType(int index);
+  Future<void> fetchHomeSection();
+  Future<List<SectionModel>> fetchSection(String sectionName);
+  void updateSection(int id, String name);
 }
 
 class HomeControllerImp extends HomeController {
@@ -31,7 +28,7 @@ class HomeControllerImp extends HomeController {
   List<SliderModel> slides = [];
   List<SliderModel> extendedSlides = [];
   var currentIndex = 0.obs;
-  late PageController pageController;
+  PageController? pageController;
   Duration autoPlayDelay = const Duration(seconds: 2);
   final Duration transitionSpeed = const Duration(milliseconds: 500);
   final int initialPage = 1;
@@ -40,29 +37,23 @@ class HomeControllerImp extends HomeController {
   MainCategoresData mainCategoresData = MainCategoresData(Get.find());
   StatusRequest mainCatStat = StatusRequest.none;
   List<MainCategoriesModel> mainCat = [];
-  // ============ category type  ===============================================
-  List<String> categoryType = ["الأكثر طلبا", "وصل حديثا", "الأعلى تقييما"];
-  // ============ new Arrival data =============================================
-  StatusRequest newArrivalStat = StatusRequest.none;
-  NewArrivalData newArrivalData = NewArrivalData(Get.find());
-  List<NewArrivalModel> newArrival = [];
-  // ============ top rating data ==============================================
-  StatusRequest topRatingStat = StatusRequest.none;
-  TopRatingData topRatingData = TopRatingData(Get.find());
-  List<NewArrivalModel> topRating = [];
-  // ============ top ordered data =============================================
-  StatusRequest topOrderedStat = StatusRequest.none;
-  TopOrderedData topOrderedData = TopOrderedData(Get.find());
-  List<NewArrivalModel> topOrdered = [];
+  // ============ home section =============================================
+  List<HomeSectionModel> homeSection = [];
+  List<SectionModel> sectionModel = [];
+  Map<String, List<SectionModel>> finalSection = {};
+  StatusRequest sectionState = StatusRequest.none;
+  StatusRequest homeSectionState = StatusRequest.none;
+  StatusRequest finalSectionState = StatusRequest.none;
+  HomeSectionData homeSectionData = HomeSectionData(Get.find());
+
   int selectedType = 0;
-  List<Map<String, dynamic>> data = [];
-  List<NewArrivalModel> dataCategory = [];
+  String sectionName = "";
   // ============== All Item Var ===============================================
   StatusRequest allItemState = StatusRequest.none;
   AllItemData allItemData = AllItemData(Get.find());
   List<ItemModel> items = [];
-  // ==============  Slider ====================================================
 
+  // ==============  Slider ====================================================
   @override
   Future<void> fetchSliders() async {
     sliderStat = StatusRequest.loading;
@@ -90,16 +81,17 @@ class HomeControllerImp extends HomeController {
   void _startAutoPlay() async {
     while (!_isDisposed) {
       await Future.delayed(autoPlayDelay);
-      if (_isDisposed || !pageController.hasClients) continue;
+      if (_isDisposed || pageController == null || !pageController!.hasClients)
+        continue;
 
-      final currentPage = pageController.page;
+      final currentPage = pageController!.page;
       if (currentPage == null) continue;
 
       int nextPage = currentPage.toInt() + 1;
       if (nextPage > extendedSlides.length - 1) {
         nextPage = 0;
       }
-      pageController.animateToPage(
+      pageController!.animateToPage(
         nextPage,
         duration: transitionSpeed,
         curve: Curves.easeInOut,
@@ -111,14 +103,19 @@ class HomeControllerImp extends HomeController {
   void onPageChanged(int index) {
     currentIndex.value = index;
 
-    // 🔁 إذا وصلنا لأول أو آخر صفحة وهمية، نرجع للصفحة الحقيقية
+    if (pageController == null || !pageController!.hasClients) return;
+
     if (index == 0) {
       Future.delayed(transitionSpeed, () {
-        pageController.jumpToPage(slides.length);
+        if (pageController != null && pageController!.hasClients) {
+          pageController!.jumpToPage(slides.length);
+        }
       });
     } else if (index == slides.length + 1) {
       Future.delayed(transitionSpeed, () {
-        pageController.jumpToPage(1);
+        if (pageController != null && pageController!.hasClients) {
+          pageController!.jumpToPage(1);
+        }
       });
     }
   }
@@ -144,73 +141,53 @@ class HomeControllerImp extends HomeController {
     }
   }
 
-  // ==============  catergory =================================================
-
-  // @override
-  // selectType(int index) {
-  //   selectedType = index;
-  //   dataCategory = data[index]["data"];
-  //   update();
-  // }
-
+  // ======================= Home Sectiom Function =============================
   @override
-  Future<void> fetchNewArrival() async {
-    newArrivalStat = StatusRequest.loading;
+  Future<void> fetchHomeSection() async {
+    homeSectionState = StatusRequest.loading;
     update();
     var response =
-        await newArrivalData.newArrivalData(1) as Map<String, dynamic>;
-    newArrivalStat = handelingData(response);
-    if (newArrivalStat == StatusRequest.success) {
-      List<dynamic> sliderList = response["data"];
-      newArrival = [];
-      for (var item in sliderList) {
-        newArrival.add(NewArrivalModel.fromJson(item));
+        await homeSectionData.homeSectionData() as Map<String, dynamic>;
+    homeSectionState = handelingData(response);
+    if (homeSectionState == StatusRequest.success) {
+      List<dynamic> sctionList = response["sections"];
+      for (var item in sctionList) {
+        homeSection.add(HomeSectionModel.fromJson(item));
+      }
+      for (var section in homeSection) {
+        final sections = await fetchSection(section.type!);
+        finalSection[section.type!] = sections;
+      }
+      if (homeSection.isNotEmpty) {
+        selectedType = 0;
+        sectionName = homeSection.first.type ?? homeSection.first.name ?? "";
+        finalSectionState = finalSection[sectionName]?.isNotEmpty == true
+            ? StatusRequest.success
+            : StatusRequest.failure;
       }
       update();
     } else {
-      newArrivalStat = StatusRequest.failure;
+      homeSectionState = StatusRequest.failure;
       update();
     }
   }
 
+  // =================== Section Function ======================================
   @override
-  Future<void> fetchTopOrdered() async {
-    newArrivalStat = StatusRequest.loading;
+  Future<List<SectionModel>> fetchSection(String sectionName) async {
+    sectionState = StatusRequest.loading;
     update();
-    var response =
-        await topOrderedData.topOrderedData(1) as Map<String, dynamic>;
-    newArrivalStat = handelingData(response);
-    if (newArrivalStat == StatusRequest.success) {
-      List<dynamic> sliderList = response["data"];
-      topOrdered = [];
-      for (var item in sliderList) {
-        topOrdered.add(NewArrivalModel.fromJson(item));
-      }
 
-      update();
-    } else {
-      newArrivalStat = StatusRequest.failure;
-      update();
-    }
-  }
+    var response = await homeSectionData.sectionData(1, sectionName);
+    sectionState = handelingData(response);
 
-  @override
-  Future<void> fetchTopRating() async {
-    newArrivalStat = StatusRequest.loading;
-    update();
-    var response = await topRatingData.topRatingData(1) as Map<String, dynamic>;
-    newArrivalStat = handelingData(response);
-    if (newArrivalStat == StatusRequest.success) {
-      List<dynamic> sliderList = response["data"];
-      topRating = [];
-      for (var item in sliderList) {
-        topRating.add(NewArrivalModel.fromJson(item));
-      }
-      update();
-    } else {
-      newArrivalStat = StatusRequest.failure;
-      update();
+    if (sectionState == StatusRequest.success && response is List) {
+      return response
+          .map<SectionModel>((e) => SectionModel.fromJson(e))
+          .toList();
     }
+
+    return [];
   }
 
   // ================== All Item Function ======================================
@@ -218,10 +195,17 @@ class HomeControllerImp extends HomeController {
   Future<void> fetchAllItem() async {
     allItemState = StatusRequest.loading;
     update();
-    var response = await allItemData.allItemData(1) as Map<String, dynamic>;
+    var response = await allItemData.allItemData(1);
     allItemState = handelingData(response);
     if (allItemState == StatusRequest.success) {
-      List<dynamic> itemList = response["data"];
+      List<dynamic> itemList = [];
+
+      if (response is List) {
+        itemList = response;
+      } else if (response is Map && response.containsKey("data")) {
+        itemList = response["data"] as List<dynamic>;
+      }
+
       items = [];
       for (var item in itemList) {
         items.add(ItemModel.fromJson(item));
@@ -234,34 +218,14 @@ class HomeControllerImp extends HomeController {
   }
 
   @override
-  selectType(int index) async {
-    selectedType = index;
-    if (index == 0) {
-      await fetchTopOrdered();
-      dataCategory = [];
-      dataCategory = topOrdered;
-      update();
-    } else if (index == 1) {
-      await fetchNewArrival();
-      dataCategory = [];
-      dataCategory = newArrival;
-    } else {
-      await fetchTopRating();
-      dataCategory = [];
-      dataCategory = topRating;
-    }
-    update();
-  }
-
-  @override
   void onInit() async {
     super.onInit();
-    await fetchSliders();
-    await fetchMainCategores();
-    await fetchTopOrdered();
-    await fetchAllItem();
-    dataCategory = [];
-    dataCategory = topOrdered;
+    await Future.wait([
+      fetchSliders(),
+      fetchMainCategores(),
+      fetchAllItem(),
+      fetchHomeSection(),
+    ]);
     if (slides.isEmpty) {
       pageController = PageController(initialPage: 0);
       extendedSlides = [];
@@ -277,7 +241,33 @@ class HomeControllerImp extends HomeController {
   @override
   void onClose() {
     _isDisposed = true;
-    pageController.dispose();
+    pageController?.dispose();
     super.onClose();
+  }
+
+  @override
+  void updateSection(int id, String name) {
+    selectedType = id;
+    final sectionKey =
+        id >= 0 && id < homeSection.length && homeSection[id].type != null
+        ? homeSection[id].type!
+        : name;
+    sectionName = sectionKey;
+    finalSectionState = StatusRequest.loading;
+    update();
+
+    if (finalSection.containsKey(sectionKey)) {
+      finalSectionState = StatusRequest.success;
+      update();
+      return;
+    }
+
+    fetchSection(sectionKey).then((sections) {
+      finalSection[sectionKey] = sections;
+      finalSectionState = sections.isNotEmpty
+          ? StatusRequest.success
+          : StatusRequest.failure;
+      update();
+    });
   }
 }

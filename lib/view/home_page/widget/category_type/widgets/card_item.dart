@@ -9,6 +9,7 @@ class CardItem extends StatelessWidget {
   final int index;
   @override
   Widget build(BuildContext context) {
+    final items = controller.finalSection[controller.sectionName] ?? [];
     return Container(
       width: 300,
       decoration: BoxDecoration(
@@ -26,7 +27,7 @@ class CardItem extends StatelessWidget {
                 topRight: Radius.circular(25),
               ),
               child: Image.network(
-                controller.dataCategory[index].imageUrl!,
+                items[index].imageUrl!,
                 height: 130,
                 width: 300,
                 fit: BoxFit.fill,
@@ -38,7 +39,7 @@ class CardItem extends StatelessWidget {
               child: FittedBox(
                 fit: BoxFit.scaleDown,
                 child: Text(
-                  controller.dataCategory[index].name!,
+                  items[index].name ?? "",
                   style: TextStyle(
                     fontSize: getResponsiveFontSize(context, fontSize: 35),
                   ),
@@ -51,7 +52,7 @@ class CardItem extends StatelessWidget {
               child: FittedBox(
                 fit: BoxFit.scaleDown,
                 child: Text(
-                  controller.dataCategory[index].deliveryTime!,
+                  items[index].description ?? "",
                   style: TextStyle(
                     fontSize: getResponsiveFontSize(context, fontSize: 25),
                     color: AppColor().descriptionColor,
@@ -73,14 +74,14 @@ class CardItem extends StatelessWidget {
                     ),
                     SizedBox(width: 5),
                     Text(
-                      controller.dataCategory[index].ratingValue!.toString(),
+                      "4",
                       style: TextStyle(
                         fontSize: getResponsiveFontSize(context, fontSize: 20),
                       ),
                     ),
                     SizedBox(width: 10),
                     Text(
-                      "(${controller.dataCategory[index].ratingCount!})",
+                      "200",
                       style: TextStyle(
                         fontSize: getResponsiveFontSize(context, fontSize: 20),
                       ),

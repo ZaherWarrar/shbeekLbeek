@@ -15,7 +15,9 @@ class CategoryItems extends StatelessWidget {
           return CustomLodingPage(
             body: ListView.builder(
               scrollDirection: Axis.horizontal,
-              itemCount: controller.dataCategory.length,
+              itemCount: controller.finalSection[controller.sectionName] == null
+                  ? 0
+                  : controller.finalSection[controller.sectionName]!.length,
               itemBuilder: (context, index) {
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 10.0),
@@ -26,7 +28,7 @@ class CategoryItems extends StatelessWidget {
                 );
               },
             ),
-            statusRequest: controller.newArrivalStat,
+            statusRequest: controller.finalSectionState,
           );
         },
       ),

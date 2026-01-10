@@ -1,4 +1,7 @@
+import 'package:app/binding/all_shops_binding.dart';
+import 'package:app/binding/cart_binding.dart';
 import 'package:app/binding/otp_binding.dart';
+import 'package:app/binding/shop_details_binding.dart';
 import 'package:app/view/Cart/cart_view.dart';
 import 'package:app/view/about_app/about_app.dart';
 import 'package:app/view/adress/binding/address_binding.dart';
@@ -40,12 +43,23 @@ class AppRoutes {
     GetPage(name: register, page: () => const RegisterView()),
     GetPage(binding: OtpBinding(), name: otp, page: () => const OtpView()),
     GetPage(name: login, page: () => LoginView()),
-    GetPage(name: home, page: () => MainView()),
     GetPage(name: chooseCity, page: () => ChooseCity()),
+    GetPage(
+      binding: AllShopsBinding(),
+      name: allShops,
+      page: () => const StoresPage(),
+    ),
+    GetPage(
+      binding: CartBinding(),
+      name: cartView,
+      page: () => const CartView(),
+    ),
+    GetPage(
+      binding: ShopDetailsBinding(),
+      name: resturantDetails,
+      page: () => const ShopDetailsView(),
+    ),
     GetPage(name: home, page: () => HomePageView()),
-    GetPage(name: allShops, page: () => StoresPage()),
-    GetPage(name: cartView, page: () => CartView()),
-    GetPage(name: resturantDetails, page: () => ShopDetailsView()),
     GetPage(name: favorates, page: () => FavoritesView()),
 
     GetPage(name: privacy, page: () => const PrivacyPolicyPage()),

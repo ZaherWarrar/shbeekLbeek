@@ -1,5 +1,8 @@
+import 'dart:math';
+
 import 'package:app/controller/home/home_controller.dart';
 import 'package:app/core/constant/app_color.dart';
+import 'package:app/core/constant/app_images.dart';
 import 'package:app/core/constant/routes/app_routes.dart';
 import 'package:app/core/function/fontsize.dart';
 import 'package:app/main.dart';
@@ -18,42 +21,28 @@ class ListAllShopsWidget extends StatelessWidget {
           children: [
             FittedBox(
               fit: BoxFit.scaleDown,
-              child: Row(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 15),
-                    child: Text(
-                      "تصفح المحلات ",
-                      style: TextStyle(
-                        fontSize: getResponsiveFontSize(context, fontSize: 30),
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 15),
+                child: Text(
+                  "تصفح كل المحلات ",
+                  style: TextStyle(
+                    fontSize: getResponsiveFontSize(context, fontSize: 35),
+                    fontWeight: FontWeight.bold,
                   ),
-                  SizedBox(width: 100),
-                  TextButton(
-                    onPressed: () {
-                      Get.toNamed(AppRoutes.allShops);
-                    },
-                    child: Text(
-                      "الكل ..",
-                      style: TextStyle(fontSize: 16, color: Colors.grey),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
             ListView.builder(
               shrinkWrap: true,
               physics: NeverScrollableScrollPhysics(),
               padding: EdgeInsets.all(16),
-              itemCount: controller.items.length,
+              itemCount: min(6, controller.items.length),
               itemBuilder: (context, index) {
                 final item = controller.items[index];
 
-                return InkWell(
+                return GestureDetector(
                   onTap: () {
-                    Get.toNamed(AppRoutes.resturantDetails);
+                    Get.toNamed(AppRoutes.resturantDetails, arguments: item);
                   },
                   child: Container(
                     margin: const EdgeInsets.only(bottom: 14),
@@ -74,8 +63,14 @@ class ListAllShopsWidget extends StatelessWidget {
                             child: AspectRatio(
                               aspectRatio: 1,
                               child: Image.network(
-                                item.imageUrl!,
+                                item.imageUrl ?? " ",
                                 fit: BoxFit.fill,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Image.asset(
+                                    Assets.imagesLogo,
+                                    fit: BoxFit.cover,
+                                  );
+                                },
                               ),
                             ),
                           ),
@@ -115,13 +110,13 @@ class ListAllShopsWidget extends StatelessWidget {
                                     ),
                                     SizedBox(width: 5),
                                     Text(
-                                      "${item.ratingValue}",
+                                      "4.5",
                                       //     style: TextStyle(fontSize: h * 0.02),
                                     ),
                                     SizedBox(width: 5),
 
                                     Text(
-                                      "(${item.ratingCount})",
+                                      "(200)",
                                       style: TextStyle(
                                         color: AppColor().descriptionColor,
                                       ),
@@ -138,7 +133,7 @@ class ListAllShopsWidget extends StatelessWidget {
                                     ),
                                     SizedBox(width: 4),
                                     Text(
-                                      "${item.deliveryTime}",
+                                      "15-25 دقيقة",
                                       style: TextStyle(
                                         color: Colors.grey[700],
                                         //   fontSize: h * 0.018,
@@ -156,6 +151,45 @@ class ListAllShopsWidget extends StatelessWidget {
                 );
               },
             ),
+            // زر عرض الكل
+            if (controller.items.length > 6)
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Get.toNamed(AppRoutes.allShops);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColor().primaryColor,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 2,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          "عرض الكل",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Icon(Icons.arrow_back, size: 20),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
           ],
         );
       },

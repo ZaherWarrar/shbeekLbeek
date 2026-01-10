@@ -1,5 +1,8 @@
 import 'package:app/core/constant/app_color.dart';
+import 'package:app/view/adress/controller/address_controller.dart';
+import 'package:app/view/adress/model/address_model.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class CustomDeliveryAppBar extends StatelessWidget
     implements PreferredSizeWidget {
@@ -52,55 +55,75 @@ class CustomDeliveryAppBar extends StatelessWidget
             ),
 
             // ====== الجهة اليمين (العنوان والموقع) ======
-            FittedBox(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  FittedBox(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
+            GetBuilder<AddressController>(
+              builder: (addressController) {
+                // البحث عن العنوان الافتراضي
+                AddressModel? defaultAddress;
+                try {
+                  if (addressController.addresses.isNotEmpty) {
+                    defaultAddress = addressController.addresses.firstWhere(
+                      (address) => address.isDefault,
+                      orElse: () => addressController.addresses.first,
+                    );
+                  }
+                } catch (e) {
+                  defaultAddress = null;
+                }
+
+                final addressText = defaultAddress?.title ?? "اختر عنوان";
+
+                return GestureDetector(
+                  onTap: () {
+                    // الانتقال إلى صفحة العناوين
+                    Get.toNamed('/AddressList');
+                  },
+                  child: FittedBox(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        Text(
-                          "توصيل إلى",
-                          style: TextStyle(
-                            fontSize: screenWidth * 0.032,
-                            color: Colors.grey.shade600,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.keyboard_arrow_down,
-                              size: 18,
-                              color: Colors.black87,
-                            ),
-                            FittedBox(
-                              child: Text(
-                                "شارع الأمير محمد ", // تجربة طول
+                        FittedBox(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                "توصيل إلى",
                                 style: TextStyle(
-                                  fontSize: screenWidth * 0.04,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
+                                  fontSize: screenWidth * 0.032,
+                                  color: Colors.grey.shade600,
                                 ),
                                 overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
                               ),
-                            ),
-                          ],
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.keyboard_arrow_down,
+                                    size: 18,
+                                    color: Colors.black87,
+                                  ),
+                                  FittedBox(
+                                    child: Text(
+                                      addressText,
+                                      style: TextStyle(
+                                        fontSize: screenWidth * 0.04,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
+                        const SizedBox(width: 6),
                       ],
                     ),
                   ),
-                  const SizedBox(width: 6),
-                  // const Icon(
-                  //   Icons.location_on_outlined,
-                  //   color: Colors.black87,
-                  //   size: 26,
-                  // ),
-                ],
-              ),
+                );
+              },
             ),
           ],
         ),

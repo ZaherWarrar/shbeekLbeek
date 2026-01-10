@@ -23,7 +23,9 @@ class PaymentMethodCard extends GetView<PaymentController> {
             color: AppColor().backgroundColor,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isSelected ? AppColor().primaryColor : Colors.grey.shade300,
+              color: isSelected
+                  ? AppColor().primaryColor
+                  : Colors.grey.shade300,
               width: 1.5,
             ),
           ),
@@ -46,13 +48,19 @@ class PaymentMethodCard extends GetView<PaymentController> {
                 height: 22,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: isSelected ? AppColor().primaryColor : Colors.transparent,
+                  color: isSelected
+                      ? AppColor().primaryColor
+                      : Colors.transparent,
                   border: Border.all(color: AppColor().descriptionColor),
                 ),
                 child: isSelected
-                    ?  Icon(Icons.check, size: 14, color: AppColor().backgroundColor)
+                    ? Icon(
+                        Icons.check,
+                        size: 14,
+                        color: AppColor().backgroundColor,
+                      )
                     : null,
-              )
+              ),
             ],
           ),
         ),

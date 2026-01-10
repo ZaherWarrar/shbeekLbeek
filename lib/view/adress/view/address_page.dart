@@ -11,16 +11,16 @@ class AddressPage extends GetView<AddressController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColor().backgroundColor ,
+      backgroundColor: AppColor().backgroundColor,
       appBar: AppBar(
-        title:  Text(
+        title: Text(
           "العناوين المحفوظة",
-          style: TextStyle(color: AppColor().titleColor, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
         ),
         backgroundColor: AppColor().backgroundColor,
         elevation: 0,
         centerTitle: true,
-        iconTheme:  IconThemeData(color: AppColor().titleColor),
+        iconTheme: IconThemeData(color: AppColor().titleColor),
       ),
       body: const AddressList(),
       floatingActionButton: const AddAddressButton(),

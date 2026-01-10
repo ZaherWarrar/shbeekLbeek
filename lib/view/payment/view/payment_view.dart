@@ -1,3 +1,4 @@
+import 'package:app/core/constant/app_color.dart';
 import 'package:app/view/payment/controller/payment_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -10,13 +11,13 @@ class PaymentPage extends GetView<PaymentController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F7F7),
+      backgroundColor: AppColor().backgroundColor,
       appBar: AppBar(
         title: const Text(
           'طريقة الدفع',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: AppColor().backgroundColor,
         elevation: 0,
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.black),
@@ -30,9 +31,7 @@ class PaymentPage extends GetView<PaymentController> {
                 return ListView.builder(
                   itemCount: controller.methods.length,
                   itemBuilder: (context, index) {
-                    return PaymentMethodCard(
-                      method: controller.methods[index],
-                    );
+                    return PaymentMethodCard(method: controller.methods[index]);
                   },
                 );
               }),

@@ -1,3 +1,4 @@
+import 'package:app/core/constant/app_color.dart';
 import 'package:app/view/termsPage/widget/footer_card.dart';
 import 'package:app/view/termsPage/widget/intro_card.dart';
 import 'package:app/view/termsPage/widget/section_card.dart';
@@ -11,9 +12,9 @@ class TermsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F7F5),
+      backgroundColor: AppColor().backgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColor().backgroundColor,
         elevation: 0,
         centerTitle: true,
         title: const Text(

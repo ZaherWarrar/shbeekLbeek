@@ -7,4 +7,8 @@ class ApiLinks {
   static const String verifyCode = '$baseUrl/verify';
   // home page Endpoints
   static const String home = '$baseUrl/home/';
+  // Order Endpoints
+  static const String createOrder = '$baseUrl/order';
+  static const String confirmOrder = '$baseUrl/order/confirm';
+  static const String cancelOrder = '$baseUrl/order/cancel';
 }

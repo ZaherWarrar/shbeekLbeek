@@ -1,3 +1,4 @@
+import 'package:app/core/constant/app_color.dart';
 import 'package:app/core/constant/app_images.dart';
 import 'package:flutter/material.dart';
 import 'quantity_button.dart';
@@ -31,6 +32,7 @@ class CartItemWidget extends StatelessWidget {
     return SizedBox(
       height: 100,
       child: Card(
+        color: AppColor().backgroundColorCard,
         margin: const EdgeInsets.only(bottom: 12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Padding(

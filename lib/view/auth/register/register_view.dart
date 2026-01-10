@@ -17,6 +17,9 @@ class RegisterView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (Get.isRegistered<RegisterControllerImb>()) {
+      Get.delete<RegisterControllerImb>();
+    }
     Get.put(RegisterControllerImb());
     return Scaffold(
       backgroundColor: AppColor().backgroundColor,

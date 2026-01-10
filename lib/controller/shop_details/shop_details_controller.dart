@@ -83,6 +83,16 @@ class ShopDetailsController extends GetxController {
 
     final cartController = Get.find<CartController>();
 
+    // التحقق من وجود طلب نشط
+    if (cartController.hasActiveOrder()) {
+      Get.snackbar(
+        "تنبيه",
+        "يوجد طلب قيد المعالجة. لا يمكن إضافة منتجات جديدة",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
     final existingIndex = cartController.cartItems.indexWhere(
       (item) => item['productId'] == productId,
     );

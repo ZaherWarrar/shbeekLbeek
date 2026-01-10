@@ -1,5 +1,6 @@
 import 'package:app/core/class/crud.dart';
 import 'package:app/controller/cart/cart_controller.dart';
+import 'package:app/controller/order/order_controller.dart';
 import 'package:get/get.dart';
 
 class InitialBindings extends Bindings {
@@ -7,5 +8,7 @@ class InitialBindings extends Bindings {
   void dependencies() {
     Get.put(Crud());
     Get.put(CartController(), permanent: true);
+    // تسجيل OrderController لضمان تحميل الطلب النشط عند بدء التطبيق
+    Get.put(OrderController(), permanent: true);
   }
 }

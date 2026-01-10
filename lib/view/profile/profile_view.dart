@@ -51,7 +51,7 @@ class ProfileView extends StatelessWidget {
             ),
 
             const SizedBox(height: 20),
-            LogoutButton(onTap: controller.logout),
+            LogoutButton(onTap: controller.handleAuthAction),
             const SizedBox(height: 30),
           ],
         ),

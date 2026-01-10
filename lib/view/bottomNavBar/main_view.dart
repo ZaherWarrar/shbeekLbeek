@@ -21,11 +21,13 @@ class MainView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(
-      () => Scaffold(
-        body: pages[controller.currentIndex.value],
-        bottomNavigationBar: CustomBottomNav(
-          currentIndex: controller.currentIndex.value,
-          onTap: controller.changeIndex,
+      () => SafeArea(
+        child: Scaffold(
+          body: pages[controller.currentIndex.value],
+          bottomNavigationBar: CustomBottomNav(
+            currentIndex: controller.currentIndex.value,
+            onTap: controller.changeIndex,
+          ),
         ),
       ),
     );

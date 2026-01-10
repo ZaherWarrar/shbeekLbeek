@@ -1,5 +1,6 @@
 import 'package:app/binding/all_shops_binding.dart';
 import 'package:app/binding/cart_binding.dart';
+import 'package:app/binding/order_binding.dart';
 import 'package:app/binding/otp_binding.dart';
 import 'package:app/binding/shop_details_binding.dart';
 import 'package:app/view/Cart/cart_view.dart';
@@ -10,7 +11,7 @@ import 'package:app/view/auth/verification/otp_view.dart';
 import 'package:app/view/bottomNavBar/main_view.dart';
 import 'package:app/view/city/choose_city.dart';
 import 'package:app/view/favorets/favorites_view.dart';
-import 'package:app/view/home_page/home_page_view.dart';
+import 'package:app/view/order/order_confirmation_view.dart';
 import 'package:app/view/shopDetails/shop_details_view.dart';
 import 'package:get/get.dart';
 
@@ -23,6 +24,7 @@ class AppRoutes {
   static const String resturantDetails = '/resDe';
   static const String allShops = '/allSho';
   static const String cartView = '/carVi';
+  static const String orderConfirmation = '/orderConfirmation';
   static const String favorates = '/fav';
   static final routes = [
     GetPage(name: register, page: () => const RegisterView()),
@@ -44,7 +46,12 @@ class AppRoutes {
       name: resturantDetails,
       page: () => const ShopDetailsView(),
     ),
-    GetPage(name: home, page: () => HomePageView()),
+    GetPage(
+      binding: OrderBinding(),
+      name: orderConfirmation,
+      page: () => const OrderConfirmationView(),
+    ),
+    GetPage(name: home, page: () => MainView()),
     GetPage(name: favorates, page: () => FavoritesView()),
   ];
 }

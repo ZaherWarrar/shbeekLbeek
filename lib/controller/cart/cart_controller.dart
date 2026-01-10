@@ -13,6 +13,10 @@ class CartController extends GetxController {
   double discountAmount = 0.0;
   double discountPercentage = 0.0;
 
+  // الملاحظات
+  TextEditingController notesController = TextEditingController();
+  String? notes;
+
   // رسوم التوصيل
   double deliveryFee = 10.0; // قيمة افتراضية
 
@@ -32,6 +36,10 @@ class CartController extends GetxController {
     if (discountCode != null) {
       discountCodeController.text = discountCode!;
     }
+    notes = _prefs.getNotes();
+    if (notes != null) {
+      notesController.text = notes!;
+    }
     update();
   }
 
@@ -40,10 +48,37 @@ class CartController extends GetxController {
     if (discountCode != null) {
       await _prefs.saveDiscountCode(discountCode!);
     }
+    if (notesController.text.isNotEmpty) {
+      notes = notesController.text;
+      await _prefs.saveNotes(notesController.text);
+    } else {
+      notes = null;
+      await _prefs.removeNotes();
+    }
+  }
+
+  // Method عام لحفظ السلة (يمكن استدعاؤه من الخارج)
+  Future<void> saveCart() async {
+    await _saveCart();
+  }
+
+  // التحقق من وجود طلب نشط
+  bool hasActiveOrder() {
+    return _prefs.hasActiveOrder();
   }
 
   // إضافة منتج للسلة
   void addItem(Products product, ItemModel shop, {int quantity = 1}) {
+    // التحقق من وجود طلب نشط
+    if (hasActiveOrder()) {
+      Get.snackbar(
+        "تنبيه",
+        "يوجد طلب قيد المعالجة. لا يمكن إضافة منتجات جديدة",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
     // التحقق من null safety
     if (product.id == null) {
       Get.snackbar("خطأ", "معرّف المنتج غير صحيح");
@@ -223,6 +258,8 @@ class CartController extends GetxController {
     discountCodeController.clear();
     discountPercentage = 0.0;
     discountAmount = 0.0;
+    notes = null;
+    notesController.clear();
     await _prefs.clearCart();
     update();
     Get.snackbar("تم المسح", "تم مسح السلة بالكامل");
@@ -247,6 +284,7 @@ class CartController extends GetxController {
   @override
   void onClose() {
     discountCodeController.dispose();
+    notesController.dispose();
     super.onClose();
   }
 }

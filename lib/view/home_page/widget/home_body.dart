@@ -7,6 +7,7 @@ import 'package:app/view/home_page/widget/category_slider.dart';
 import 'package:app/view/home_page/widget/category_type/category_type.dart';
 import 'package:app/view/home_page/widget/custom_home_app_bar.dart';
 import 'package:app/view/profile/profile_view.dart';
+import 'package:app/view/shopDetails/widgets/cart_floating_button.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -20,6 +21,8 @@ class HomeBody extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 240, 240, 240),
       appBar: CustomDeliveryAppBar(),
+      floatingActionButton: const CartFloatingButton(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       drawer: Drawer(
         child: Column(
           children: [
@@ -40,7 +43,6 @@ class HomeBody extends StatelessWidget {
       body: GetBuilder<HomeControllerImp>(
         builder: (controller) {
           return ListView(
-            
             children: [
               const SizedBox(height: 10),
               //==================== السلايدر الرئيسي ========

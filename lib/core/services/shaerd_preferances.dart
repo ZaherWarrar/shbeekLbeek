@@ -8,6 +8,10 @@ class UserPreferences {
   static const String _keyUserId = 'user_id';
   static const String _keyUserRole = "user_role";
   static const String _keyUserStatus = "user_status";
+  static const String _keyUserName = "user_name";
+  static const String _keyUserEmail = "user_email";
+  static const String _keyActiveOrderId = "active_order_id";
+  static const String _keyActiveOrderCreatedAt = "active_order_created_at";
   MyServices myServices = Get.find();
   // ===================== save token ============================
   Future<void> saveToken(String token) async {
@@ -96,6 +100,7 @@ class UserPreferences {
   Future<void> clearCart() async {
     await myServices.sharedPreferences.remove('cart_items');
     await myServices.sharedPreferences.remove('cart_discount_code');
+    await myServices.sharedPreferences.remove('cart_notes');
   }
 
   // ===================== save Discount Code ============================
@@ -111,6 +116,96 @@ class UserPreferences {
   // ===================== remove Discount Code ============================
   Future<void> removeDiscountCode() async {
     await myServices.sharedPreferences.remove('cart_discount_code');
+  }
+
+  // ===================== save Notes ============================
+  Future<void> saveNotes(String notes) async {
+    await myServices.sharedPreferences.setString('cart_notes', notes);
+  }
+
+  // ===================== get Notes ============================
+  String? getNotes() {
+    return myServices.sharedPreferences.getString('cart_notes');
+  }
+
+  // ===================== remove Notes ============================
+  Future<void> removeNotes() async {
+    await myServices.sharedPreferences.remove('cart_notes');
+  }
+
+  // ===================== save User Name ============================
+  Future<void> saveUserName(String name) async {
+    await myServices.sharedPreferences.setString(_keyUserName, name);
+  }
+
+  // ===================== get User Name ============================
+  String? getUserName() {
+    return myServices.sharedPreferences.getString(_keyUserName);
+  }
+
+  // ===================== delete User Name ============================
+  Future<void> clearUserName() async {
+    await myServices.sharedPreferences.remove(_keyUserName);
+  }
+
+  // ===================== save User Email ============================
+  Future<void> saveUserEmail(String email) async {
+    await myServices.sharedPreferences.setString(_keyUserEmail, email);
+  }
+
+  // ===================== get User Email ============================
+  String? getUserEmail() {
+    return myServices.sharedPreferences.getString(_keyUserEmail);
+  }
+
+  // ===================== delete User Email ============================
+  Future<void> clearUserEmail() async {
+    await myServices.sharedPreferences.remove(_keyUserEmail);
+  }
+
+  // ===================== save Active Order ============================
+  Future<void> saveActiveOrder(int orderId, DateTime createdAt) async {
+    await myServices.sharedPreferences.setString(
+      _keyActiveOrderId,
+      orderId.toString(),
+    );
+    await myServices.sharedPreferences.setString(
+      _keyActiveOrderCreatedAt,
+      createdAt.toIso8601String(),
+    );
+  }
+
+  // ===================== get Active Order ============================
+  Map<String, dynamic>? getActiveOrder() {
+    final orderIdStr = myServices.sharedPreferences.getString(
+      _keyActiveOrderId,
+    );
+    final createdAtStr = myServices.sharedPreferences.getString(
+      _keyActiveOrderCreatedAt,
+    );
+
+    if (orderIdStr == null || createdAtStr == null) {
+      return null;
+    }
+
+    try {
+      final orderId = int.parse(orderIdStr);
+      final createdAt = DateTime.parse(createdAtStr);
+      return {'orderId': orderId, 'createdAt': createdAt};
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // ===================== clear Active Order ============================
+  Future<void> clearActiveOrder() async {
+    await myServices.sharedPreferences.remove(_keyActiveOrderId);
+    await myServices.sharedPreferences.remove(_keyActiveOrderCreatedAt);
+  }
+
+  // ===================== has Active Order ============================
+  bool hasActiveOrder() {
+    return myServices.sharedPreferences.getString(_keyActiveOrderId) != null;
   }
 
   // // حفظ بيانات المستخدم (كـ JSON)

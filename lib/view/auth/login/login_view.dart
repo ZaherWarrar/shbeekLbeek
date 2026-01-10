@@ -18,6 +18,9 @@ class LoginView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (Get.isRegistered<LoginControllerImb>()) {
+      Get.delete<LoginControllerImb>();
+    }
     Get.put(LoginControllerImb());
     return Scaffold(
       backgroundColor: AppColor().backgroundColor,

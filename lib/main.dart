@@ -1,27 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:app/binding/my_binding.dart';
+import 'package:app/core/constant/routes/app_routes.dart';
 import 'package:app/core/services/services.dart';
+import 'package:app/core/services/shaerd_preferances.dart';
 import 'package:app/localization/changelocal.dart';
 import 'package:app/localization/translation.dart';
-import 'core/constant/routes/app_routes.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initialServices();
-  runApp(const MyApp());
-} 
 
+  // التحقق من تسجيل الدخول
+  final userPreferences = UserPreferences();
+  final token = await userPreferences.getToken();
+  final initialRoute = (token != null && token.isNotEmpty)
+      ? AppRoutes.home
+      : AppRoutes.login;
 
-
-
-
+  runApp(MyApp(initialRoute: initialRoute));
+}
 
 late double w;
 late double h;
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final String initialRoute;
+
+  const MyApp({super.key, required this.initialRoute});
 
   // This widget is the root of your application.
   @override
@@ -35,6 +41,7 @@ class MyApp extends StatelessWidget {
       locale: controller.language,
       theme: controller.appTheme,
       initialBinding: InitialBindings(),
+      initialRoute: initialRoute,
       getPages: AppRoutes.routes,
     );
   }

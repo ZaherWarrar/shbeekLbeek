@@ -27,6 +27,7 @@ class StoreCardWidget extends StatelessWidget {
       child: SizedBox.expand(
         // ⭐ الحل
         child: Card(
+          color: AppColor().backgroundColorCard,
           elevation: 2,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),

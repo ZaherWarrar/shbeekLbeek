@@ -16,17 +16,14 @@ class OrderHistoryPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColor().backgroundColor,
       appBar: AppBar(
-        title:  Text(
+        title: Text(
           "سجل الطلبات",
-          style: TextStyle(
-            color: AppColor().titleColor,
-            fontWeight: FontWeight.w700,
-          ),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
         ),
         centerTitle: true,
         backgroundColor: AppColor().backgroundColor,
         elevation: 0,
-        iconTheme:  IconThemeData(color: AppColor().titleColor),
+        iconTheme: IconThemeData(color: AppColor().titleColor),
       ),
       body: const OrderList(),
     );

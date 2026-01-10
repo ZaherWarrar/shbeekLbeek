@@ -1,5 +1,6 @@
 import 'package:app/controller/profile/profile_controller.dart';
 import 'package:app/core/constant/app_color.dart';
+import 'package:app/core/constant/routes/app_routes.dart';
 import 'package:app/view/profile/widget/logout_button.dart';
 import 'package:app/view/profile/widget/profile_header.dart';
 import 'package:app/view/profile/widget/profile_item.dart';
@@ -34,45 +35,52 @@ class ProfileView extends StatelessWidget {
             ProfileSection(
               title: 'الحساب',
               items: [
-                ProfileItemData(title: 'سجل الطلبات', icon: Icons.history,route:'/OrderHistoryPage'),
+                ProfileItemData(
+                  title: 'سجل الطلبات',
+                  icon: Icons.history,
+                  route: AppRoutes.ordhis,
+                ),
                 ProfileItemData(
                   title: 'العناوين المحفوظة',
                   icon: Icons.location_on_outlined,
-                  route: '/AddressList'
+                  route: AppRoutes.addrslis,
                 ),
-                ProfileItemData(title: 'طرق الدفع', icon: Icons.credit_card,route: '/PaymentBinding'),
+                ProfileItemData(
+                  title: 'طرق الدفع',
+                  icon: Icons.credit_card,
+                  route: AppRoutes.paympa,
+                ),
               ],
             ),
 
-            ProfileSection(
-              title: 'عام',
-              items: [
-                ProfileItemData(title: 'الإعدادات', icon: Icons.settings),
-              ],
-            ),
-
+            // ProfileSection(
+            //   title: 'عام',
+            //   items: [
+            //     ProfileItemData(title: 'الإعدادات', icon: Icons.settings),
+            //   ],
+            // ),
             ProfileSection(
               title: 'الدعم والمعلومات',
               items: [
                 ProfileItemData(
                   title: 'سياسة الخصوصية',
                   icon: Icons.privacy_tip_outlined,
-                  route: '/privacy',
+                  route: AppRoutes.privacy,
                 ),
                 ProfileItemData(
                   title: 'الشروط والأحكام',
                   icon: Icons.description_outlined,
-                  route: '/terms',
+                  route: AppRoutes.terms,
                 ),
                 ProfileItemData(
                   title: 'تواصل معنا',
                   icon: Icons.support_agent,
-                  route: '/contact',
+                  route: AppRoutes.contact,
                 ),
                 ProfileItemData(
                   title: 'عن التطبيق',
                   icon: Icons.info_outline,
-                  route: '/about',
+                  route: AppRoutes.about,
                 ),
               ],
             ),

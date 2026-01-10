@@ -19,7 +19,7 @@ class HomeBody extends StatelessWidget {
     // Register once; GetBuilder will rebuild when update() is called in the controller.
     Get.put(HomeControllerImp());
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 240, 240, 240),
+      backgroundColor: AppColor().backgroundColor,
       appBar: CustomDeliveryAppBar(),
       floatingActionButton: const CartFloatingButton(),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,

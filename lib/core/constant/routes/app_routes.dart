@@ -39,6 +39,10 @@ class AppRoutes {
   static const String terms = '/terms';
   static const String contact = '/contact';
   static const String about = '/about';
+  static const String ordhis = '/OrderHistoryPage';
+  static const String addrslis = '/Addresspage';
+  static const String paympa = '/Paymentpage';
+  
   
 
   static final routes = [
@@ -68,15 +72,20 @@ class AppRoutes {
     ),
     GetPage(name: home, page: () => MainView()),
     GetPage(name: favorates, page: () => FavoritesView()),
-
     GetPage(name: privacy, page: () => const PrivacyPolicyPage()),
     GetPage(name: terms, page: () => const TermsPage()),
     GetPage(name: contact, page: () => const ContactUsPage()),
     GetPage(name: about, page: () => const AboutAppPage()),
-    GetPage(name: '/OrderHistoryPage', page: () =>  OrderHistoryPage()),
-    GetPage(name: '/AddressList', page: () =>  AddressPage(),binding: AddressBinding()),
-    GetPage(name: '/PaymentBinding', page: () =>  PaymentPage(),binding: PaymentBinding()),
-
-
+    GetPage(name: ordhis, page: () => OrderHistoryPage()),
+    GetPage(
+      name: addrslis,
+      page: () => AddressPage(),
+      binding: AddressBinding(),
+    ),
+    GetPage(
+      name: paympa,
+      page: () => PaymentPage(),
+      binding: PaymentBinding(),
+    ),
   ];
 }

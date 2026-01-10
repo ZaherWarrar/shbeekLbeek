@@ -26,18 +26,21 @@ class MainCategory extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 10.0),
                 child: Container(
                   height: 30,
-                  width: 100,
+                  width: 120,
                   decoration: BoxDecoration(
                     color: controller.selectedType == index
                         ? AppColor().primaryColor
                         : AppColor().backgroundColorCard,
                     borderRadius: BorderRadius.circular(50),
                   ),
-                  child: Center(
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        controller.homeSection[index].name.toString(),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Center(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          controller.homeSection[index].name.toString(),
+                        ),
                       ),
                     ),
                   ),

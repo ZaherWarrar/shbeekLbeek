@@ -42,6 +42,8 @@ class MyApp extends StatelessWidget {
       theme: controller.appTheme,
       initialBinding: InitialBindings(),
       initialRoute: initialRoute,
+      defaultTransition: Transition.cupertino,
+      transitionDuration: const Duration(milliseconds: 300),
       getPages: AppRoutes.routes,
       // جعل التطبيق RTL بشكل دائم
       builder: (context, child) {

@@ -1,4 +1,5 @@
 import 'package:app/core/constant/app_color.dart';
+import 'package:app/core/constant/routes/app_routes.dart';
 import 'package:app/view/adress/controller/address_controller.dart';
 import 'package:app/view/adress/model/address_model.dart';
 import 'package:flutter/material.dart';
@@ -75,7 +76,7 @@ class CustomDeliveryAppBar extends StatelessWidget
                 return GestureDetector(
                   onTap: () {
                     // الانتقال إلى صفحة العناوين
-                    Get.toNamed('/AddressList');
+                    Get.toNamed(AppRoutes.addrslis);
                   },
                   child: FittedBox(
                     child: Row(

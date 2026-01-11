@@ -38,7 +38,7 @@ class CategorySlider extends StatelessWidget {
                 itemBuilder: (context, index) {
                   MainCategoriesModel data = controller.mainCat[index];
                   return Padding(
-                    padding: const EdgeInsets.only(right: 15),
+                    padding: const EdgeInsets.only(right: 16),
                     child: FittedBox(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,

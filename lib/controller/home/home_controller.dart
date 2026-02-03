@@ -81,8 +81,9 @@ class HomeControllerImp extends HomeController {
   void _startAutoPlay() async {
     while (!_isDisposed) {
       await Future.delayed(autoPlayDelay);
-      if (_isDisposed || pageController == null || !pageController!.hasClients)
+      if (_isDisposed || pageController == null || !pageController!.hasClients) {
         continue;
+      }
 
       final currentPage = pageController!.page;
       if (currentPage == null) continue;

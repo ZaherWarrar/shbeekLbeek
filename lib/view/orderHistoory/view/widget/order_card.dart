@@ -1,9 +1,10 @@
 import 'package:app/core/constant/app_color.dart';
+import 'package:app/view/orderHistoory/model/order_his_model.dart';
 import 'package:app/view/orderHistoory/view/widget/status_chip.dart';
 import 'package:flutter/material.dart';
 
 class OrderCard extends StatelessWidget {
-  final dynamic order;
+  final OrderHisModel order;
   final int index;
 
   const OrderCard({
@@ -14,7 +15,8 @@ class OrderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isActive = order.status == "نشط";
+    final isActive = order.status == OrderHisModel.statusActive;
+    final total = order.total ?? 0;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
@@ -51,7 +53,7 @@ class OrderCard extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    order.restaurantName,
+                    order.restaurantName ?? "",
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
@@ -89,7 +91,7 @@ class OrderCard extends StatelessWidget {
                   ],
                 ),
                 Text(
-                  "${order.total} ر.س",
+                  "$total ل.س",
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

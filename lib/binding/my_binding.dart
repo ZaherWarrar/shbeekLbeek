@@ -2,6 +2,7 @@ import 'package:app/core/class/crud.dart';
 import 'package:app/controller/cart/cart_controller.dart';
 import 'package:app/controller/order/order_controller.dart';
 import 'package:app/view/adress/controller/address_controller.dart';
+import 'package:app/view/favorets/widget/favorates_tabs/favorate_tabs_controller.dart';
 import 'package:get/get.dart';
 
 class InitialBindings extends Bindings {
@@ -13,5 +14,6 @@ class InitialBindings extends Bindings {
     Get.put(OrderController(), permanent: true);
     // تسجيل AddressController لضمان توافره في الشريط العلوي
     Get.put(AddressController(), permanent: true);
+    Get.put(FavoritesController(), permanent: true);
   }
 }

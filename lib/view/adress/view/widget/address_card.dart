@@ -22,6 +22,7 @@ class AddressCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
+            // ignore: deprecated_member_use
             color: AppColor().titleColor.withOpacity(.08),
             blurRadius: 20,
             offset: const Offset(0, 8),

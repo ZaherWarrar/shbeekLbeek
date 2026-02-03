@@ -236,6 +236,86 @@ class UserPreferences {
     await myServices.sharedPreferences.remove('user_addresses');
   }
 
+  // ===================== Favorites (Local) ============================
+  String _normalizeUserId(String? userId) {
+    final id = userId?.trim();
+    return (id == null || id.isEmpty) ? 'guest' : id;
+  }
+
+  String _favoritesKey(String? userId) =>
+      'favorites_${_normalizeUserId(userId)}';
+
+  String _favoritesPendingKey(String? userId) =>
+      'favorites_pending_${_normalizeUserId(userId)}';
+
+  Future<void> saveFavorites(
+    List<Map<String, dynamic>> favorites, {
+    String? userId,
+  }) async {
+    final favoritesJson = jsonEncode(favorites);
+    await myServices.sharedPreferences.setString(
+      _favoritesKey(userId),
+      favoritesJson,
+    );
+  }
+
+  List<Map<String, dynamic>> getFavorites({String? userId}) {
+    final favoritesJson = myServices.sharedPreferences.getString(
+      _favoritesKey(userId),
+    );
+    if (favoritesJson == null) return [];
+    try {
+      final decoded = jsonDecode(favoritesJson);
+      if (decoded is List) {
+        return decoded
+            .whereType<Map>()
+            .map((item) => Map<String, dynamic>.from(item))
+            .toList();
+      }
+    } catch (e) {
+      return [];
+    }
+    return [];
+  }
+
+  Future<void> clearFavorites({String? userId}) async {
+    await myServices.sharedPreferences.remove(_favoritesKey(userId));
+  }
+
+  Future<void> saveFavoritePending(
+    List<Map<String, dynamic>> pending, {
+    String? userId,
+  }) async {
+    final pendingJson = jsonEncode(pending);
+    await myServices.sharedPreferences.setString(
+      _favoritesPendingKey(userId),
+      pendingJson,
+    );
+  }
+
+  List<Map<String, dynamic>> getFavoritePending({String? userId}) {
+    final pendingJson = myServices.sharedPreferences.getString(
+      _favoritesPendingKey(userId),
+    );
+    if (pendingJson == null) return [];
+    try {
+      final decoded = jsonDecode(pendingJson);
+      if (decoded is List) {
+        return decoded
+            .whereType<Map>()
+            .map((item) => Map<String, dynamic>.from(item))
+            .toList();
+      }
+    } catch (e) {
+      return [];
+    }
+    return [];
+  }
+
+  Future<void> clearFavoritePending({String? userId}) async {
+    await myServices.sharedPreferences.remove(_favoritesPendingKey(userId));
+  }
+
   // // حفظ بيانات المستخدم (كـ JSON)
   // static Future<void> saveUser(Map<String, dynamic> user) async {
   //   final prefs = await SharedPreferences.getInstance();

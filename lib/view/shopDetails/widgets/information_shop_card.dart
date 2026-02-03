@@ -1,5 +1,7 @@
 import 'package:app/controller/shop_details/shop_details_controller.dart';
 import 'package:app/core/constant/app_color.dart';
+import 'package:app/view/favorets/widget/favorates_tabs/favorate_tabs_controller.dart';
+import 'package:app/view/favorets/widget/favorates_tabs/favorates_tabs_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -43,26 +45,51 @@ class InformationShopCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Container(
-                      height: 32,
-                      width: 32,
-                      decoration: BoxDecoration(
-                        color: const Color.fromARGB(148, 248, 228, 198),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: IconButton(
-                          padding: EdgeInsets.zero,
-                          onPressed: () {
-                            // TODO: إضافة وظيفة المفضلة
-                          },
-                          icon: Icon(
-                            Icons.favorite_border,
-                            color: AppColor().primaryColor,
-                            size: 22,
+                    GetBuilder<FavoritesController>(
+                      builder: (favoritesController) {
+                        final shopId = shopItem.id ?? 0;
+                        final isFavorite = shopId != 0 &&
+                            favoritesController.isFavorite('category', shopId);
+                        final favoriteItem = RestaurantModel(
+                          id: shopId,
+                          name: shopItem.name ?? '',
+                          image: shopItem.imageUrl ?? '',
+                          rating: 0,
+                          category: shopItem.type ?? '',
+                          favoriteType: 'category',
+                          isFavorite: isFavorite,
+                        );
+
+                        return Container(
+                          height: 32,
+                          width: 32,
+                          decoration: BoxDecoration(
+                            color: const Color.fromARGB(148, 248, 228, 198),
+                            shape: BoxShape.circle,
                           ),
-                        ),
-                      ),
+                          child: Center(
+                            child: IconButton(
+                              padding: EdgeInsets.zero,
+                              onPressed: shopId == 0
+                                  ? null
+                                  : () {
+                                      favoritesController.toggleFavoriteById(
+                                        type: 'category',
+                                        id: shopId,
+                                        item: favoriteItem,
+                                      );
+                                    },
+                              icon: Icon(
+                                isFavorite
+                                    ? Icons.favorite
+                                    : Icons.favorite_border,
+                                color: AppColor().primaryColor,
+                                size: 22,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),

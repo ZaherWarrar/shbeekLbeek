@@ -5,7 +5,9 @@ import 'favorate_tabs_controller.dart';
 class FavoritesTabs extends StatelessWidget {
   FavoritesTabs({super.key});
 
-  final controller = Get.find<FavoritesController>();
+  final controller = Get.isRegistered<FavoritesController>()
+      ? Get.find<FavoritesController>()
+      : Get.put(FavoritesController(), permanent: true);
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +49,7 @@ class FavoritesTabs extends StatelessWidget {
                 child: Column(
                   children: [
                     Text(
-                      "المطاعم",
+                      "المتاجر",
                       style: TextStyle(
                         color: controller.currentIndex.value == 1
                             ? Colors.black

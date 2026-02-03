@@ -7,11 +7,9 @@ import 'package:get/get.dart';
 class OrderHistoryPage extends StatelessWidget {
   OrderHistoryPage({super.key});
 
-  final controller = Get.put(OrderHisController());
-
   @override
   Widget build(BuildContext context) {
-    controller.fetchOrders();
+    Get.put(OrderHisController());
 
     return Scaffold(
       backgroundColor: AppColor().backgroundColor,

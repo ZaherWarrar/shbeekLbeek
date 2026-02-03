@@ -1,6 +1,6 @@
 import 'package:app/controller/home/home_controller.dart';
 import 'package:app/core/constant/app_color.dart';
-import 'package:app/core/shared/custom_loding_page.dart';
+import 'package:app/core/shared/custom_refresh.dart';
 import 'package:flutter/material.dart';
 
 class MainCategory extends StatelessWidget {
@@ -8,7 +8,9 @@ class MainCategory extends StatelessWidget {
   final HomeControllerImp controller;
   @override
   Widget build(BuildContext context) {
-    return CustomLodingPage(
+    return CustomRefresh(
+      statusRequest: controller.finalSectionState,
+      fun: () => controller.fetchHomeSection(),
       body: SizedBox(
         height: 40,
         child: ListView.builder(
@@ -50,7 +52,6 @@ class MainCategory extends StatelessWidget {
           },
         ),
       ),
-      statusRequest: controller.finalSectionState,
     );
   }
 }

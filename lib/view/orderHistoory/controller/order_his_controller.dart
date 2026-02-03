@@ -1,15 +1,50 @@
+import 'package:app/core/class/statusrequest.dart';
+import 'package:app/core/function/handelingdata.dart';
+import 'package:app/data/datasorce/remot/order_data.dart';
 import 'package:app/view/orderHistoory/model/order_his_model.dart';
-import 'package:get/get_rx/src/rx_types/rx_types.dart';
-import 'package:get/get_state_manager/src/simple/get_controllers.dart';
+import 'package:get/get.dart';
 
 class OrderHisController extends GetxController {
-  RxList<OrderHisModel> orders = <OrderHisModel>[].obs;
+  OrderData orderData = OrderData(Get.find());
 
-  void fetchOrders() async {
-    // هنا يتم جلب البيانات من الـ backend
-    orders.value = [
-      OrderHisModel(restaurantName: "ماكدونالدز", status: "مكتمل", date: DateTime.now(), total: 45.0),
-      OrderHisModel(restaurantName: "البيك", status: "نشط", date: DateTime.now(), total: 60.0),
-    ];
+  StatusRequest orderState = StatusRequest.none;
+  List<OrderHisModel> orders = [];
+
+  Future<void> fetchOrders() async {
+    orderState = StatusRequest.loading;
+    update();
+
+    var response = await orderData.myOrdersData();
+    orderState = handelingData(response);
+    if (orderState == StatusRequest.success) {
+      final orderList = _extractOrders(response);
+      orders =
+          orderList.map((item) => OrderHisModel.fromJson(item)).toList();
+    } else {
+      orders = [];
+    }
+    update();
+  }
+
+  List<Map<String, dynamic>> _extractOrders(dynamic response) {
+    if (response is Map && response['orders'] is List) {
+      return (response['orders'] as List)
+          .whereType<Map>()
+          .map((item) => Map<String, dynamic>.from(item))
+          .toList();
+    }
+    if (response is List) {
+      return response
+          .whereType<Map>()
+          .map((item) => Map<String, dynamic>.from(item))
+          .toList();
+    }
+    return [];
+  }
+
+  @override
+  void onInit() {
+    super.onInit();
+    fetchOrders();
   }
 }

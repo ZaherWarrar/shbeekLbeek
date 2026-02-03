@@ -2,7 +2,7 @@ import 'package:app/controller/all_shops/all_shops_controller.dart';
 import 'package:app/core/constant/app_color.dart';
 import 'package:app/core/constant/routes/app_routes.dart';
 import 'package:app/core/shared/custom_app_bar.dart';
-import 'package:app/core/shared/custom_loding_page.dart';
+import 'package:app/core/shared/custom_refresh.dart';
 import 'package:app/view/allShops/filter/controller/shop_filter_controller.dart';
 import 'package:app/view/allShops/filter/view/shop_filters.dart';
 import 'package:app/view/allShops/view/widget/empty_state_widget.dart';
@@ -31,21 +31,24 @@ class StoresPage extends StatelessWidget {
         appBar: CustomAppBar(title: "كل المتاجر"),
         body: GetBuilder<AllShopsController>(
           builder: (controller) {
-            return CustomLodingPage(
-              statusRequest: controller.allShopsState,
-              body: Column(
-                children: [
-                  // شريط البحث
-                  const SearchBarWidget(),
-                  Obx(
-                    () => FiltersRowWidget(
-                      selectedIndex: filterController.selectedIndex.value,
-                      onSelect: filterController.changeFilter,
-                    ),
+            return Column(
+              children: [
+                const SearchBarWidget(),
+                Obx(
+                  () => FiltersRowWidget(
+                    selectedIndex: filterController.selectedIndex.value,
+                    onSelect: filterController.changeFilter,
                   ),
-                  Expanded(
-                    child: controller.filteredShops.isEmpty
-                        ? const EmptyStateWidget()
+                ),
+                Expanded(
+                  child: CustomRefresh(
+                    statusRequest: controller.allShopsState,
+                    fun: () => controller.refreshData(),
+                    body: controller.filteredShops.isEmpty
+                        ? const SingleChildScrollView(
+                            physics: AlwaysScrollableScrollPhysics(),
+                            child: EmptyStateWidget(),
+                          )
                         : LayoutBuilder(
                             builder: (context, constraints) {
                               int crossAxisCount;
@@ -53,7 +56,7 @@ class StoresPage extends StatelessWidget {
 
                               if (constraints.maxWidth < 360) {
                                 crossAxisCount = 2;
-                                aspectRatio = 0.62; // موبايلات صغيرة جدًا
+                                aspectRatio = 0.62;
                               } else if (constraints.maxWidth < 600) {
                                 crossAxisCount = 2;
                                 aspectRatio = 0.68;
@@ -80,7 +83,7 @@ class StoresPage extends StatelessWidget {
                                   return StoreCardWidget(
                                     name: store.name ?? "متجر",
                                     category: store.type ?? "عام",
-                                    rating: 4.5, // يمكن إضافة rating لاحقاً
+                                    rating: 4.5,
                                     image: store.imageUrl ?? "",
                                     deliveryTime: store.deliveryFee ?? "مجاني",
                                     onTap: () {
@@ -95,8 +98,8 @@ class StoresPage extends StatelessWidget {
                             },
                           ),
                   ),
-                ],
-              ),
+                ),
+              ],
             );
           },
         ),

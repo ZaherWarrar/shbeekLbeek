@@ -1,4 +1,6 @@
+import 'package:app/core/shared/custom_refresh.dart';
 import 'package:app/view/orderHistoory/controller/order_his_controller.dart';
+import 'package:app/view/orderHistoory/model/order_his_model.dart';
 import 'package:app/view/orderHistoory/view/widget/order_card.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -8,28 +10,38 @@ class OrderList extends GetView<OrderHisController> {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() {
-      final activeOrders =
-          controller.orders.where((o) => o.status == "نشط").toList();
+    return GetBuilder<OrderHisController>(
+      builder: (controller) {
+        final activeOrders = controller.orders
+            .where((o) => o.status == OrderHisModel.statusActive)
+            .toList();
 
-      final completedOrders =
-          controller.orders.where((o) => o.status != "نشط").toList();
+        final completedOrders = controller.orders
+            .where((o) => o.status != OrderHisModel.statusActive)
+            .toList();
 
-      final orders = [...activeOrders, ...completedOrders];
+        final orders = [...activeOrders, ...completedOrders];
 
-      if (orders.isEmpty) {
-        return const Center(
-          child: Text("لا يوجد طلبات بعد"),
+        return CustomRefresh(
+          statusRequest: controller.orderState,
+          fun: () => controller.fetchOrders(),
+          body: orders.isEmpty
+              ? SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.5,
+                    child: const Center(child: Text("لا يوجد طلبات بعد")),
+                  ),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 90),
+                  itemCount: orders.length,
+                  itemBuilder: (context, index) {
+                    return OrderCard(order: orders[index], index: index);
+                  },
+                ),
         );
-      }
-
-      return ListView.builder(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 90),
-        itemCount: orders.length,
-        itemBuilder: (context, index) {
-          return OrderCard(order: orders[index], index: index);
-        },
-      );
-    });
+      },
+    );
   }
 }

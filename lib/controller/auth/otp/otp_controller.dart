@@ -3,6 +3,7 @@ import 'package:app/core/constant/routes/app_routes.dart';
 import 'package:app/core/function/handelingdata.dart';
 import 'package:app/core/services/shaerd_preferances.dart';
 import 'package:app/data/datasorce/remot/otp_data.dart';
+import 'package:app/view/favorets/widget/favorates_tabs/favorate_tabs_controller.dart';
 import 'package:get/get.dart';
 
 class OtpController extends GetxController {
@@ -13,7 +14,7 @@ class OtpController extends GetxController {
   late String phoneNumber;
   late StatusRequest statusRequest;
   OtpData otpData = OtpData(Get.find());
-  UserPreferences _prefs = UserPreferences();
+  final UserPreferences _prefs = UserPreferences();
   dynamic data;
   // هنا يجب ادخال عنوان الapi الصحيح للotp
   final String apiUrl = "";
@@ -78,6 +79,11 @@ class OtpController extends GetxController {
 
               data = userData;
             }
+
+            final favoritesController = Get.isRegistered<FavoritesController>()
+                ? Get.find<FavoritesController>()
+                : Get.put(FavoritesController(), permanent: true);
+            await favoritesController.syncWithServer();
 
             Get.snackbar('نجاح ✅', 'تم التحقق بنجاح');
             Get.toNamed(AppRoutes.home);

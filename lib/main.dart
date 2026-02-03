@@ -11,7 +11,6 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initialServices();
 
-  // التحقق من تسجيل الدخول
   final userPreferences = UserPreferences();
   final token = await userPreferences.getToken();
   final initialRoute = (token != null && token.isNotEmpty)
@@ -29,7 +28,6 @@ class MyApp extends StatelessWidget {
 
   const MyApp({super.key, required this.initialRoute});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     w = MediaQuery.sizeOf(context).width;
@@ -45,7 +43,6 @@ class MyApp extends StatelessWidget {
       defaultTransition: Transition.cupertino,
       transitionDuration: const Duration(milliseconds: 300),
       getPages: AppRoutes.routes,
-      // جعل التطبيق RTL بشكل دائم
       builder: (context, child) {
         return Directionality(textDirection: TextDirection.rtl, child: child!);
       },

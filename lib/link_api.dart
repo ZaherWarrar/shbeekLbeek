@@ -13,4 +13,6 @@ class ApiLinks {
   static const String cancelOrder = '$baseUrl/order/cancel';
   static const String coupons = '$baseUrl/coupons/available';
   static const String couponCheck = '$baseUrl/coupons/check/';
+  static const String myOrders = '$baseUrl/my_order';
+  static const String addFavorite = '$baseUrl/favorites';
 }

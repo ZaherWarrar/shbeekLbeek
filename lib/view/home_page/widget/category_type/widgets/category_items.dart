@@ -1,5 +1,5 @@
 import 'package:app/controller/home/home_controller.dart';
-import 'package:app/core/shared/custom_loding_page.dart';
+import 'package:app/core/shared/custom_refresh.dart';
 import 'package:app/view/home_page/widget/category_type/widgets/card_item.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -12,7 +12,9 @@ class CategoryItems extends StatelessWidget {
       height: 158,
       child: GetBuilder<HomeControllerImp>(
         builder: (controller) {
-          return CustomLodingPage(
+          return CustomRefresh(
+            statusRequest: controller.finalSectionState,
+            fun: () => controller.fetchHomeSection(),
             body: ListView.builder(
               scrollDirection: Axis.horizontal,
               itemCount: controller.finalSection[controller.sectionName] == null
@@ -28,7 +30,6 @@ class CategoryItems extends StatelessWidget {
                 );
               },
             ),
-            statusRequest: controller.finalSectionState,
           );
         },
       ),

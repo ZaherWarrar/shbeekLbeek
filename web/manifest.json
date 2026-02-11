@@ -1,6 +1,6 @@
 {
-    "name": "app",
-    "short_name": "app",
+    "name": "shbeeklbeek",
+    "short_name": "shbeeklbeek",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
@@ -8,6 +8,9 @@
     "description": "A new Flutter project.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
+    "permissions": [
+        "geolocation"
+    ],
     "icons": [
         {
             "src": "icons/Icon-192.png",

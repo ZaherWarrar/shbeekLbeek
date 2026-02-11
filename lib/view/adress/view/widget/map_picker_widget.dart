@@ -7,21 +7,69 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:get/get.dart';
 import 'package:latlong2/latlong.dart';
 
-class MapPickerWidget extends StatelessWidget {
+class MapPickerWidget extends StatefulWidget {
   const MapPickerWidget({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final controller = Get.find<AddressController>();
+  State<MapPickerWidget> createState() => _MapPickerWidgetState();
+}
 
+class _MapPickerWidgetState extends State<MapPickerWidget> {
+  final MapController mapController = MapController();
+  final AddressController addressController = Get.find<AddressController>();
+  Worker? _latWorker;
+  Worker? _lngWorker;
+
+  @override
+  void initState() {
+    super.initState();
+    // الاستماع لتغييرات الموقع لتحريك الخريطة
+    _latWorker = ever(addressController.selectedLat, (lat) {
+      if (mounted && lat != 0.0 && addressController.selectedLng.value != 0.0) {
+        _moveToLocation(lat, addressController.selectedLng.value);
+      }
+    });
+    _lngWorker = ever(addressController.selectedLng, (lng) {
+      if (mounted && lng != 0.0 && addressController.selectedLat.value != 0.0) {
+        _moveToLocation(addressController.selectedLat.value, lng);
+      }
+    });
+  }
+
+  // تحريك الخريطة إلى موقع معين
+  void _moveToLocation(double lat, double lng) {
+    if (!mounted) return;
+    
+    try {
+      mapController.move(
+        LatLng(lat, lng),
+        15.0, // مستوى التكبير
+      );
+    } catch (e) {
+      // تجاهل الأخطاء إذا كان الـ controller تم dispose
+      // أو إذا كان هناك خطأ في تحريك الخريطة
+    }
+  }
+
+  @override
+  void dispose() {
+    // إلغاء الاشتراكات
+    _latWorker?.dispose();
+    _lngWorker?.dispose();
+    mapController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Obx(() {
-      final selectedLat = controller.selectedLat.value;
-      final selectedLng = controller.selectedLng.value;
+      final selectedLat = addressController.selectedLat.value;
+      final selectedLng = addressController.selectedLng.value;
 
       // البحث عن العنوان الافتراضي
       AddressModel? defaultAddress;
       try {
-        defaultAddress = controller.addresses.firstWhere(
+        defaultAddress = addressController.addresses.firstWhere(
           (address) => address.isDefault,
         );
       } catch (e) {
@@ -56,14 +104,18 @@ class MapPickerWidget extends StatelessWidget {
           child: Stack(
             children: [
               FlutterMap(
+                mapController: mapController,
                 options: MapOptions(
                   initialCenter: initialCenter,
                   initialZoom: 13.0,
                   minZoom: 5.0,
                   maxZoom: 18.0,
-                  onTap: (tapPosition, point) {
-                    // عند النقر على الخريطة، تحديث الموقع
-                    controller.setLocation(point.latitude, point.longitude);
+                  onTap: (tapPosition, point) async {
+                    // عند النقر على الخريطة، تحديث الموقع والحصول على العنوان
+                    await addressController.setLocation(
+                      point.latitude,
+                      point.longitude,
+                    );
                   },
                 ),
                 children: [
@@ -102,7 +154,8 @@ class MapPickerWidget extends StatelessWidget {
                   mini: true,
                   backgroundColor: AppColor().primaryColor,
                   onPressed: () async {
-                    await controller.getCurrentLocation();
+                    await addressController.getCurrentLocation();
+                    // الخريطة ستتحرك تلقائياً عبر ever listener
                   },
                   child: const Icon(Icons.my_location, color: Colors.white),
                 ),

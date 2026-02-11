@@ -1,3 +1,4 @@
+import 'package:app/core/constant/app_images.dart';
 import 'package:app/view/favorets/widget/favorates_tabs/favorate_tabs_controller.dart';
 import 'package:app/view/favorets/widget/favorates_tabs/favorates_tabs_model.dart';
 import 'package:flutter/material.dart';
@@ -7,15 +8,13 @@ class RestaurantCard extends StatelessWidget {
   final RestaurantModel item;
   final int index;
 
-  const RestaurantCard({
-    super.key,
-    required this.item,
-    required this.index,
-  });
+  const RestaurantCard({super.key, required this.item, required this.index});
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<FavoritesController>();
+    final controller = Get.isRegistered<FavoritesController>()
+        ? Get.find<FavoritesController>()
+        : Get.put(FavoritesController(), permanent: true);
 
     return Container(
       decoration: BoxDecoration(
@@ -29,16 +28,30 @@ class RestaurantCard extends StatelessWidget {
             child: Stack(
               children: [
                 ClipRRect(
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(20)),
-                  child: Image.network(
-                    item.image,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(20),
                   ),
+                  child: item.image.isNotEmpty
+                      ? Image.network(
+                          item.image,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Image.asset(
+                              Assets.imagesLogo,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                            );
+                          },
+                        )
+                      : Image.asset(
+                          Assets.imagesLogo,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
                 ),
 
-                /// ❤️ زر المفضلة 
+                /// ❤️ زر المفضلة
                 Positioned(
                   top: 10,
                   right: 10,
@@ -73,22 +86,27 @@ class RestaurantCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 14),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    Text(item.rating.toString(),
-                        style: const TextStyle(fontSize: 12)),
+                    Text(
+                      item.rating.toString(),
+                      style: const TextStyle(fontSize: 12),
+                    ),
                     const SizedBox(width: 4),
-                    const Icon(Icons.star,
-                        size: 14, color: Colors.amber),
+                    const Icon(Icons.star, size: 14, color: Colors.amber),
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
                         item.category,
                         style: const TextStyle(
-                            fontSize: 12, color: Colors.grey),
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -96,7 +114,7 @@ class RestaurantCard extends StatelessWidget {
                 ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );

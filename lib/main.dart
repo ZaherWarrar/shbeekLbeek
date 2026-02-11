@@ -50,8 +50,6 @@ class MyApp extends StatelessWidget {
       transitionDuration: const Duration(milliseconds: 300),
 
       getPages: AppRoutes.routes,
-
-      // 🔥 جعل التطبيق RTL دائمًا
       builder: (context, child) {
         return Directionality(
           textDirection: TextDirection.rtl,

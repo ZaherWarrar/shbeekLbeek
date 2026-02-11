@@ -11,6 +11,7 @@ class CustomTextFormFild extends StatelessWidget {
     required this.iconData,
     this.scure,
     this.onTap,
+    this.readOnly = false,
   });
   final TextEditingController controller;
   final String hint, lable;
@@ -18,6 +19,7 @@ class CustomTextFormFild extends StatelessWidget {
   final String? Function(String?) valid;
   final bool? scure;
   final Function()? onTap;
+  final bool readOnly;
 
   @override
   Widget build(BuildContext context) {
@@ -25,6 +27,7 @@ class CustomTextFormFild extends StatelessWidget {
       obscureText: scure == null || scure == false ? false : true,
       validator: valid,
       controller: controller,
+      readOnly: readOnly,
       style: TextStyle(color: Colors.black),
       decoration: InputDecoration(
         hoverColor: Colors.white,

@@ -1,5 +1,5 @@
 import 'package:app/controller/home/home_controller.dart';
-import 'package:app/core/shared/custom_loding_page.dart';
+import 'package:app/core/shared/custom_refresh.dart';
 import 'package:app/view/home_page/widget/list_all_shops_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -13,8 +13,9 @@ class AllShops extends StatelessWidget {
 
     return GetBuilder<HomeControllerImp>(
       builder: (controller) {
-        return CustomLodingPage(
+        return CustomRefresh(
           statusRequest: controller.allItemState,
+          fun: () => controller.fetchAllItem(),
           body: ListAllShopsWidget(),
         );
       },

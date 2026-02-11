@@ -4,6 +4,8 @@ import 'package:app/core/constant/app_color.dart';
 import 'package:app/core/constant/app_images.dart';
 import 'package:app/core/function/fontsize.dart';
 import 'package:app/data/datasorce/model/item_model.dart';
+import 'package:app/view/favorets/widget/favorates_tabs/favorate_tabs_controller.dart';
+import 'package:app/view/favorets/widget/favorates_tabs/favorates_tabs_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -124,17 +126,90 @@ class CategoryWithItems extends StatelessWidget {
                                           mainAxisAlignment:
                                               MainAxisAlignment.spaceBetween,
                                           children: [
-                                            Flexible(
-                                              child: Text(
-                                                "$price ليرة",
-                                                style: TextStyle(
-                                                  color: Colors.deepOrange,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: isSmallScreen
-                                                      ? 14
-                                                      : 16,
-                                                ),
-                                                overflow: TextOverflow.ellipsis,
+                                            Expanded(
+                                              child: Row(
+                                                children: [
+                                                  Flexible(
+                                                    child: Text(
+                                                      "$price ليرة",
+                                                      style: TextStyle(
+                                                        color:
+                                                            Colors.deepOrange,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: isSmallScreen
+                                                            ? 14
+                                                            : 16,
+                                                      ),
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 4),
+                                                  GetBuilder<
+                                                    FavoritesController
+                                                  >(
+                                                    builder: (favoritesController) {
+                                                      final isFavorite =
+                                                          favoritesController
+                                                              .isFavorite(
+                                                                'product',
+                                                                productId,
+                                                              );
+                                                      final favoriteItem =
+                                                          RestaurantModel(
+                                                            id: productId,
+                                                            name:
+                                                                product.name ??
+                                                                '',
+                                                            image:
+                                                                product
+                                                                    .imageUrl ??
+                                                                '',
+                                                            rating: 0,
+                                                            category: price
+                                                                .toString(),
+                                                            favoriteType:
+                                                                'product',
+                                                            isFavorite:
+                                                                isFavorite,
+                                                          );
+
+                                                      return IconButton(
+                                                        iconSize: isSmallScreen
+                                                            ? 18
+                                                            : 20,
+                                                        padding:
+                                                            EdgeInsets.zero,
+                                                        constraints:
+                                                            const BoxConstraints(
+                                                              minWidth: 24,
+                                                              minHeight: 24,
+                                                            ),
+                                                        onPressed:
+                                                            productId <= 0
+                                                            ? null
+                                                            : () {
+                                                                favoritesController.toggleFavoriteById(
+                                                                  type:
+                                                                      'product',
+                                                                  id: productId,
+                                                                  item:
+                                                                      favoriteItem,
+                                                                );
+                                                              },
+                                                        icon: Icon(
+                                                          isFavorite
+                                                              ? Icons.favorite
+                                                              : Icons
+                                                                    .favorite_border,
+                                                          color: AppColor()
+                                                              .primaryColor,
+                                                        ),
+                                                      );
+                                                    },
+                                                  ),
+                                                ],
                                               ),
                                             ),
                                             const SizedBox(width: 8),

@@ -11,7 +11,6 @@ import 'package:app/core/function/valid_function.dart';
 import 'package:app/core/shared/custom_app_bar.dart';
 import 'package:app/core/shared/custom_button.dart';
 import 'package:app/core/shared/custom_text_form_fild.dart';
-import 'package:app/main.dart';
 
 class LoginView extends StatelessWidget {
   const LoginView({super.key});
@@ -22,6 +21,10 @@ class LoginView extends StatelessWidget {
       Get.delete<LoginControllerImb>();
     }
     Get.put(LoginControllerImb());
+    
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+    
     return Scaffold(
       backgroundColor: AppColor().backgroundColor,
       appBar: CustomAppBar(title: "1".tr),
@@ -34,23 +37,21 @@ class LoginView extends StatelessWidget {
           }
           return Container(
             padding: EdgeInsets.only(
-              top: h * 0.05,
-              left: w * 0.05,
-              right: w * 0.05,
+              top: screenHeight * 0.05,
+              left: screenWidth * 0.05,
+              right: screenWidth * 0.05,
             ),
             color: AppColor().backgroundColor,
-            height: h,
-            width: w,
             child: Form(
               key: controller.formStat,
               child: ListView(
                 children: [
                   SizedBox(
-                    height: h * 0.2,
-                    width: w * 0.05,
+                    height: screenHeight * 0.2,
+                    width: screenWidth * 0.5,
                     child: Image.asset(Assets.imagesLogo, fit: BoxFit.contain),
                   ),
-                  SizedBox(height: h * 0.05),
+                  SizedBox(height: screenHeight * 0.05),
                   CustomTextFormFild(
                     hint: "2".tr,
                     controller: controller.email,
@@ -61,7 +62,7 @@ class LoginView extends StatelessWidget {
                     iconData: Icons.email_outlined,
                     scure: false,
                   ),
-                  SizedBox(height: h * 0.05),
+                  SizedBox(height: screenHeight * 0.05),
                   CustomTextFormFild(
                     hint: "10".tr,
                     controller: controller.phoneNumber,
@@ -72,7 +73,7 @@ class LoginView extends StatelessWidget {
                     iconData: Icons.email_outlined,
                     scure: false,
                   ),
-                  SizedBox(height: h * 0.05),
+                  SizedBox(height: screenHeight * 0.05),
                   GetBuilder<LoginControllerImb>(
                     builder: (controller) => CustomTextFormFild(
                       hint: "5".tr,
@@ -89,10 +90,10 @@ class LoginView extends StatelessWidget {
                   SizedBox(height: 15),
                   GoToRegister(onTap: () => controller.goRegister()),
 
-                  SizedBox(height: h * 0.05),
+                  SizedBox(height: screenHeight * 0.05),
                   CustomButton(
-                    hi: h * 0.05,
-                    we: w * 0.2,
+                    hi: screenHeight * 0.05,
+                    we: screenWidth * 0.2,
                     fontsize: 25,
                     padding: 10,
                     title: "1".tr,
@@ -105,7 +106,7 @@ class LoginView extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(
                         10,
-                      ), // تحكم بنعومة الدائرة
+                      ),
                     ),
                     color: Colors.grey,
                     child: Text("الدخول كضيف"),

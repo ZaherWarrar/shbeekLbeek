@@ -1,5 +1,6 @@
 import 'package:app/core/class/crud.dart';
 import 'package:app/core/services/session_service.dart';
+import 'package:app/core/class/statusrequest.dart';
 import 'package:app/link_api.dart';
 import 'package:get/get.dart';
 
@@ -15,6 +16,7 @@ class OrderData {
   Map<String, String> _getHeaders() {
     final token = session.token;
 
+
     final headers = <String, String>{
       "Content-Type": "application/json",
       "Accept": "application/json",
@@ -27,13 +29,16 @@ class OrderData {
     return headers;
   }
 
-  // ================================
-  // إنشاء طلب جديد
-  // ================================
-  Future<Object> createOrderData(Map<String, dynamic> orderData) async {
-    final headers = _getHeaders();
 
-    final response = await crud.postData(
+  // إنشاء طلب جديد — إرسال التوكن في الهيدر (Authorization: Bearer {token}) مطلوب من الـ API
+  Future<Object> createOrderData(Map<String, dynamic> orderData) async {
+    final headers =  _getHeaders();
+    // التأكد من إرسال Authorization في الهيدر عند إنشاء الطلب
+    if (!headers.containsKey("Authorization")) {
+      return StatusRequest.unauthorized;
+    }
+    var response = await crud.postData(
+
       ApiLinks.createOrder,
       orderData,
       headers: headers,
@@ -69,6 +74,13 @@ class OrderData {
       headers: headers,
     );
 
+    return response.fold((l) => l, (r) => r);
+  }
+
+
+  Future<Object> myOrdersData() async {
+    final headers =  _getHeaders();
+    var response = await crud.getData(ApiLinks.myOrders, {}, headers: headers);
     return response.fold((l) => l, (r) => r);
   }
 }

@@ -5,6 +5,7 @@ import 'package:app/core/function/handelingdata.dart';
 import 'package:app/core/services/session_service.dart';
 import 'package:app/data/datasorce/remot/order_data.dart';
 import 'package:get/get.dart';
+import 'package:app/view/adress/controller/address_controller.dart';
 
 class OrderController extends GetxController {
   final OrderData orderData = OrderData(Get.find());
@@ -45,8 +46,26 @@ class OrderController extends GetxController {
     }).toList();
 
     // إعداد بيانات الطلب
+    final addressController = Get.find<AddressController>();
+    final defaultAddressList = addressController.addresses.where(
+      (address) => address.isDefault,
+    );
+
+    double latitude;
+    double longitude;
+    if (defaultAddressList.isNotEmpty) {
+      final address = defaultAddressList.first;
+      latitude = address.lat;
+      longitude = address.lng;
+    } else {
+      latitude = addressController.selectedLat.value;
+      longitude = addressController.selectedLng.value;
+    }
+
     Map<String, dynamic> orderDataMap = {
       "cart": {"items": items},
+      "latitude": latitude,
+      "longitude": longitude,
     };
 
     if (notes != null && notes.trim().isNotEmpty) {

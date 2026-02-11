@@ -226,7 +226,6 @@ void onInit() {
       return;
     }
 
-    // TODO: التحقق من كود الخصم من API
     // حالياً نستخدم كود وهمي للاختبار
     if (code.toLowerCase() == 'discount10' || code == 'خصم10') {
       discountCode = code;

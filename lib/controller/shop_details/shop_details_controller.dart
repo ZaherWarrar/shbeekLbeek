@@ -1,4 +1,5 @@
 import 'package:app/controller/cart/cart_controller.dart';
+import 'package:app/core/class/statusrequest.dart';
 import 'package:app/data/datasorce/model/item_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -7,6 +8,7 @@ class ShopDetailsController extends GetxController {
   late ItemModel shopItem;
   late TextEditingController searchController;
 
+  StatusRequest statusRequest = StatusRequest.none;
   List<Products> filteredProducts = [];
 
   @override
@@ -140,6 +142,15 @@ class ShopDetailsController extends GetxController {
     // يمكن إضافة منطق للحصول على ساعات اليوم الحالي
     // حالياً نرجع قيمة افتراضية
     return "مفتوح الآن - 11:00 ص - 02:00 ص";
+  }
+
+  /// إعادة تحميل الصفحة (سحب للتحديث)
+  Future<void> refreshPage() async {
+    statusRequest = StatusRequest.loading;
+    update();
+    await Future.delayed(const Duration(milliseconds: 400));
+    statusRequest = StatusRequest.success;
+    update();
   }
 
   @override

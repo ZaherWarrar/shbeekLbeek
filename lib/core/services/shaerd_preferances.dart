@@ -80,6 +80,4 @@
 //   Future<void> saveLanguage(String code) async => await _prefs.setString(_keyLanguage, code);
 //   String? getLanguage() => _prefs.getString(_keyLanguage);
 
-//   // ====== Clear everything ======
-//   Future<void> clearAll() async => await _prefs.clear();
-// }
+

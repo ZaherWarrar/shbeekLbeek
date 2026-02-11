@@ -3,10 +3,10 @@ import 'package:app/controller/order/order_controller.dart';
 import 'package:app/core/class/statusrequest.dart';
 import 'package:app/core/constant/app_color.dart';
 import 'package:app/core/shared/custom_app_bar.dart';
+import 'package:app/view/order/widget/order_actions_widget.dart';
+import 'package:app/view/order/widget/order_timer_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:app/view/order/widget/order_timer_widget.dart';
-import 'package:app/view/order/widget/order_actions_widget.dart';
 
 class OrderConfirmationView extends StatefulWidget {
   const OrderConfirmationView({super.key});
@@ -17,23 +17,26 @@ class OrderConfirmationView extends StatefulWidget {
 
 class _OrderConfirmationViewState extends State<OrderConfirmationView> {
   Timer? _timer;
-  int _remainingSeconds = 600; // 10 دقائق بالثواني
+  int _remainingSeconds = 600;
 
   @override
   void initState() {
     super.initState();
+
     final orderController = Get.find<OrderController>();
 
-    // loadActiveOrder يتم استدعاؤه في OrderController.onInit()
-    // الحصول على orderId من arguments أو من controller
+    // الحصول على رقم الطلب من arguments أو من controller
     final orderId = Get.arguments as int? ?? orderController.currentOrderId;
+
     if (orderId != null) {
       orderController.currentOrderId = orderId;
+
       // إذا لم يكن orderCreatedAt موجوداً، نستخدم الوقت الحالي ونحفظه
       if (orderController.orderCreatedAt == null) {
         orderController.orderCreatedAt = DateTime.now();
-        // حفظ الطلب النشط
-        orderController.userPreferences.saveActiveOrder(
+
+        // 🔥 حفظ الطلب النشط عبر SessionService
+        orderController.session.saveActiveOrder(
           orderId,
           orderController.orderCreatedAt!,
         );
@@ -42,33 +45,29 @@ class _OrderConfirmationViewState extends State<OrderConfirmationView> {
 
     // حساب الوقت المتبقي
     _remainingSeconds = orderController.getRemainingCancelSeconds();
-    if (_remainingSeconds <= 0) {
-      _remainingSeconds = 0;
-    }
+    if (_remainingSeconds < 0) _remainingSeconds = 0;
 
-    // بدء العداد التنازلي
+    // بدء العداد
     _startTimer();
   }
 
   void _startTimer() {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (mounted) {
-        final orderController = Get.find<OrderController>();
-        // تحديث الوقت المتبقي من controller
+      if (!mounted) return;
+
+      final orderController = Get.find<OrderController>();
+
+      setState(() {
         _remainingSeconds = orderController.getRemainingCancelSeconds();
 
-        setState(() {
-          if (_remainingSeconds > 0) {
-            // الوقت لا يزال متبقي
-          } else {
-            timer.cancel();
-            // تأكيد الطلب تلقائياً عند انتهاء العداد
-            if (orderController.currentOrderId != null) {
-              orderController.confirmOrder(orderController.currentOrderId!);
-            }
+        if (_remainingSeconds <= 0) {
+          timer.cancel();
+
+          if (orderController.currentOrderId != null) {
+            orderController.confirmOrder(orderController.currentOrderId!);
           }
-        });
-      }
+        }
+      });
     });
   }
 
@@ -87,9 +86,7 @@ class _OrderConfirmationViewState extends State<OrderConfirmationView> {
     return PopScope(
       canPop: true,
       onPopInvoked: (didPop) {
-        if (didPop) return;
-        // السماح بالرجوع للصفحة السابقة
-        Get.back();
+        if (!didPop) Get.back();
       },
       child: SafeArea(
         child: Scaffold(
@@ -99,8 +96,10 @@ class _OrderConfirmationViewState extends State<OrderConfirmationView> {
             builder: (controller) {
               final orderIdNullable =
                   controller.currentOrderId ?? Get.arguments as int?;
+
               final canCancel = _remainingSeconds > 0;
-              final isLoading = controller.orderState == StatusRequest.loading;
+              final isLoading =
+                  controller.orderState == StatusRequest.loading;
 
               if (orderIdNullable == null) {
                 return Center(
@@ -110,7 +109,7 @@ class _OrderConfirmationViewState extends State<OrderConfirmationView> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(Icons.error_outline, size: 64, color: Colors.red),
-                        SizedBox(height: 16),
+                        const SizedBox(height: 16),
                         Text(
                           "خطأ",
                           style: TextStyle(
@@ -118,7 +117,7 @@ class _OrderConfirmationViewState extends State<OrderConfirmationView> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        SizedBox(height: 8),
+                        const SizedBox(height: 8),
                         Text(
                           "لم يتم العثور على رقم الطلب",
                           style: TextStyle(
@@ -127,10 +126,10 @@ class _OrderConfirmationViewState extends State<OrderConfirmationView> {
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        SizedBox(height: 24),
+                        const SizedBox(height: 24),
                         ElevatedButton(
                           onPressed: () => Get.back(),
-                          child: Text("العودة"),
+                          child: const Text("العودة"),
                         ),
                       ],
                     ),
@@ -138,7 +137,6 @@ class _OrderConfirmationViewState extends State<OrderConfirmationView> {
                 );
               }
 
-              // بعد التحقق، orderIdNullable لا يمكن أن يكون null
               final orderId = orderIdNullable;
 
               return SingleChildScrollView(
@@ -148,7 +146,7 @@ class _OrderConfirmationViewState extends State<OrderConfirmationView> {
                   children: [
                     SizedBox(height: isSmallScreen ? 20 : 30),
 
-                    // رسالة الترحيب
+                    // رسالة النجاح
                     Container(
                       padding: EdgeInsets.all(isSmallScreen ? 16 : 20),
                       decoration: BoxDecoration(
@@ -161,11 +159,9 @@ class _OrderConfirmationViewState extends State<OrderConfirmationView> {
                       ),
                       child: Column(
                         children: [
-                          Icon(
-                            Icons.check_circle,
-                            size: isSmallScreen ? 48 : 64,
-                            color: Colors.green,
-                          ),
+                          Icon(Icons.check_circle,
+                              size: isSmallScreen ? 48 : 64,
+                              color: Colors.green),
                           SizedBox(height: isSmallScreen ? 12 : 16),
                           Text(
                             "تم إنشاء الطلب بنجاح",
@@ -189,7 +185,7 @@ class _OrderConfirmationViewState extends State<OrderConfirmationView> {
 
                     SizedBox(height: isSmallScreen ? 24 : 30),
 
-                    // العداد التنازلي
+                    // العداد
                     OrderTimerWidget(
                       remainingSeconds: _remainingSeconds,
                       isExpired: !canCancel,
@@ -197,7 +193,7 @@ class _OrderConfirmationViewState extends State<OrderConfirmationView> {
 
                     SizedBox(height: isSmallScreen ? 24 : 30),
 
-                    // معلومات مهمة
+                    // معلومات
                     Container(
                       padding: EdgeInsets.all(isSmallScreen ? 12 : 16),
                       decoration: BoxDecoration(
@@ -206,17 +202,15 @@ class _OrderConfirmationViewState extends State<OrderConfirmationView> {
                       ),
                       child: Row(
                         children: [
-                          Icon(
-                            Icons.info_outline,
-                            color: Colors.blue,
-                            size: isSmallScreen ? 20 : 24,
-                          ),
+                          Icon(Icons.info_outline,
+                              color: Colors.blue,
+                              size: isSmallScreen ? 20 : 24),
                           SizedBox(width: isSmallScreen ? 8 : 12),
                           Expanded(
                             child: Text(
                               canCancel
                                   ? "يمكنك إلغاء الطلب خلال 10 دقائق من إنشائه"
-                                  : "انتهى وقت الإلغاء. يمكنك فقط تأكيد الطلب",
+                                  : "انتهى وقت الإلغاء. سيتم تأكيد الطلب تلقائيًا",
                               style: TextStyle(
                                 fontSize: isSmallScreen ? 12 : 14,
                                 color: Colors.blue.shade900,
@@ -231,27 +225,25 @@ class _OrderConfirmationViewState extends State<OrderConfirmationView> {
 
                     // أزرار التأكيد والإلغاء
                     OrderActionsWidget(
-                      onConfirm: () {
-                        controller.confirmOrder(orderId);
-                      },
+                      onConfirm: () => controller.confirmOrder(orderId),
                       onCancel: canCancel
                           ? () {
-                              // عرض تأكيد قبل الإلغاء
                               Get.dialog(
                                 AlertDialog(
-                                  title: Text("تأكيد الإلغاء"),
-                                  content: Text("هل أنت متأكد من إلغاء الطلب؟"),
+                                  title: const Text("تأكيد الإلغاء"),
+                                  content: const Text(
+                                      "هل أنت متأكد من إلغاء الطلب؟"),
                                   actions: [
                                     TextButton(
                                       onPressed: () => Get.back(),
-                                      child: Text("إلغاء"),
+                                      child: const Text("إلغاء"),
                                     ),
                                     TextButton(
                                       onPressed: () {
                                         Get.back();
                                         controller.cancelOrder(orderId);
                                       },
-                                      child: Text(
+                                      child: const Text(
                                         "نعم، إلغاء",
                                         style: TextStyle(color: Colors.red),
                                       ),

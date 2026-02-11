@@ -1,0 +1,131 @@
+import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+class SessionService extends GetxService {
+  late SharedPreferences prefs;
+
+  // ====== Keys ======
+  static const tokenKey = "token";
+  static const userIdKey = "user_id";
+  static const userNameKey = "user_name";
+  static const userEmailKey = "user_email";
+  static const userRoleKey = "user_role";
+  static const userStatusKey = "user_status";
+
+  static const guestKey = "is_guest";
+
+  static const cityIdKey = "city_id";
+  static const cityNameKey = "city_name";
+
+  static const activeOrderIdKey = "active_order_id";
+  static const activeOrderCreatedAtKey = "active_order_created_at";
+
+  static const languageKey = "language";
+
+  // ====== Init ======
+  Future<SessionService> init() async {
+    prefs = await SharedPreferences.getInstance();
+    return this;
+  }
+
+  // ====== AUTH ======
+  Future<void> saveLogin({
+    required String token,
+    required String userId,
+  }) async {
+    await prefs.setString(tokenKey, token);
+    await prefs.setString(userIdKey, userId);
+    await prefs.setBool(guestKey, false);
+  }
+
+  Future<void> setGuest(bool value) async {
+    await prefs.setBool(guestKey, value);
+  }
+
+  Future<void> logout() async {
+    await prefs.remove(tokenKey);
+    await prefs.remove(userIdKey);
+    await prefs.remove(userNameKey);
+    await prefs.remove(userEmailKey);
+    await prefs.remove(userRoleKey);
+    await prefs.remove(userStatusKey);
+  }
+
+  String? get token => prefs.getString(tokenKey);
+  String? get userId => prefs.getString(userIdKey);
+  bool get isGuest => prefs.getBool(guestKey) ?? false;
+  bool get isLoggedIn => token != null;
+
+  // ====== USER DATA ======
+  Future<void> saveUserName(String name) async =>
+      await prefs.setString(userNameKey, name);
+  String? get userName => prefs.getString(userNameKey);
+
+  Future<void> saveUserEmail(String email) async =>
+      await prefs.setString(userEmailKey, email);
+  String? get userEmail => prefs.getString(userEmailKey);
+
+  Future<void> saveUserRole(String role) async =>
+      await prefs.setString(userRoleKey, role);
+  String? get userRole => prefs.getString(userRoleKey);
+
+  Future<void> saveUserStatus(String status) async =>
+      await prefs.setString(userStatusKey, status);
+  String? get userStatus => prefs.getString(userStatusKey);
+
+  // ====== CITY ======
+  Future<void> saveCity(int id, String name) async {
+    await prefs.setInt(cityIdKey, id);
+    await prefs.setString(cityNameKey, name);
+  }
+
+  int? get cityId => prefs.getInt(cityIdKey);
+  String? get cityName => prefs.getString(cityNameKey);
+
+  Future<void> clearCity() async {
+    await prefs.remove(cityIdKey);
+    await prefs.remove(cityNameKey);
+  }
+
+  // ====== ACTIVE ORDER ======
+  Future<void> saveActiveOrder(int orderId, DateTime createdAt) async {
+    await prefs.setString(activeOrderIdKey, orderId.toString());
+    await prefs.setString(
+        activeOrderCreatedAtKey, createdAt.toIso8601String());
+  }
+
+  Map<String, dynamic>? get activeOrder {
+    final id = prefs.getString(activeOrderIdKey);
+    final created = prefs.getString(activeOrderCreatedAtKey);
+    if (id == null || created == null) return null;
+
+    return {
+      "orderId": int.parse(id),
+      "createdAt": DateTime.parse(created),
+    };
+  }
+
+  bool get hasActiveOrder => prefs.getString(activeOrderIdKey) != null;
+
+  Future<void> clearActiveOrder() async {
+    await prefs.remove(activeOrderIdKey);
+    await prefs.remove(activeOrderCreatedAtKey);
+  }
+
+  // ====== LANGUAGE ======
+  Future<void> saveLanguage(String code) async =>
+      await prefs.setString(languageKey, code);
+  String? get language => prefs.getString(languageKey);
+
+  // ====== HEADERS ======
+  Map<String, String> get headers {
+    if (token == null) return {};
+    return {
+      "Authorization": "Bearer $token",
+      "Accept": "application/json",
+    };
+  }
+
+  // ====== CLEAR ALL ======
+  Future<void> clearAll() async => await prefs.clear();
+}

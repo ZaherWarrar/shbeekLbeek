@@ -24,6 +24,7 @@ class OrderHistoryPage extends StatelessWidget {
         backgroundColor: AppColor().backgroundColor,
         elevation: 0,
         iconTheme: IconThemeData(color: AppColor().titleColor),
+        automaticallyImplyLeading: false,
       ),
       body: const OrderList(),
     );

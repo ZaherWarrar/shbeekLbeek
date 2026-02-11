@@ -35,11 +35,11 @@ class ProfileView extends StatelessWidget {
             ProfileSection(
               title: 'الحساب',
               items: [
-                ProfileItemData(
-                  title: 'سجل الطلبات',
-                  icon: Icons.history,
-                  route: AppRoutes.ordhis,
-                ),
+                // ProfileItemData(
+                //   title: 'سجل الطلبات',
+                //   icon: Icons.history,
+                //   route: AppRoutes.ordhis,
+                // ),
                 ProfileItemData(
                   title: 'العناوين المحفوظة',
                   icon: Icons.location_on_outlined,

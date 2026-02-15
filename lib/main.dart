@@ -51,10 +51,7 @@ class MyApp extends StatelessWidget {
 
       getPages: AppRoutes.routes,
       builder: (context, child) {
-        return Directionality(
-          textDirection: TextDirection.rtl,
-          child: child!,
-        );
+        return Directionality(textDirection: TextDirection.rtl, child: child!);
       },
     );
   }

@@ -50,6 +50,11 @@ class ProfileView extends StatelessWidget {
                   icon: Icons.credit_card,
                   route: AppRoutes.paympa,
                 ),
+                ProfileItemData(
+                  title: 'تغيير المدينة',
+                  icon: Icons.map_outlined,
+                  route: AppRoutes.chooseCity,
+                ),
               ],
             ),
 

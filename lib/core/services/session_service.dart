@@ -1,8 +1,9 @@
+import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SessionService extends GetxService {
-  late SharedPreferences prefs;
+  late final SharedPreferences prefs;
 
   // ====== Keys ======
   static const tokenKey = "token";
@@ -11,18 +12,14 @@ class SessionService extends GetxService {
   static const userEmailKey = "user_email";
   static const userRoleKey = "user_role";
   static const userStatusKey = "user_status";
-
   static const guestKey = "is_guest";
-
   static const cityIdKey = "city_id";
   static const cityNameKey = "city_name";
-
   static const activeOrderIdKey = "active_order_id";
   static const activeOrderCreatedAtKey = "active_order_created_at";
-
   static const languageKey = "language";
 
-  // ====== Init ======
+  // ====== INIT ======
   Future<SessionService> init() async {
     prefs = await SharedPreferences.getInstance();
     return this;
@@ -54,23 +51,27 @@ class SessionService extends GetxService {
   String? get token => prefs.getString(tokenKey);
   String? get userId => prefs.getString(userIdKey);
   bool get isGuest => prefs.getBool(guestKey) ?? false;
-  bool get isLoggedIn => token != null;
+  bool get isLoggedIn => token != null && token!.isNotEmpty;
 
   // ====== USER DATA ======
   Future<void> saveUserName(String name) async =>
       await prefs.setString(userNameKey, name);
+
   String? get userName => prefs.getString(userNameKey);
 
   Future<void> saveUserEmail(String email) async =>
       await prefs.setString(userEmailKey, email);
+
   String? get userEmail => prefs.getString(userEmailKey);
 
   Future<void> saveUserRole(String role) async =>
       await prefs.setString(userRoleKey, role);
+
   String? get userRole => prefs.getString(userRoleKey);
 
   Future<void> saveUserStatus(String status) async =>
       await prefs.setString(userStatusKey, status);
+
   String? get userStatus => prefs.getString(userStatusKey);
 
   // ====== CITY ======
@@ -91,7 +92,9 @@ class SessionService extends GetxService {
   Future<void> saveActiveOrder(int orderId, DateTime createdAt) async {
     await prefs.setString(activeOrderIdKey, orderId.toString());
     await prefs.setString(
-        activeOrderCreatedAtKey, createdAt.toIso8601String());
+      activeOrderCreatedAtKey,
+      createdAt.toIso8601String(),
+    );
   }
 
   Map<String, dynamic>? get activeOrder {
@@ -115,16 +118,88 @@ class SessionService extends GetxService {
   // ====== LANGUAGE ======
   Future<void> saveLanguage(String code) async =>
       await prefs.setString(languageKey, code);
+
   String? get language => prefs.getString(languageKey);
 
   // ====== HEADERS ======
   Map<String, String> get headers {
-    if (token == null) return {};
+    if (token == null || token!.isEmpty) return {};
     return {
       "Authorization": "Bearer $token",
       "Accept": "application/json",
+      "Content-Type": "application/json",
     };
   }
+
+  // ====== FAVORITES ======
+  String _normalizeUserId(String? userId) {
+    final id = userId?.trim();
+    return (id == null || id.isEmpty) ? 'guest' : id;
+  }
+
+  String _favoritesKey(String? userId) =>
+      'favorites_${_normalizeUserId(userId)}';
+
+  String _favoritesPendingKey(String? userId) =>
+      'favorites_pending_${_normalizeUserId(userId)}';
+
+  Future<void> saveFavorites(
+    List<Map<String, dynamic>> favorites, {
+    String? userId,
+  }) async {
+    await prefs.setString(
+      _favoritesKey(userId),
+      jsonEncode(favorites),
+    );
+  }
+
+  List<Map<String, dynamic>> getFavorites({String? userId}) {
+    final json = prefs.getString(_favoritesKey(userId));
+    if (json == null) return [];
+    try {
+      final decoded = jsonDecode(json);
+      if (decoded is List) {
+        return decoded
+            .whereType<Map>()
+            .map((e) => Map<String, dynamic>.from(e))
+            .toList();
+      }
+    } catch (_) {}
+    return [];
+  }
+  // ====== FAVORITES PENDING ======
+
+Future<void> saveFavoritePending(
+  List<Map<String, dynamic>> pending, {
+  String? userId,
+}) async {
+  await prefs.setString(
+    _favoritesPendingKey(userId),
+    jsonEncode(pending),
+  );
+}
+
+List<Map<String, dynamic>> getFavoritePending({String? userId}) {
+  final json = prefs.getString(_favoritesPendingKey(userId));
+  if (json == null) return [];
+  try {
+    final decoded = jsonDecode(json);
+    if (decoded is List) {
+      return decoded
+          .whereType<Map>()
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList();
+    }
+  } catch (_) {}
+  return [];
+}
+
+Future<void> clearFavoritePending({String? userId}) async =>
+    await prefs.remove(_favoritesPendingKey(userId));
+
+
+  Future<void> clearFavorites({String? userId}) async =>
+      await prefs.remove(_favoritesKey(userId));
 
   // ====== CLEAR ALL ======
   Future<void> clearAll() async => await prefs.clear();

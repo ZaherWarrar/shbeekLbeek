@@ -88,6 +88,7 @@ class CartItemWidget extends StatelessWidget {
                   ],
                 ),
               ),
+
               Row(
                 children: [
                   QuantityButton(icon: Icons.remove, onTap: onDecrease),
@@ -102,7 +103,7 @@ class CartItemWidget extends StatelessWidget {
                     ),
                   ),
                   QuantityButton(icon: Icons.add, onTap: onIncrease),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 4),
                   IconButton(
                     onPressed: onDelete,
                     icon: const Icon(Icons.delete_outline),

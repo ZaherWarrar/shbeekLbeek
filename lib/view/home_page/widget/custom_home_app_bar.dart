@@ -33,7 +33,7 @@ class CustomDeliveryAppBar extends StatelessWidget
         ),
 
         padding: EdgeInsets.symmetric(
-          horizontal: screenWidth * 0.04, // نسبة من العرض
+          horizontal: screenWidth * 0.03, // نسبة من العرض
           vertical: 8,
         ),
         child: Row(
@@ -42,11 +42,6 @@ class CustomDeliveryAppBar extends StatelessWidget
             // ====== الجهة اليسار (الأيقونات) ======
             Row(
               children: [
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.notifications_none),
-                  color: Colors.black87,
-                ),
                 IconButton(
                   onPressed: () {},
                   icon: const Icon(Icons.search),

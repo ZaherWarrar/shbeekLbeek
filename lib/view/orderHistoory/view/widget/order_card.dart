@@ -7,11 +7,7 @@ class OrderCard extends StatelessWidget {
   final OrderHisModel order;
   final int index;
 
-  const OrderCard({
-    super.key,
-    required this.order,
-    required this.index,
-  });
+  const OrderCard({super.key, required this.order, required this.index});
 
   @override
   Widget build(BuildContext context) {
@@ -45,10 +41,7 @@ class OrderCard extends StatelessWidget {
                     color: AppColor().primaryColor.withOpacity(.12),
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: Icon(
-                    Icons.restaurant,
-                    color: AppColor().primaryColor,
-                  ),
+                  child: Icon(Icons.restaurant, color: AppColor().primaryColor),
                 ),
                 const SizedBox(width: 12),
                 Expanded(

@@ -42,8 +42,6 @@ class AppRoutes {
   static const String ordhis = '/OrderHistoryPage';
   static const String addrslis = '/Addresspage';
   static const String paympa = '/Paymentpage';
-  
-  
 
   static final routes = [
     GetPage(name: register, page: () => const RegisterView()),
@@ -82,10 +80,6 @@ class AppRoutes {
       page: () => AddressPage(),
       binding: AddressBinding(),
     ),
-    GetPage(
-      name: paympa,
-      page: () => PaymentPage(),
-      binding: PaymentBinding(),
-    ),
+    GetPage(name: paympa, page: () => PaymentPage(), binding: PaymentBinding()),
   ];
 }

@@ -48,7 +48,9 @@ class CustomDeliveryAppBar extends StatelessWidget
                   color: Colors.black87,
                 ),
                 IconButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Get.toNamed(AppRoutes.allShops);
+                  },
                   icon: const Icon(Icons.search),
                   color: Colors.black87,
                 ),

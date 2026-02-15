@@ -1,3 +1,4 @@
+import 'package:app/controller/choose_city/choose_city_controller.dart';
 import 'package:app/core/constant/routes/app_routes.dart';
 import 'package:app/view/city/widget/city_widget.dart';
 import 'package:app/view/city/widget/header_image.dart';
@@ -5,7 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class ChooseCity extends StatelessWidget {
-  const ChooseCity({super.key});
+  ChooseCity({super.key});
+  final ChooseCityController controller = Get.put(ChooseCityController());
 
   @override
   Widget build(BuildContext context) {
@@ -47,8 +49,9 @@ class ChooseCity extends StatelessWidget {
                   cityId: 1,
                   imageUrl: "https://img.icons8.com/color/1200/castle.jpg",
                   title: "حماه",
-                  onTap: () {
-                    Get.toNamed(AppRoutes.home);
+                  onTap: () async {
+                    await controller.selectCity(id: 1, name: "حماه");
+                    Get.offAllNamed(AppRoutes.start);
                   },
                 ),
 
@@ -59,6 +62,10 @@ class ChooseCity extends StatelessWidget {
                   imageUrl:
                       "https://image.shutterstock.com/image-vector/clock-tower-vector-illustration-on-260nw-1597739923.jpg",
                   title: "حمص",
+                  onTap: () async {
+                    await controller.selectCity(id: 3, name: "حمص");
+                    Get.offAllNamed(AppRoutes.start);
+                  },
                 ),
 
                 const SizedBox(height: 24), // مسافة أسفل للراحة عند التمرير

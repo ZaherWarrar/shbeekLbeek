@@ -30,15 +30,13 @@ class CartView extends StatelessWidget {
         appBar: CustomAppBar(title: "السلة"),
         body: GetBuilder<OrderController>(
           builder: (orderController) {
-            // التحقق من وجود طلب نشط
-            // loadActiveOrder يتم استدعاؤه في onInit() فقط
+            // حالة وجود طلب نشط
             if (orderController.hasActiveOrder() &&
                 orderController.currentOrderId != null) {
-              // عرض حالة الطلب النشط
               return const ActiveOrderWidget();
             }
 
-            // عرض السلة العادية
+            // عرض السلة
             return GetBuilder<CartController>(
               builder: (controller) {
                 if (controller.isEmpty) {
@@ -61,7 +59,7 @@ class CartView extends StatelessWidget {
                             ),
                           ),
 
-                          // عرض المنتجات من Controller
+                          // عناصر السلة
                           ...controller.cartItems
                               .where((item) => item['productId'] != null)
                               .map((item) {
@@ -69,13 +67,15 @@ class CartView extends StatelessWidget {
                                 final price = item['price'] is int
                                     ? item['price'] as int
                                     : (item['price'] as double?)?.toInt() ?? 0;
+
                                 final quantity = item['quantity'] is int
                                     ? item['quantity'] as int
                                     : (item['quantity'] as double?)?.toInt() ??
                                           1;
 
-                                if (productId == null)
+                                if (productId == null) {
                                   return const SizedBox.shrink();
+                                }
 
                                 return CartItemWidget(
                                   title:
@@ -101,7 +101,7 @@ class CartView extends StatelessWidget {
 
                           const SizedBox(height: 10),
 
-                          // حقل الملاحظات
+                          // ملاحظات الطلب
                           TextField(
                             controller: controller.notesController,
                             maxLines: 3,
@@ -161,7 +161,9 @@ class CartView extends StatelessWidget {
                             "الخصم",
                             _formatPrice(controller.calculatedDiscount),
                           ),
+
                           const Divider(),
+
                           SummaryRowWidget(
                             "المجموع الإجمالي",
                             _formatPrice(controller.total),
@@ -186,7 +188,6 @@ class CartView extends StatelessWidget {
                           ),
                         ),
                         onPressed: () {
-                          // التحقق من وجود منتجات في السلة
                           if (controller.isEmpty) {
                             Get.snackbar(
                               "تنبيه",
@@ -196,10 +197,8 @@ class CartView extends StatelessWidget {
                             return;
                           }
 
-                          // الحصول على الملاحظات
                           final notes = controller.notesController.text.trim();
 
-                          // إنشاء الطلب (استخدام orderController من GetBuilder الخارجي)
                           orderController.createOrder(
                             notes.isEmpty ? null : notes,
                           );

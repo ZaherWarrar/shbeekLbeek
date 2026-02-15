@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class OrderHistoryPage extends StatelessWidget {
-  OrderHistoryPage({super.key});
+  const OrderHistoryPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -22,6 +22,7 @@ class OrderHistoryPage extends StatelessWidget {
         backgroundColor: AppColor().backgroundColor,
         elevation: 0,
         iconTheme: IconThemeData(color: AppColor().titleColor),
+        automaticallyImplyLeading: false,
       ),
       body: const OrderList(),
     );

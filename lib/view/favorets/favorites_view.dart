@@ -36,19 +36,6 @@ class FavoritesView extends StatelessWidget {
         ),
         centerTitle: true,
         actions: [
-          // Padding(
-          //   padding: EdgeInsets.symmetric(horizontal: 12),
-          //   child: IconButton(
-          //     onPressed: () {
-          //       Get.back();
-          //     },
-          //     icon: Icon(
-          //       Icons.arrow_forward_ios,
-          //       color: Colors.black,
-          //       size: 18,
-          //     ),
-          //   ),
-          // ),
         ],
       ),
       body: Column(

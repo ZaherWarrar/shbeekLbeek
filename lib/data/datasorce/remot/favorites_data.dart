@@ -1,15 +1,17 @@
 import 'package:app/core/class/crud.dart';
-import 'package:app/core/services/shaerd_preferances.dart';
+import 'package:app/core/services/session_service.dart';
 import 'package:app/link_api.dart';
+import 'package:get/get.dart';
 
 class FavoritesData {
   Crud crud;
-  UserPreferences userPreferences = UserPreferences();
+  SessionService userPreferences = Get.find<SessionService>()
+;
 
   FavoritesData(this.crud);
 
   Future<Map<String, String>> _getHeaders() async {
-    final token = await userPreferences.getToken();
+    final token =  userPreferences.token;
     final headers = <String, String>{
       "Content-Type": "application/json",
       "Accept": "application/json",

@@ -27,9 +27,10 @@ class OtpView extends GetView<OtpController> {
               ),
               textAlign: TextAlign.center,
             ),
+
             const SizedBox(height: 30),
 
-            //=========الباكيج تبعيت  otp ====
+            //========= حقل إدخال OTP =========
             Directionality(
               textDirection: TextDirection.ltr,
               child: Pinput(
@@ -50,10 +51,13 @@ class OtpView extends GetView<OtpController> {
                 ),
               ),
             ),
-            SizedBox(height: 50),
+
+            const SizedBox(height: 50),
+
+            //========= زر التحقق =========
             Obx(() {
               return ElevatedButton(
-                onPressed: controller.isloading.value
+                onPressed: controller.isLoading.value
                     ? null
                     : () => controller.verifyOtp(),
                 style: ElevatedButton.styleFrom(
@@ -61,17 +65,19 @@ class OtpView extends GetView<OtpController> {
                   foregroundColor: AppColor().textButomColor,
                   minimumSize: const Size(double.infinity, 50),
                 ),
-                child: controller.isloading.value
+                child: controller.isLoading.value
                     ? const CircularProgressIndicator(color: Colors.white)
                     : Text('20'.tr),
               );
             }),
+
             const SizedBox(height: 20),
 
+            //========= إعادة إرسال OTP =========
             TextButton(
               onPressed: () {
                 Get.snackbar("21".tr, "22".tr);
-                //=========api اعادة ارسال الotp==== "22".tr
+                // TODO: استدعاء API لإعادة إرسال OTP
               },
               child: Text(
                 "23".tr,

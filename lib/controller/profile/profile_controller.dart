@@ -1,5 +1,5 @@
 import 'package:app/core/constant/routes/app_routes.dart';
-import 'package:app/core/services/shaerd_preferances.dart';
+import 'package:app/core/services/session_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -11,7 +11,7 @@ class ProfileController extends GetxController {
   final userStatus = ''.obs;
   final isLoggedIn = false.obs;
 
-  final UserPreferences _prefs = UserPreferences();
+  final SessionService session = Get.find<SessionService>();
 
   @override
   void onInit() {
@@ -23,52 +23,44 @@ class ProfileController extends GetxController {
   @override
   void onReady() {
     super.onReady();
-    // تحديث حالة تسجيل الدخول عند العودة للصفحة
     checkLoginStatus();
     loadUserData();
   }
 
+  // ================================
   // التحقق من حالة تسجيل الدخول
-  Future<void> checkLoginStatus() async {
-    final token = await _prefs.getToken();
-    isLoggedIn.value = token != null && token.isNotEmpty;
+  // ================================
+  void checkLoginStatus() {
+    isLoggedIn.value = session.token != null && session.token!.isNotEmpty;
   }
 
-  // تحميل بيانات المستخدم من SharedPreferences
+  // ================================
+  // تحميل بيانات المستخدم
+  // ================================
   void loadUserData() {
-    final name = _prefs.getUserName();
-    final userEmail = _prefs.getUserEmail();
-    final id = _prefs.getUserId();
-
-    userName.value = name ?? 'مستخدم';
-    email.value = userEmail ?? '';
-    userId.value = id ?? '';
-
-    // تحميل role و status بشكل async
-    _prefs.getUserRole().then((role) {
-      userRole.value = role ?? '';
-    });
-
-    _prefs.getUserStatus().then((status) {
-      userStatus.value = status ?? '';
-    });
+    userName.value = session.userName ?? 'مستخدم';
+    email.value = session.userEmail ?? '';
+    userId.value = session.userId ?? '';
+    userRole.value = session.userRole ?? '';
+    userStatus.value = session.userStatus ?? '';
   }
 
+  // ================================
   // تسجيل الدخول أو الخروج
+  // ================================
   Future<void> handleAuthAction() async {
     if (isLoggedIn.value) {
-      // تسجيل الخروج
       await logout();
     } else {
-      // تسجيل الدخول
       Get.toNamed(AppRoutes.login);
     }
   }
 
+  // ================================
   // تسجيل الخروج
+  // ================================
   Future<void> logout() async {
     try {
-      // عرض dialog تأكيد
       final confirmed = await Get.dialog<bool>(
         AlertDialog(
           title: const Text('تسجيل الخروج'),
@@ -90,13 +82,13 @@ class ProfileController extends GetxController {
       );
 
       if (confirmed == true) {
-        // مسح جميع البيانات من SharedPreferences (يشمل token, user data, cart, orders)
-        await _prefs.clearAll();
+        // مسح بيانات الجلسة فقط
+        await session.logout();
+        await session.clearCity();
+        await session.clearActiveOrder();
 
-        // تحديث حالة تسجيل الدخول
         isLoggedIn.value = false;
 
-        // الانتقال إلى صفحة تسجيل الدخول
         Get.offAllNamed(AppRoutes.login);
 
         Get.snackbar(

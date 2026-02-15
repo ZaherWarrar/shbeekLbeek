@@ -33,7 +33,7 @@ class CustomDeliveryAppBar extends StatelessWidget
         ),
 
         padding: EdgeInsets.symmetric(
-          horizontal: screenWidth * 0.04, // نسبة من العرض
+          horizontal: screenWidth * 0.03, // نسبة من العرض
           vertical: 8,
         ),
         child: Row(

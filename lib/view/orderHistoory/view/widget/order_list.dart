@@ -1,4 +1,5 @@
 import 'package:app/core/shared/custom_refresh.dart';
+import 'package:app/view/orderDetails/order_details_view.dart';
 import 'package:app/view/orderHistoory/controller/order_his_controller.dart';
 import 'package:app/view/orderHistoory/model/order_his_model.dart';
 import 'package:app/view/orderHistoory/view/widget/order_card.dart';
@@ -37,7 +38,10 @@ class OrderList extends GetView<OrderHisController> {
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 90),
                   itemCount: orders.length,
                   itemBuilder: (context, index) {
-                    return OrderCard(order: orders[index], index: index);
+                    return GestureDetector(
+                      onTap: () => Get.to(OrderDetailsView()),
+                      child: OrderCard(order: orders[index], index: index),
+                    );
                   },
                 ),
         );

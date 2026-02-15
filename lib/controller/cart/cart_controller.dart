@@ -1,4 +1,4 @@
-import 'package:app/core/services/shaerd_preferances.dart';
+import 'package:app/core/services/cart_preferences.dart';
 import 'package:app/data/datasorce/model/item_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -21,14 +21,16 @@ class CartController extends GetxController {
   double deliveryFee = 10.0; // قيمة افتراضية
 
   // UserPreferences للحفظ
-  final UserPreferences _prefs = UserPreferences();
+ final CartPreferences _prefs = CartPreferences();
 
-  @override
-  void onInit() {
-    super.onInit();
-    // تحميل السلة من SharedPreferences
+
+ @override
+void onInit() {
+  super.onInit();
+  _prefs.init().then((_) {
     _loadCart();
-  }
+  });
+}
 
   void _loadCart() {
     cartItems = _prefs.getCart();

@@ -1,5 +1,6 @@
 import 'package:app/core/class/statusrequest.dart';
 import 'package:app/core/function/handelingdata.dart';
+import 'package:app/core/services/session_service.dart';
 import 'package:app/data/datasorce/model/home_section_model.dart';
 import 'package:app/data/datasorce/model/item_model.dart';
 import 'package:app/data/datasorce/model/main_categores.dart';
@@ -22,6 +23,8 @@ abstract class HomeController extends GetxController {
 }
 
 class HomeControllerImp extends HomeController {
+  final session = Get.find<SessionService>();
+  late final int cityId = session.cityId??1;
   // ============= Slider =================================================
   SliderData sliderData = SliderData(Get.find());
   StatusRequest sliderStat = StatusRequest.none;
@@ -58,7 +61,7 @@ class HomeControllerImp extends HomeController {
   Future<void> fetchSliders() async {
     sliderStat = StatusRequest.loading;
     update();
-    var response = await sliderData.sliderData(1);
+    var response = await sliderData.sliderData(cityId);
     sliderStat = handelingData(response);
     if (sliderStat == StatusRequest.success) {
       List<dynamic> sliderList = [];
@@ -126,7 +129,7 @@ class HomeControllerImp extends HomeController {
   Future<void> fetchMainCategores() async {
     mainCatStat = StatusRequest.loading;
     update();
-    var response = await mainCategoresData.mainCategoresData(1);
+    var response = await mainCategoresData.mainCategoresData(cityId);
     mainCatStat = handelingData(response);
     if (mainCatStat == StatusRequest.success) {
       if (response is List) {
@@ -179,7 +182,7 @@ class HomeControllerImp extends HomeController {
     sectionState = StatusRequest.loading;
     update();
 
-    var response = await homeSectionData.sectionData(1, sectionName);
+    var response = await homeSectionData.sectionData(cityId, sectionName);
     sectionState = handelingData(response);
 
     if (sectionState == StatusRequest.success && response is List) {
@@ -196,7 +199,7 @@ class HomeControllerImp extends HomeController {
   Future<void> fetchAllItem() async {
     allItemState = StatusRequest.loading;
     update();
-    var response = await allItemData.allItemData(1);
+    var response = await allItemData.allItemData(cityId);
     allItemState = handelingData(response);
     if (allItemState == StatusRequest.success) {
       List<dynamic> itemList = [];

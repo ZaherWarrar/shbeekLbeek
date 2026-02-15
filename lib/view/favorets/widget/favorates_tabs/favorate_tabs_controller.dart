@@ -1,13 +1,13 @@
 import 'package:app/core/class/statusrequest.dart';
 import 'package:app/core/function/handelingdata.dart';
-import 'package:app/core/services/shaerd_preferances.dart';
+import 'package:app/core/services/session_service.dart';
 import 'package:app/data/datasorce/remot/favorites_data.dart';
 import 'package:app/view/favorets/widget/favorates_tabs/favorates_tabs_model.dart';
 import 'package:get/get.dart';
 
 class FavoritesController extends GetxController {
   FavoritesData favoritesData = FavoritesData(Get.find());
-  final UserPreferences _prefs = UserPreferences();
+  final SessionService _prefs = Get.find();
 
   StatusRequest favoriteState = StatusRequest.none;
   var restaurants = <RestaurantModel>[].obs;
@@ -32,12 +32,9 @@ class FavoritesController extends GetxController {
   }
 
   Future<void> syncWithServer() async {
-    final token = await _prefs.getToken();
-    final userId = _prefs.getUserId();
-    if (token == null ||
-        token.isEmpty ||
-        userId == null ||
-        userId.isEmpty) {
+    final token = _prefs.token;
+    final userId = _prefs.userId;
+    if (token == null || token.isEmpty || userId == null || userId.isEmpty) {
       favoriteState = StatusRequest.success;
       update();
       return;
@@ -57,9 +54,9 @@ class FavoritesController extends GetxController {
     final status = handelingData(response);
 
     if (status == StatusRequest.success) {
-      final favorites = _extractFavorites(response)
-          .map((item) => RestaurantModel.fromFavoriteJson(item))
-          .toList();
+      final favorites = _extractFavorites(
+        response,
+      ).map((item) => RestaurantModel.fromFavoriteJson(item)).toList();
       await _mergeWithServer(favorites, userId);
       await _processPending(userId);
     }
@@ -118,24 +115,39 @@ class FavoritesController extends GetxController {
     final isLoggedIn = await _canSyncWithServer();
 
     if (existingIndex != -1) {
-      final removedItem = restaurants.removeAt(existingIndex);
-      removedItem.isFavorite.value = false;
-      update();
-      await _saveLocalFavorites(userId, restaurants);
-      await _enqueuePending(userId, _actionRemove, type, id);
+      if (existingIndex != -1) {
+        final confirmed = await Get.defaultDialog<bool>(
+          title: "تأكيد الحذف",
+          middleText: "هل أنت متأكد أنك تريد إزالة هذا العنصر من المفضلة؟",
+          textConfirm: "نعم",
+          textCancel: "إلغاء",
+          confirmTextColor: Get.theme.colorScheme.onPrimary,
+          onConfirm: () {
+            Get.back(result: true);
+          },
+          onCancel: () {
+            Get.back(result: false);
+          },
+        );
 
-      if (isLoggedIn) {
-        final success = await _tryRemoveFromServer(type, id);
-        if (success) {
-          await _removePending(userId, type, id);
-        } else {
-          Get.snackbar(
-            'تنبيه',
-            'تمت الإزالة محلياً وسيتم المزامنة لاحقاً',
-          );
+        if (confirmed != true) return;
+
+        final removedItem = restaurants.removeAt(existingIndex);
+        removedItem.isFavorite.value = false;
+        update();
+        await _saveLocalFavorites(userId, restaurants);
+        await _enqueuePending(userId, _actionRemove, type, id);
+
+        if (isLoggedIn) {
+          final success = await _tryRemoveFromServer(type, id);
+          if (success) {
+            await _removePending(userId, type, id);
+          } else {
+            Get.snackbar('تنبيه', 'تمت الإزالة محلياً وسيتم المزامنة لاحقاً');
+          }
         }
+        return;
       }
-      return;
     }
 
     if (item == null) {
@@ -160,7 +172,7 @@ class FavoritesController extends GetxController {
   }
 
   String _currentUserId() {
-    final id = _prefs.getUserId();
+    final id = _prefs.userId;
     return (id == null || id.isEmpty) ? 'guest' : id;
   }
 
@@ -366,8 +378,8 @@ class FavoritesController extends GetxController {
   }
 
   Future<bool> _canSyncWithServer() async {
-    final token = await _prefs.getToken();
-    final userId = _prefs.getUserId();
+    final token = _prefs.token;
+    final userId = _prefs.userId;
     return token != null &&
         token.isNotEmpty &&
         userId != null &&

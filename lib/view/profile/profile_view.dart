@@ -35,11 +35,11 @@ class ProfileView extends StatelessWidget {
             ProfileSection(
               title: 'الحساب',
               items: [
-                ProfileItemData(
-                  title: 'سجل الطلبات',
-                  icon: Icons.history,
-                  route: AppRoutes.ordhis,
-                ),
+                // ProfileItemData(
+                //   title: 'سجل الطلبات',
+                //   icon: Icons.history,
+                //   route: AppRoutes.ordhis,
+                // ),
                 ProfileItemData(
                   title: 'العناوين المحفوظة',
                   icon: Icons.location_on_outlined,
@@ -49,6 +49,11 @@ class ProfileView extends StatelessWidget {
                   title: 'طرق الدفع',
                   icon: Icons.credit_card,
                   route: AppRoutes.paympa,
+                ),
+                ProfileItemData(
+                  title: 'تغيير المدينة',
+                  icon: Icons.map_outlined,
+                  route: AppRoutes.chooseCity,
                 ),
               ],
             ),

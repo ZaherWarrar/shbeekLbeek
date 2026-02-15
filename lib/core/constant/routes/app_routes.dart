@@ -3,6 +3,7 @@ import 'package:app/binding/cart_binding.dart';
 import 'package:app/binding/order_binding.dart';
 import 'package:app/binding/otp_binding.dart';
 import 'package:app/binding/shop_details_binding.dart';
+import 'package:app/core/middleware/choose_city_middleware.dart';
 import 'package:app/view/Cart/cart_view.dart';
 import 'package:app/view/about_app/about_app.dart';
 import 'package:app/view/adress/binding/address_binding.dart';
@@ -22,6 +23,7 @@ import 'package:app/view/payment/view/payment_view.dart';
 import 'package:app/view/privacy/privacy_view.dart';
 import 'package:app/view/shopDetails/shop_details_view.dart';
 import 'package:app/view/termsPage/terms_pages.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class AppRoutes {
@@ -42,8 +44,15 @@ class AppRoutes {
   static const String ordhis = '/OrderHistoryPage';
   static const String addrslis = '/Addresspage';
   static const String paympa = '/Paymentpage';
+  static const String start = '/start';
 
   static final routes = [
+    GetPage(
+      name: start,
+      page: () => const SizedBox(),
+      middlewares: [AppMiddleware()],
+    ),
+
     GetPage(name: register, page: () => const RegisterView()),
     GetPage(binding: OtpBinding(), name: otp, page: () => const OtpView()),
     GetPage(name: login, page: () => LoginView()),

@@ -2,29 +2,28 @@ import 'package:app/controller/cart/cart_controller.dart';
 import 'package:app/core/class/statusrequest.dart';
 import 'package:app/core/constant/routes/app_routes.dart';
 import 'package:app/core/function/handelingdata.dart';
-import 'package:app/core/services/shaerd_preferances.dart';
+import 'package:app/core/services/session_service.dart';
 import 'package:app/data/datasorce/remot/order_data.dart';
 import 'package:get/get.dart';
 import 'package:app/view/adress/controller/address_controller.dart';
 
 class OrderController extends GetxController {
-  OrderData orderData = OrderData(Get.find());
-  UserPreferences userPreferences = UserPreferences();
+  final OrderData orderData = OrderData(Get.find());
+  final SessionService session = Get.find<SessionService>();
 
   StatusRequest orderState = StatusRequest.none;
+
   int? currentOrderId;
   DateTime? orderCreatedAt;
 
+  // ================================
   // إنشاء طلب جديد
+  // ================================
   Future<void> createOrder(String? notes) async {
     // التحقق من وجود token
-    final token = await userPreferences.getToken();
+    final token = session.token;
     if (token == null || token.isEmpty) {
-      Get.snackbar(
-        "تنبيه",
-        "يجب تسجيل الدخول أولاً",
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      Get.snackbar("تنبيه", "يجب تسجيل الدخول أولاً");
       Get.toNamed(AppRoutes.login);
       return;
     }
@@ -32,7 +31,7 @@ class OrderController extends GetxController {
     // الحصول على بيانات السلة
     final cartController = Get.find<CartController>();
     if (cartController.isEmpty) {
-      Get.snackbar("تنبيه", "السلة فارغة", snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar("تنبيه", "السلة فارغة");
       return;
     }
 
@@ -40,12 +39,11 @@ class OrderController extends GetxController {
     List<Map<String, dynamic>> items = cartController.cartItems
         .where((item) => item['productId'] != null)
         .map((item) {
-          return {
-            "product": {"id": item['productId'] as int},
-            "quantity": item['quantity'] as int,
-          };
-        })
-        .toList();
+      return {
+        "product": {"id": item['productId'] as int},
+        "quantity": item['quantity'] as int,
+      };
+    }).toList();
 
     // إعداد بيانات الطلب
     final addressController = Get.find<AddressController>();
@@ -70,7 +68,6 @@ class OrderController extends GetxController {
       "longitude": longitude,
     };
 
-    // إضافة الملاحظات إذا كانت موجودة
     if (notes != null && notes.trim().isNotEmpty) {
       orderDataMap["notes"] = notes.trim();
     }
@@ -82,55 +79,41 @@ class OrderController extends GetxController {
       var response = await orderData.createOrderData(orderDataMap);
       orderState = handelingData(response);
 
-      // التحقق من نوع response
       if (response is StatusRequest) {
-        // إذا كان StatusRequest، يعني فشل
         orderState = response;
         _handleOrderError(orderState);
       } else if (response is Map<String, dynamic>) {
-        // إذا كان Map، يعني نجاح
         orderState = StatusRequest.success;
+
         currentOrderId = response['order_id'] as int?;
         orderCreatedAt = DateTime.now();
 
-        if (currentOrderId != null && orderCreatedAt != null) {
-          // حفظ الطلب النشط في SharedPreferences
-          await userPreferences.saveActiveOrder(
-            currentOrderId!,
-            orderCreatedAt!,
-          );
+        if (currentOrderId != null) {
+          // حفظ الطلب النشط في SessionService
+          await session.saveActiveOrder(currentOrderId!, orderCreatedAt!);
+
           // الانتقال لصفحة التأكيد
-          Get.toNamed(AppRoutes.orderConfirmation, arguments: currentOrderId);
+          Get.toNamed(AppRoutes.orderConfirmation,
+              arguments: currentOrderId);
         } else {
-          Get.snackbar(
-            "خطأ",
-            "فشل في الحصول على رقم الطلب",
-            snackPosition: SnackPosition.BOTTOM,
-          );
+          Get.snackbar("خطأ", "فشل في الحصول على رقم الطلب");
           orderState = StatusRequest.failure;
         }
       } else {
-        // حالة غير متوقعة
         orderState = StatusRequest.failure;
-        Get.snackbar(
-          "خطأ",
-          "فشل في إنشاء الطلب. يرجى المحاولة مرة أخرى",
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        Get.snackbar("خطأ", "فشل في إنشاء الطلب");
       }
     } catch (e) {
       orderState = StatusRequest.failure;
-      Get.snackbar(
-        "خطأ",
-        "حدث خطأ غير متوقع: ${e.toString()}",
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      Get.snackbar("خطأ", "حدث خطأ: ${e.toString()}");
     }
 
     update();
   }
 
+  // ================================
   // تأكيد الطلب
+  // ================================
   Future<void> confirmOrder(int orderId) async {
     orderState = StatusRequest.loading;
     update();
@@ -139,45 +122,35 @@ class OrderController extends GetxController {
       var response = await orderData.confirmOrderData(orderId);
 
       if (response is StatusRequest) {
-        // فشل
         orderState = response;
         _handleOrderError(orderState);
       } else {
-        // نجاح
         orderState = StatusRequest.success;
-        // مسح الطلب النشط من SharedPreferences
-        await userPreferences.clearActiveOrder();
-        // مسح السلة بعد التأكيد الناجح
+
+        // مسح الطلب النشط
+        await session.clearActiveOrder();
+
+        // مسح السلة
         final cartController = Get.find<CartController>();
         cartController.clearCart();
 
-        // إعادة تعيين المتغيرات
         currentOrderId = null;
         orderCreatedAt = null;
 
-        Get.snackbar(
-          "نجاح",
-          "تم تأكيد الطلب بنجاح",
-          snackPosition: SnackPosition.BOTTOM,
-          duration: const Duration(seconds: 3),
-        );
-
-        // الانتقال للصفحة الرئيسية
+        Get.snackbar("نجاح", "تم تأكيد الطلب بنجاح");
         Get.offAllNamed(AppRoutes.home);
       }
     } catch (e) {
       orderState = StatusRequest.failure;
-      Get.snackbar(
-        "خطأ",
-        "حدث خطأ: ${e.toString()}",
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      Get.snackbar("خطأ", "حدث خطأ: ${e.toString()}");
     }
 
     update();
   }
 
+  // ================================
   // إلغاء الطلب
+  // ================================
   Future<void> cancelOrder(int orderId) async {
     orderState = StatusRequest.loading;
     update();
@@ -186,145 +159,112 @@ class OrderController extends GetxController {
       var response = await orderData.cancelOrderData(orderId);
 
       if (response is StatusRequest) {
-        // فشل
         orderState = response;
         _handleOrderError(orderState);
       } else {
-        // نجاح
         orderState = StatusRequest.success;
-        // مسح الطلب النشط من SharedPreferences
-        await userPreferences.clearActiveOrder();
-        Get.snackbar(
-          "تم الإلغاء",
-          "تم إلغاء الطلب بنجاح",
-          snackPosition: SnackPosition.BOTTOM,
-          duration: const Duration(seconds: 3),
-        );
 
-        // إعادة تعيين المتغيرات
+        await session.clearActiveOrder();
+
         currentOrderId = null;
         orderCreatedAt = null;
 
-        // العودة للصفحة الرئيسية
+        Get.snackbar("تم الإلغاء", "تم إلغاء الطلب بنجاح");
         Get.offAllNamed(AppRoutes.home);
       }
     } catch (e) {
       orderState = StatusRequest.failure;
-      Get.snackbar(
-        "خطأ",
-        "حدث خطأ: ${e.toString()}",
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      Get.snackbar("خطأ", "حدث خطأ: ${e.toString()}");
     }
 
     update();
   }
 
-  // التحقق من إمكانية الإلغاء (خلال 10 دقائق)
-  bool canCancelOrder() {
-    if (orderCreatedAt == null) return false;
-    final now = DateTime.now();
-    final difference = now.difference(orderCreatedAt!);
-    return difference.inMinutes < 10;
-  }
-
-  // الحصول على الوقت المتبقي للإلغاء (بالثواني)
-  int getRemainingCancelSeconds() {
-    if (orderCreatedAt == null) return 0;
-    final now = DateTime.now();
-    final difference = now.difference(orderCreatedAt!);
-    final totalSeconds = 10 * 60; // 10 دقائق بالثواني
-    final remaining = totalSeconds - difference.inSeconds;
-    return remaining > 0 ? remaining : 0;
-  }
-
-  // تحميل الطلب النشط من SharedPreferences
+  // ================================
+  // تحميل الطلب النشط
+  // ================================
   void loadActiveOrder() {
-    final activeOrder = userPreferences.getActiveOrder();
+    final activeOrder = session.activeOrder;
+
     if (activeOrder != null) {
-      currentOrderId = activeOrder['orderId'] as int?;
-      orderCreatedAt = activeOrder['createdAt'] as DateTime?;
+      currentOrderId = activeOrder['orderId'];
+      orderCreatedAt = activeOrder['createdAt'];
       update();
     }
   }
 
-  // التحقق من العداد والتأكيد التلقائي
+  // ================================
+  // التحقق من المؤقت
+  // ================================
   Future<void> checkTimerAndAutoConfirm() async {
-    // تحميل الطلب النشط
     loadActiveOrder();
 
-    if (currentOrderId == null || orderCreatedAt == null) {
-      return;
-    }
+    if (currentOrderId == null || orderCreatedAt == null) return;
 
-    // حساب الوقت المتبقي
     final remainingSeconds = getRemainingCancelSeconds();
 
-    // إذا انتهى الوقت، تأكيد الطلب تلقائياً
     if (remainingSeconds <= 0) {
       await confirmOrder(currentOrderId!);
     }
   }
 
+  // ================================
   // التحقق من وجود طلب نشط
+  // ================================
   bool hasActiveOrder() {
-    return userPreferences.hasActiveOrder();
+    return session.hasActiveOrder;
+  }
+
+  // ================================
+  // حساب الوقت المتبقي للإلغاء
+  // ================================
+  int getRemainingCancelSeconds() {
+    if (orderCreatedAt == null) return 0;
+
+    final now = DateTime.now();
+    final difference = now.difference(orderCreatedAt!);
+
+    const totalSeconds = 10 * 60;
+    final remaining = totalSeconds - difference.inSeconds;
+
+    return remaining > 0 ? remaining : 0;
   }
 
   @override
   void onInit() {
     super.onInit();
-    // تحميل الطلب النشط عند بدء التطبيق
     loadActiveOrder();
-    // التحقق من العداد والتأكيد التلقائي
     checkTimerAndAutoConfirm();
   }
 
-  // معالجة أخطاء الطلب
+  // ================================
+  // معالجة الأخطاء
+  // ================================
   void _handleOrderError(StatusRequest status) {
     switch (status) {
       case StatusRequest.unauthorized:
-        Get.snackbar(
-          "خطأ",
-          "غير مصرح لك. يرجى تسجيل الدخول مرة أخرى",
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        Get.snackbar("خطأ", "غير مصرح لك. يرجى تسجيل الدخول");
         Get.toNamed(AppRoutes.login);
         break;
+
       case StatusRequest.forbidden:
-        Get.snackbar(
-          "خطأ",
-          "غير مسموح لك بهذا الإجراء",
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        Get.snackbar("خطأ", "غير مسموح لك بهذا الإجراء");
         break;
+
       case StatusRequest.notFound:
-        Get.snackbar(
-          "خطأ",
-          "الطلب غير موجود",
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        Get.snackbar("خطأ", "الطلب غير موجود");
         break;
+
       case StatusRequest.serverfailure:
-        Get.snackbar(
-          "خطأ",
-          "حدث خطأ في الخادم. يرجى المحاولة لاحقاً",
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        Get.snackbar("خطأ", "خطأ في الخادم");
         break;
+
       case StatusRequest.offlinefailure:
-        Get.snackbar(
-          "خطأ",
-          "لا يوجد اتصال بالإنترنت",
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        Get.snackbar("خطأ", "لا يوجد اتصال بالإنترنت");
         break;
+
       default:
-        Get.snackbar(
-          "خطأ",
-          "فشل في العملية. يرجى المحاولة مرة أخرى",
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        Get.snackbar("خطأ", "فشل في العملية");
     }
   }
 }

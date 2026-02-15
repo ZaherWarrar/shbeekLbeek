@@ -1,29 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:app/core/constant/app_color.dart';
-import 'package:app/main.dart';
 
+/// الثيم الإنجليزي
 ThemeData themeEnglish = ThemeData(
-    fontFamily: "swisscki",
-    appBarTheme: AppBarTheme(
-        foregroundColor: AppColor().backgroundColor,
-        surfaceTintColor: AppColor().backgroundColor,
-        backgroundColor: AppColor().backgroundColor,
-        elevation: 0.0,
-        titleTextStyle: TextStyle(
-            fontFamily: "swisscki",
-            color: AppColor().titleColor,
-            fontSize: w * 0.08,
-            fontWeight: FontWeight.bold)));
+  fontFamily: "swisscki",
+  appBarTheme: AppBarTheme(
+    foregroundColor: AppColor().backgroundColor,
+    surfaceTintColor: AppColor().backgroundColor,
+    backgroundColor: AppColor().backgroundColor,
+    elevation: 0.0,
+    titleTextStyle: TextStyle(
+      fontFamily: "swisscki",
+      color: AppColor().titleColor,
+      fontSize: 22, // ثابت بدل w * 0.08
+      fontWeight: FontWeight.bold,
+    ),
+  ),
+);
+
+/// الثيم العربي
 ThemeData themeArabec = ThemeData(
-    fontFamily: "Sukar",
-    textTheme: TextTheme(titleLarge: TextStyle()),
-    appBarTheme: AppBarTheme(
-        foregroundColor: AppColor().backgroundColor,
-        surfaceTintColor: AppColor().backgroundColor,
-        backgroundColor: AppColor().backgroundColor,
-        elevation: 0.0,
-        titleTextStyle: TextStyle(
-            fontFamily: "Sukar",
-            color: AppColor().titleColor,
-            fontSize: w * 0.08,
-            fontWeight: FontWeight.bold)));
+  fontFamily: "Sukar",
+  textTheme: const TextTheme(
+    titleLarge: TextStyle(),
+  ),
+  appBarTheme: AppBarTheme(
+    foregroundColor: AppColor().backgroundColor,
+    surfaceTintColor: AppColor().backgroundColor,
+    backgroundColor: AppColor().backgroundColor,
+    elevation: 0.0,
+    titleTextStyle: TextStyle(
+      fontFamily: "Sukar",
+      color: AppColor().titleColor,
+      fontSize: 22, // ثابت بدل w * 0.08
+      fontWeight: FontWeight.bold,
+    ),
+  ),
+);

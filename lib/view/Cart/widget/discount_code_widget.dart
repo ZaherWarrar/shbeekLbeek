@@ -64,25 +64,60 @@ class DiscountCodeWidget extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    onPressed: () {
-                      controller.applyDiscount();
-                    },
-                    child: const Text(
-                      "تطبيق",
-                      style: TextStyle(color: Colors.orange),
-                    ),
+                    onPressed: controller.isCheckingCoupon
+                        ? null
+                        : () => controller.applyDiscount(),
+                    child: controller.isCheckingCoupon
+                        ? SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.orange,
+                            ),
+                          )
+                        : const Text(
+                            "تطبيق",
+                            style: TextStyle(color: Colors.orange),
+                          ),
                   ),
               ],
             ),
-            if (hasDiscount && controller.calculatedDiscount > 0)
+            if (controller.couponMessage != null &&
+                controller.couponMessage!.isNotEmpty)
               Padding(
-                padding: const EdgeInsets.only(top: 8),
+                padding: const EdgeInsets.only(top: 6),
                 child: Row(
                   children: [
-                    Icon(Icons.check_circle, color: Colors.green, size: 16),
+                    Icon(
+                      hasDiscount ? Icons.check_circle : Icons.info_outline,
+                      color: hasDiscount ? Colors.green : Colors.orange,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        controller.couponMessage!,
+                        style: TextStyle(
+                          color: hasDiscount ? Colors.green : Colors.grey[700],
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            if (hasDiscount && controller.calculatedDiscount > 0)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Row(
+                  children: [
+                    Icon(Icons.discount, color: Colors.green, size: 16),
                     const SizedBox(width: 4),
                     Text(
-                      "تم تطبيق خصم ${controller.discountPercentage}%",
+                      controller.discountPercentage > 0
+                          ? "خصم ${controller.discountPercentage.toStringAsFixed(0)}%"
+                          : "خصم ${controller.discountAmount.toStringAsFixed(0)} ليرة",
                       style: TextStyle(color: Colors.green, fontSize: 12),
                     ),
                   ],

@@ -7,7 +7,6 @@ import 'package:get/get.dart';
 
 abstract class LoginController extends GetxController {
   dynamic login();
-  dynamic chingeshow();
   dynamic goRegister();
 }
 
@@ -15,7 +14,6 @@ class LoginControllerImb extends LoginController {
   // =================     Text form fild var    ===============================
   GlobalKey<FormState> formStat = GlobalKey<FormState>();
   late TextEditingController email;
-  late TextEditingController password;
   late TextEditingController phoneNumber;
   bool showpassword = true;
   // =================     Data response var ===================================
@@ -32,7 +30,6 @@ class LoginControllerImb extends LoginController {
       update();
       var response = await loginData.loginData(
         email.text,
-        password.text,
         phoneNumber.text,
       );
       statusRequest = handelingData(response);
@@ -53,18 +50,7 @@ class LoginControllerImb extends LoginController {
     }
   }
 
-  // ===============   chinge status show password =============================
-  @override
-  chingeshow() {
-    update();
-    if (showpassword) {
-      showpassword = false;
-      update();
-    } else {
-      showpassword = true;
-      update();
-    }
-  }
+
 
   @override
   goRegister() {
@@ -75,7 +61,6 @@ class LoginControllerImb extends LoginController {
   @override
   void onInit() async {
     email = TextEditingController();
-    password = TextEditingController();
     phoneNumber = TextEditingController();
     super.onInit();
   }
@@ -84,7 +69,6 @@ class LoginControllerImb extends LoginController {
   @override
   void dispose() {
     email.dispose();
-    password.dispose();
     phoneNumber.dispose();
     super.dispose();
   }

@@ -72,6 +72,12 @@ class OrderController extends GetxController {
       orderDataMap["notes"] = notes.trim();
     }
 
+    // تطبيق الكوبون على السلة — إرسال apply_coupon مع صفحة الطلب
+    if (cartController.discountCode != null &&
+        cartController.discountCode!.trim().isNotEmpty) {
+      orderDataMap["apply_coupon"] = cartController.discountCode!.trim();
+    }
+
     orderState = StatusRequest.loading;
     update();
 

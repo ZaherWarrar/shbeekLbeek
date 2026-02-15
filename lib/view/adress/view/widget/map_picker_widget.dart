@@ -95,6 +95,7 @@ class _MapPickerWidgetState extends State<MapPickerWidget> {
           color: Colors.grey.shade300,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
+            // ignore: deprecated_member_use
             color: AppColor().primaryColor.withOpacity(0.3),
             width: 2,
           ),

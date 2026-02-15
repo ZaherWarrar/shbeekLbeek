@@ -77,7 +77,6 @@ class OtpView extends GetView<OtpController> {
             TextButton(
               onPressed: () {
                 Get.snackbar("21".tr, "22".tr);
-                // TODO: استدعاء API لإعادة إرسال OTP
               },
               child: Text(
                 "23".tr,

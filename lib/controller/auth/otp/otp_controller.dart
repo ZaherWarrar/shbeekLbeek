@@ -3,7 +3,6 @@ import 'package:app/core/constant/routes/app_routes.dart';
 import 'package:app/core/function/handelingdata.dart';
 import 'package:app/core/services/session_service.dart';
 import 'package:app/data/datasorce/remot/otp_data.dart';
-import 'package:app/view/favorets/widget/favorates_tabs/favorate_tabs_controller.dart';
 import 'package:get/get.dart';
 
 class OtpController extends GetxController {

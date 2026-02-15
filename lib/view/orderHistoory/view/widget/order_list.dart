@@ -39,7 +39,7 @@ class OrderList extends GetView<OrderHisController> {
                   itemCount: orders.length,
                   itemBuilder: (context, index) {
                     return GestureDetector(
-                      onTap: () => Get.to(OrderDetailsView()),
+                      onTap: () => Get.to(OrderDetailsView(orderId: index)),
                       child: OrderCard(order: orders[index], index: index),
                     );
                   },

@@ -6,9 +6,9 @@ class LoginData {
 
   LoginData(this.crud);
 
-  Future<Object> loginData(String email, String password , String phoneNumber) async {
+  Future<Object> loginData(String email , String phoneNumber) async {
     var response = await crud
-        .postData(ApiLinks.login, {"name": email, "phone_number": phoneNumber, "password": password});
+        .postData(ApiLinks.login, {"name": email, "phone_number": phoneNumber});
     return response.fold((l) => l, (r) => r);
   }
 }

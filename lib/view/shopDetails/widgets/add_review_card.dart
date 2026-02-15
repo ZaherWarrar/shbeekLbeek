@@ -17,6 +17,7 @@ class AddReviewCardWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
+            // ignore: deprecated_member_use
             color: AppColor().titleColor.withOpacity(0.06),
             blurRadius: 10,
             offset: const Offset(0, 4),

@@ -1,12 +1,17 @@
 import 'package:app/core/constant/app_color.dart';
 import 'package:app/core/shared/custom_app_bar.dart';
+import 'package:app/view/orderHistoory/controller/order_his_controller.dart';
+import 'package:app/view/orderHistoory/model/order_his_model.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class OrderDetailsView extends StatelessWidget {
-  const OrderDetailsView({super.key});
-
+  const OrderDetailsView({super.key, required this.orderId});
+  final int orderId;
   @override
   Widget build(BuildContext context) {
+    OrderHisController controller = Get.find<OrderHisController>();
+
     final colors = AppColor();
 
     return Scaffold(
@@ -14,18 +19,20 @@ class OrderDetailsView extends StatelessWidget {
       appBar: CustomAppBar(title: "تفاصيل الطلب"),
       body: Padding(
         padding: const EdgeInsets.all(12.0),
-        child: ListView(
-          children: [
-            _buildProductCard(colors),
-            const SizedBox(height: 12),
-            _buildProductCard(colors),
-          ],
+        child: ListView.builder(
+          itemCount: controller.orders[orderId].items!.length,
+          itemBuilder: (context, index) {
+            return _buildProductCard(
+              colors,
+              controller.orders[orderId].items![index],
+            );
+          },
         ),
       ),
     );
   }
 
-  Widget _buildProductCard(AppColor colors) {
+  Widget _buildProductCard(AppColor colors, OrderItemModel item) {
     return Card(
       color: colors.backgroundColorCard,
       elevation: 3,
@@ -38,7 +45,7 @@ class OrderDetailsView extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
               child: Image.network(
-                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTa9Qq1rV_svdydH5u3O8r5ZmT8udMBnSuKeA&s",
+                "${item.product!.imageUrl}",
                 width: 90,
                 height: 90,
                 fit: BoxFit.cover,
@@ -53,7 +60,7 @@ class OrderDetailsView extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "اسم المنتج",
+                    "${item.product!.name}",
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -62,7 +69,7 @@ class OrderDetailsView extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    "الوصف تبعه   ",
+                    "${item.product!.description}",
                     style: TextStyle(
                       fontSize: 14,
                       color: colors.descriptionColor,
@@ -70,7 +77,16 @@ class OrderDetailsView extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    "السعر: 25.00 \$",
+                    "السعر: ${item.product!.salePrice} \$",
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: colors.primaryColor,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    "العدد: ${item.quantity}",
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,

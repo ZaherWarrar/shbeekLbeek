@@ -21,6 +21,7 @@ class OrderCard extends StatelessWidget {
         color: AppColor().backgroundColor,
         boxShadow: [
           BoxShadow(
+            // ignore: deprecated_member_use
             color: AppColor().titleColor.withOpacity(.08),
             blurRadius: 20,
             offset: const Offset(0, 8),
@@ -38,6 +39,7 @@ class OrderCard extends StatelessWidget {
                   height: 44,
                   width: 44,
                   decoration: BoxDecoration(
+                    // ignore: deprecated_member_use
                     color: AppColor().primaryColor.withOpacity(.12),
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -92,6 +94,17 @@ class OrderCard extends StatelessWidget {
                   ),
                 ),
               ],
+            ),
+            SizedBox(height: 8),
+            Container(
+              alignment: Alignment.centerRight,
+              child: Text(
+                "تاريخ الطلب: ${order.date!.year}-${order.date!.month.toString().padLeft(2, '0')}-${order.date!.day.toString().padLeft(2, '0')}",
+                style: TextStyle(
+                  fontSize: 13,
+                  color: AppColor().descriptionColor,
+                ),
+              ),
             ),
           ],
         ),

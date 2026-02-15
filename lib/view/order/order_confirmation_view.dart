@@ -85,6 +85,7 @@ class _OrderConfirmationViewState extends State<OrderConfirmationView> {
 
     return PopScope(
       canPop: true,
+      // ignore: deprecated_member_use
       onPopInvoked: (didPop) {
         if (!didPop) Get.back();
       },

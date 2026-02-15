@@ -65,6 +65,7 @@ class AddressCard extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
+                    // ignore: deprecated_member_use
                     color: AppColor().primaryColor.withOpacity(.15),
                     borderRadius: BorderRadius.circular(20),
                   ),

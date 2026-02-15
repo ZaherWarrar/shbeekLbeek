@@ -63,9 +63,13 @@ class HomeBody extends StatelessWidget {
                     borderRadius: 20,
                     interval: const Duration(seconds: 5),
                     onTapActions: [
+                      // ignore: avoid_print
                       () => print("تم الضغط على السلايدر 1"),
+                      // ignore: avoid_print
                       () => print("تم الضغط على السلايدر 2"),
+                      // ignore: avoid_print
                       () => print("تم الضغط على السلايدر 3"),
+                      // ignore: avoid_print
                       () => print("تم الضغط على السلايدر 4"),
                     ],
                   ),

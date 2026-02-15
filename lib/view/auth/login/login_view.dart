@@ -21,10 +21,10 @@ class LoginView extends StatelessWidget {
       Get.delete<LoginControllerImb>();
     }
     Get.put(LoginControllerImb());
-    
+
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
-    
+
     return Scaffold(
       backgroundColor: AppColor().backgroundColor,
       appBar: CustomAppBar(title: "1".tr),
@@ -74,19 +74,6 @@ class LoginView extends StatelessWidget {
                     scure: false,
                   ),
                   SizedBox(height: screenHeight * 0.05),
-                  GetBuilder<LoginControllerImb>(
-                    builder: (controller) => CustomTextFormFild(
-                      hint: "5".tr,
-                      controller: controller.password,
-                      valid: (val) {
-                        return validTextForm(val ?? '', "password", 30, 5);
-                      },
-                      lable: '4'.tr,
-                      iconData: Icons.lock_outline,
-                      scure: controller.showpassword,
-                      onTap: () => controller.chingeshow(),
-                    ),
-                  ),
                   SizedBox(height: 15),
                   GoToRegister(onTap: () => controller.goRegister()),
 
@@ -104,9 +91,7 @@ class LoginView extends StatelessWidget {
 
                   MaterialButton(
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(
-                        10,
-                      ),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     color: Colors.grey,
                     child: Text("الدخول كضيف"),

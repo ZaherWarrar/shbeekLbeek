@@ -43,11 +43,6 @@ class CustomDeliveryAppBar extends StatelessWidget
             Row(
               children: [
                 IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.notifications_none),
-                  color: Colors.black87,
-                ),
-                IconButton(
                   onPressed: () {
                     Get.toNamed(AppRoutes.allShops);
                   },

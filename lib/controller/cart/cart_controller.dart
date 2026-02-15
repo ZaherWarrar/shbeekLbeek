@@ -1,5 +1,8 @@
+import 'package:app/core/class/statusrequest.dart';
 import 'package:app/core/services/cart_preferences.dart';
 import 'package:app/data/datasorce/model/item_model.dart';
+import 'package:app/core/class/crud.dart';
+import 'package:app/data/datasorce/remot/coupons_data.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -12,6 +15,10 @@ class CartController extends GetxController {
   String? discountCode;
   double discountAmount = 0.0;
   double discountPercentage = 0.0;
+  /// رسالة من API (صالح / غير صالح)
+  String? couponMessage;
+  /// جاري التحقق من الكوبون
+  bool isCheckingCoupon = false;
 
   // الملاحظات
   TextEditingController notesController = TextEditingController();
@@ -218,7 +225,7 @@ void onInit() {
     return subtotal + calculatedDeliveryFee - calculatedDiscount;
   }
 
-  // تطبيق كود الخصم
+  // تطبيق كود الخصم — التحقق من API ثم تطبيق النتيجة
   void applyDiscount() async {
     String code = discountCodeController.text.trim();
     if (code.isEmpty) {
@@ -226,20 +233,92 @@ void onInit() {
       return;
     }
 
-    // حالياً نستخدم كود وهمي للاختبار
-    if (code.toLowerCase() == 'discount10' || code == 'خصم10') {
-      discountCode = code;
-      discountPercentage = 10.0;
-      discountAmount = 0.0;
-      await _prefs.saveDiscountCode(code);
-      Get.snackbar("نجاح", "تم تطبيق كود الخصم بنجاح");
-    } else {
-      Get.snackbar("خطأ", "كود الخصم غير صحيح");
+    isCheckingCoupon = true;
+    couponMessage = null;
+    update();
+
+    try {
+      final couponData = CouponsData(Get.find<Crud>());
+      var response = await couponData.couponsCheckData(code);
+
+      if (response is StatusRequest) {
+        isCheckingCoupon = false;
+        couponMessage = null;
+        discountCode = null;
+        discountPercentage = 0.0;
+        discountAmount = 0.0;
+        _couponErrorSnackbar(response);
+        update();
+        return;
+      }
+
+      if (response is Map<String, dynamic>) {
+        final valid = response['valid'] == true;
+        final message = response['message']?.toString();
+
+        if (valid && message != null && message.isNotEmpty) {
+          couponMessage = message;
+          discountCode = code;
+          discountPercentage = 0.0;
+          discountAmount = 0.0;
+
+          final details = response['details'];
+          if (details is Map<String, dynamic>) {
+            final type = details['type']?.toString().toLowerCase();
+            final valueStr = details['value']?.toString();
+            final value = double.tryParse(valueStr ?? '') ?? 0.0;
+            if (type == 'fixed') {
+              discountAmount = value;
+            } else if (type == 'percent' || type == 'percentage') {
+              discountPercentage = value.clamp(0.0, 100.0);
+            }
+          }
+          await _prefs.saveDiscountCode(code);
+          Get.snackbar("نجاح", message);
+        } else {
+          couponMessage = message ?? "كود الخصم غير صالح";
+          discountCode = null;
+          discountPercentage = 0.0;
+          discountAmount = 0.0;
+          Get.snackbar("خطأ", couponMessage!);
+        }
+      } else {
+        couponMessage = "كود الخصم غير صالح";
+        discountCode = null;
+        discountPercentage = 0.0;
+        discountAmount = 0.0;
+        Get.snackbar("خطأ", couponMessage!);
+      }
+    } catch (e) {
+      isCheckingCoupon = false;
+      couponMessage = null;
       discountCode = null;
       discountPercentage = 0.0;
       discountAmount = 0.0;
+      Get.snackbar("خطأ", "حدث خطأ أثناء التحقق من الكوبون");
+      update();
+      return;
     }
+
+    isCheckingCoupon = false;
     update();
+  }
+
+  void _couponErrorSnackbar(StatusRequest status) {
+    switch (status) {
+      case StatusRequest.unauthorized:
+        Get.snackbar("تنبيه", "يجب تسجيل الدخول لاستخدام كود الخصم");
+        break;
+      case StatusRequest.offlinefailure:
+        Get.snackbar("خطأ", "لا يوجد اتصال بالإنترنت");
+        break;
+      case StatusRequest.serverfailure:
+      case StatusRequest.serverException:
+        Get.snackbar("خطأ", "خطأ في الخادم، حاول لاحقاً");
+        break;
+      default:
+        Get.snackbar("خطأ", "كود الخصم غير صالح أو منتهي");
+    }
   }
 
   // إزالة كود الخصم
@@ -248,6 +327,7 @@ void onInit() {
     discountCodeController.clear();
     discountPercentage = 0.0;
     discountAmount = 0.0;
+    couponMessage = null;
     await _prefs.removeDiscountCode();
     update();
   }

@@ -45,7 +45,6 @@ class MyApp extends StatelessWidget {
 
       initialBinding: InitialBindings(),
       initialRoute: AppRoutes.start,
-
       defaultTransition: Transition.cupertino,
       transitionDuration: const Duration(milliseconds: 300),
 

@@ -9,27 +9,42 @@ import 'package:app/localization/translation.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 🔥 تهيئة SessionService
+  //  تهيئة SessionService
   await Get.putAsync(() => SessionService().init());
 
-  // 🔥 تهيئة Changelocal مرة واحدة فقط
+  //  تهيئة Changelocal مرة واحدة فقط
   Get.put(Changelocal());
 
-  runApp(const MyApp());
+  final session = Get.find<SessionService>();
+
+  // 👇 تحديد أول صفحة
+  String initialRoute;
+
+
+   if (!session.isOnboardingDone) {
+    initialRoute = AppRoutes.onboarding;
+  } else if (session.isLoggedIn) {
+    initialRoute = AppRoutes.home; 
+  } else {
+    initialRoute = AppRoutes.login;
+  }
+  runApp( MyApp(initialRoute: initialRoute));
 }
 
 late double w;
 late double h;
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final String initialRoute;
+
+  const MyApp({super.key, required this.initialRoute});
 
   @override
   Widget build(BuildContext context) {
     w = MediaQuery.sizeOf(context).width;
     h = MediaQuery.sizeOf(context).height;
 
-    // 🔥 جلب Changelocal بدون إنشاء جديد
+    //  جلب Changelocal بدون إنشاء جديد
     final controller = Get.find<Changelocal>();
 
     return GetMaterialApp(
@@ -37,14 +52,14 @@ class MyApp extends StatelessWidget {
 
       translations: MyTranslation(),
 
-      // 🔥 اللغة المحفوظة
+      //  اللغة المحفوظة
       locale: controller.language,
 
-      // 🔥 الثيم المحفوظ
+      //  الثيم المحفوظ
       theme: controller.appTheme,
 
       initialBinding: InitialBindings(),
-      initialRoute: AppRoutes.start,
+      initialRoute: initialRoute,
       defaultTransition: Transition.cupertino,
       transitionDuration: const Duration(milliseconds: 300),
 

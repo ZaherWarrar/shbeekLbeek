@@ -1,5 +1,6 @@
 import 'package:app/controller/auth/register/register_controller.dart';
 import 'package:app/view/auth/register/widgets/go_to_login.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
@@ -21,6 +22,7 @@ class RegisterView extends StatelessWidget {
       Get.delete<RegisterControllerImb>();
     }
     Get.put(RegisterControllerImb());
+
     return Scaffold(
       backgroundColor: AppColor().backgroundColor,
       appBar: CustomAppBar(title: "15".tr),
@@ -31,6 +33,7 @@ class RegisterView extends StatelessWidget {
               child: Lottie.asset(Assets.imagesLoding, width: 100, height: 100),
             );
           }
+
           return Container(
             padding: EdgeInsets.only(
               top: h * 0.05,
@@ -46,10 +49,11 @@ class RegisterView extends StatelessWidget {
                 children: [
                   SizedBox(
                     height: h * 0.2,
-                    width: w * 0.05,
                     child: Image.asset(Assets.imagesLogo, fit: BoxFit.contain),
                   ),
+
                   SizedBox(height: h * 0.05),
+
                   CustomTextFormFild(
                     hint: "2".tr,
                     controller: controller.name,
@@ -57,11 +61,12 @@ class RegisterView extends StatelessWidget {
                       return validTextForm(val ?? '', "name", 100, 3);
                     },
                     lable: "3".tr,
-                    iconData: Icons.email_outlined,
+                    iconData: Icons.person_outline,
                     scure: false,
                   ),
 
                   SizedBox(height: h * 0.05),
+
                   CustomTextFormFild(
                     hint: "10".tr,
                     controller: controller.phoneNumber,
@@ -72,18 +77,78 @@ class RegisterView extends StatelessWidget {
                     iconData: Icons.phone_outlined,
                     scure: false,
                   ),
-                  SizedBox(height: 15),
+
+                  SizedBox(height: 18),
+
                   GoToLogin(onTap: () => controller.goToLogin()),
 
                   SizedBox(height: h * 0.05),
+
+                  // ✅ Checkbox الموافقة على سياسة الخصوصية
+                  CheckboxListTile(
+                    value: controller.isAgree,
+                    activeColor: AppColor().primaryColor,
+                    controlAffinity: ListTileControlAffinity.leading,
+                    contentPadding: EdgeInsets.zero,
+                    onChanged: controller.toggleAgree,
+                    title: Text.rich(
+                      TextSpan(
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.black87,
+                          height: 1.4,
+                        ),
+                        children: [
+                          const TextSpan(text: "أوافق على "),
+                          TextSpan(
+                            text: "الشروط والأحكام",
+                            style: TextStyle(
+                              color: AppColor().primaryColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () {
+                                Get.toNamed("/terms");
+                              },
+                          ),
+                          const TextSpan(text: " و "),
+                          TextSpan(
+                            text: "سياسة الخصوصية",
+                            style: TextStyle(
+                              color: AppColor().primaryColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () {
+                                Get.toNamed("/privacy");
+                              },
+                          ),
+                        ],
+                      ),
+                      textDirection: TextDirection.rtl,
+                    ),
+                  ),
+
+                  SizedBox(height: h * 0.02),
+
                   CustomButton(
                     hi: h * 0.05,
                     we: w * 0.2,
                     fontsize: 25,
                     padding: 10,
                     title: "16".tr,
-                    onTap: () => controller.register(),
-                    //controller.register(),
+                    onTap: () {
+                      if (!controller.isAgree) {
+                        Get.snackbar(
+                          "تنبيه",
+                          "يجب الموافقة على سياسة الخصوصية أولاً",
+                          snackPosition: SnackPosition.BOTTOM,
+                        );
+                        return;
+                      }
+
+                      controller.register();
+                    },
                   ),
                 ],
               ),

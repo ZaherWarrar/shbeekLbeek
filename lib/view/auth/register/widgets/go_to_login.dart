@@ -15,7 +15,7 @@ class GoToLogin extends StatelessWidget {
           "17".tr,
           style: TextStyle(
             color: AppColor().descriptionColor,
-            fontSize: getResponsiveFontSize(context, fontSize: 15),
+            fontSize: getResponsiveFontSize(context, fontSize: 16),
           ),
         ),
         SizedBox(width: 5),
@@ -25,7 +25,7 @@ class GoToLogin extends StatelessWidget {
             "1".tr,
             style: TextStyle(
               color: AppColor().primaryColor,
-              fontSize: getResponsiveFontSize(context, fontSize: 15),
+              fontSize: getResponsiveFontSize(context, fontSize: 16),
             ),
           ),
         ),

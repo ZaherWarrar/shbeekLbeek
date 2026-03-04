@@ -16,6 +16,7 @@ import 'package:app/view/bottomNavBar/main_view.dart';
 import 'package:app/view/city/choose_city.dart';
 import 'package:app/view/contact_us_view/contact_us.dart';
 import 'package:app/view/favorets/favorites_view.dart';
+import 'package:app/view/onBoarding/view/onboarding_view.dart';
 import 'package:app/view/order/order_confirmation_view.dart';
 import 'package:app/view/orderHistoory/view/order_his_view.dart';
 import 'package:app/view/payment/binding/payment_binding.dart';
@@ -45,6 +46,7 @@ class AppRoutes {
   static const String addrslis = '/Addresspage';
   static const String paympa = '/Paymentpage';
   static const String start = '/start';
+  static const String onboarding = '/onbo';
 
   static final routes = [
     GetPage(
@@ -90,5 +92,7 @@ class AppRoutes {
       binding: AddressBinding(),
     ),
     GetPage(name: paympa, page: () => PaymentPage(), binding: PaymentBinding()),
+     GetPage(name: onboarding, page: () => OnboardingView()),
+    
   ];
 }

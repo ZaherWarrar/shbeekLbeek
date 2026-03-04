@@ -15,41 +15,64 @@ abstract class RegisterController extends GetxController {
 }
 
 class RegisterControllerImb extends RegisterController {
-  // =================     Text form fild var    ===============================
+  // ================= Text form fields =================
   GlobalKey<FormState> formStat = GlobalKey<FormState>();
   late TextEditingController name;
   late TextEditingController phoneNumber;
-  // =================     Data response var ===================================
+
+  // ================= Privacy agreement =================
+  bool isAgree = false;
+
+  void toggleAgree(bool? value) {
+    isAgree = value ?? false;
+    update();
+  }
+
+  // ================= Data response =================
   RegisterData registerData = RegisterData(Get.find());
   StatusRequest statusRequest = StatusRequest.none;
+
   @override
   register() async {
-    update();
     var formData = formStat.currentState;
-    // ==============       status valid =======================================
-    if ((formData?.validate()??true)) {
-      statusRequest = StatusRequest.loading;
-      update();
-      var response = await registerData.registerData(
-        name.text,
-        phoneNumber.text,
-      );
-      statusRequest = handelingData(response);
 
-      if (StatusRequest.success == statusRequest) {
-        Get.offAllNamed(
-          AppRoutes.otp,
-          arguments: {"phone_number": phoneNumber.text},
-        );
-      } else {
-        statusRequest = StatusRequest.failure;
-        Get.defaultDialog(
-          title: "فشل تسجيل الدخول",
-          content: Text("الحساب أو كلمة المرور غير صحيحان!"),
-        );
-      }
-      update();
+    // ✅ تحقق من الفورم
+    if (!(formData?.validate() ?? false)) {
+      return;
     }
+
+    // ✅ تحقق من الموافقة على سياسة الخصوصية
+    if (!isAgree) {
+      Get.snackbar(
+        "تنبيه",
+        "يجب الموافقة على سياسة الخصوصية أولاً",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
+    statusRequest = StatusRequest.loading;
+    update();
+
+    var response = await registerData.registerData(name.text, phoneNumber.text);
+
+    statusRequest = handelingData(response);
+
+    if (statusRequest == StatusRequest.success) {
+      Get.offAllNamed(
+        AppRoutes.otp,
+        arguments: {"phone_number": phoneNumber.text},
+      );
+    } else {
+      statusRequest = StatusRequest.failure;
+
+      Get.defaultDialog(
+        title: "فشل التسجيل",
+        middleText: "حدث خطأ أثناء إنشاء الحساب، حاول مرة أخرى",
+      );
+    }
+
+    update();
   }
 
   @override

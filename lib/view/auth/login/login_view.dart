@@ -73,7 +73,6 @@ class LoginView extends StatelessWidget {
                     iconData: Icons.email_outlined,
                     scure: false,
                   ),
-                  SizedBox(height: screenHeight * 0.05),
                   SizedBox(height: 15),
                   GoToRegister(onTap: () => controller.goRegister()),
 
@@ -91,7 +90,7 @@ class LoginView extends StatelessWidget {
 
                   MaterialButton(
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(15),
                     ),
                     color: Colors.grey,
                     child: Text("الدخول كضيف"),

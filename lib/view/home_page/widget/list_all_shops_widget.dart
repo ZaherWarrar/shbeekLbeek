@@ -184,7 +184,7 @@ class ListAllShopsWidget extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Icon(Icons.arrow_back, size: 20),
+                        Icon(Icons.arrow_forward_outlined, size: 20),
                       ],
                     ),
                   ),

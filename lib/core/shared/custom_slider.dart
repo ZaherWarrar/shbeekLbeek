@@ -9,7 +9,7 @@ class SliderWidget extends StatelessWidget {
   final Duration? interval;
   final bool autoPlay;
   final double imageWidth;
-  final List<void Function()>? onTapActions;
+
   final HomeControllerImp controller;
 
   const SliderWidget({
@@ -20,7 +20,7 @@ class SliderWidget extends StatelessWidget {
     this.interval,
     this.autoPlay = true,
     this.imageWidth = 300,
-    this.onTapActions,
+
     required this.controller,
   });
 
@@ -63,24 +63,14 @@ class SliderWidget extends StatelessWidget {
                     final slide = controller.extendedSlides[index];
 
                     // حساب index الحقيقي داخل القائمة الأصلية
-                    final realIndex = (index - 1) % controller.slides.length;
 
-                    return GestureDetector(
-                      onTap: () {
-                        if (onTapActions != null &&
-                            realIndex >= 0 &&
-                            realIndex < onTapActions!.length) {
-                          onTapActions![realIndex]();
-                        }
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(borderRadius),
-                          child: Image.network(
-                            slide.imageUrl!,
-                            fit: BoxFit.cover,
-                          ),
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(borderRadius),
+                        child: Image.network(
+                          slide.imageUrl!,
+                          fit: BoxFit.cover,
                         ),
                       ),
                     );

@@ -24,7 +24,7 @@ abstract class HomeController extends GetxController {
 
 class HomeControllerImp extends HomeController {
   final session = Get.find<SessionService>();
-  late final int cityId = session.cityId??1;
+  late final int cityId = session.cityId ?? 1;
   // ============= Slider =================================================
   SliderData sliderData = SliderData(Get.find());
   StatusRequest sliderStat = StatusRequest.none;
@@ -84,7 +84,9 @@ class HomeControllerImp extends HomeController {
   void _startAutoPlay() async {
     while (!_isDisposed) {
       await Future.delayed(autoPlayDelay);
-      if (_isDisposed || pageController == null || !pageController!.hasClients) {
+      if (_isDisposed ||
+          pageController == null ||
+          !pageController!.hasClients) {
         continue;
       }
 
@@ -149,6 +151,7 @@ class HomeControllerImp extends HomeController {
   @override
   Future<void> fetchHomeSection() async {
     homeSectionState = StatusRequest.loading;
+    homeSection = [];
     update();
     var response =
         await homeSectionData.homeSectionData() as Map<String, dynamic>;
@@ -221,9 +224,33 @@ class HomeControllerImp extends HomeController {
     }
   }
 
+  /// عرض Skeleton حتى ينتهي تحميل كل البيانات (سلايدر، أصناف، أقسام، متاجر)
+  bool get isInitialLoading {
+    final anyLoading =
+        sliderStat == StatusRequest.loading ||
+        mainCatStat == StatusRequest.loading ||
+        allItemState == StatusRequest.loading ||
+        homeSectionState == StatusRequest.loading;
+    final hasNoData =
+        slides.isEmpty &&
+        mainCat.isEmpty &&
+        items.isEmpty &&
+        homeSection.isEmpty;
+    return hasNoData || anyLoading;
+  }
+
   @override
   void onInit() async {
     super.onInit();
+    if (slides.isNotEmpty && mainCat.isNotEmpty) {
+      if (extendedSlides.isEmpty) {
+        extendedSlides = [slides.last, ...slides, slides.first];
+        pageController = PageController(initialPage: initialPage);
+        _startAutoPlay();
+      }
+      update();
+      return;
+    }
     await Future.wait([
       fetchSliders(),
       fetchMainCategores(),

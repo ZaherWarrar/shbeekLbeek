@@ -24,7 +24,9 @@ abstract class HomeController extends GetxController {
 
 class HomeControllerImp extends HomeController {
   final session = Get.find<SessionService>();
-  late final int cityId = session.cityId ?? 1;
+
+  /// يُقرأ من الـ session في كل مرة ليعكس المدينة الحالية بعد التغيير.
+  int get cityId => session.cityId ?? 1;
   // ============= Slider =================================================
   SliderData sliderData = SliderData(Get.find());
   StatusRequest sliderStat = StatusRequest.none;
@@ -71,6 +73,15 @@ class HomeControllerImp extends HomeController {
         slides = sliderList
             .map<SliderModel>((item) => SliderModel.fromJson(item))
             .toList();
+      }
+      if (slides.isEmpty) {
+        extendedSlides = [];
+        pageController?.dispose();
+        pageController = null;
+      } else {
+        extendedSlides = [slides.last, ...slides, slides.first];
+        pageController?.dispose();
+        pageController = null;
       }
       update();
     } else {

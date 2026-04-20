@@ -41,7 +41,10 @@ class ShopDetailsView extends StatelessWidget {
           child: Scaffold(
             floatingActionButton: const CartFloatingButton(),
             backgroundColor: AppColor().backgroundColor,
-            appBar: CustomAppBar(title: controller.shopItem.name ?? "المطعم"),
+            appBar: CustomAppBar(
+              title:
+                  controller.store?.name ?? controller.shopItemSummary?.name ?? "المطعم",
+            ),
             body: CustomRefresh(
               statusRequest: controller.statusRequest,
               fun: () => controller.refreshPage(),
@@ -58,7 +61,9 @@ class ShopDetailsView extends StatelessWidget {
                             height: 180,
                             width: double.infinity,
                             child: Image.network(
-                              controller.shopItem.imageUrl ?? "",
+                              controller.store?.imageUrl ??
+                                  controller.shopItemSummary?.imageUrl ??
+                                  "",
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) {
                                 return Image.asset(

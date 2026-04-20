@@ -44,7 +44,7 @@ class HomeSkeletonPlaceholder extends StatelessWidget {
                   scrollDirection: Axis.horizontal,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: 5,
-                  separatorBuilder: (_, __) => const SizedBox(width: 16),
+                  separatorBuilder: (_, _) => const SizedBox(width: 16),
                   itemBuilder: (context, index) {
                     return Column(
                       mainAxisSize: MainAxisSize.min,
@@ -96,7 +96,7 @@ class HomeSkeletonPlaceholder extends StatelessWidget {
                   scrollDirection: Axis.horizontal,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: 4,
-                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  separatorBuilder: (_, _) => const SizedBox(width: 12),
                   itemBuilder: (context, index) {
                     return Container(
                       width: 80,
@@ -154,7 +154,7 @@ class HomeSkeletonPlaceholder extends StatelessWidget {
                   scrollDirection: Axis.horizontal,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: 3,
-                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  separatorBuilder: (_, _) => const SizedBox(width: 12),
                   itemBuilder: (context, index) {
                     return Container(
                       width: screenWidth * 0.4,

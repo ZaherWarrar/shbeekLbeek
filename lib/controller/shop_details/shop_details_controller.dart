@@ -1,11 +1,17 @@
 import 'package:app/controller/cart/cart_controller.dart';
 import 'package:app/core/class/statusrequest.dart';
+import 'package:app/core/function/handelingdata.dart';
+import 'package:app/core/class/crud.dart';
 import 'package:app/data/datasorce/model/item_model.dart';
+import 'package:app/data/datasorce/model/store_model.dart';
+import 'package:app/data/datasorce/remot/store_details_data.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class ShopDetailsController extends GetxController {
-  late ItemModel shopItem;
+  ItemModel? shopItemSummary;
+  StoreModel? store;
+  late final int storeId;
   late TextEditingController searchController;
 
   StatusRequest statusRequest = StatusRequest.none;
@@ -14,44 +20,65 @@ class ShopDetailsController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    if (Get.arguments != null && Get.arguments is ItemModel) {
-      shopItem = Get.arguments as ItemModel;
+    final args = Get.arguments;
+    if (args is ItemModel) {
+      shopItemSummary = args;
+      storeId = args.id ?? -1;
+    } else if (args is int) {
+      storeId = args;
     } else {
+      storeId = -1;
+    }
+    if (storeId <= 0) {
       Get.back();
-      Get.snackbar("خطأ", "لم يتم العثور على بيانات المتجر");
+      Get.snackbar("خطأ", "معرّف المتجر غير صحيح");
       return;
     }
 
     searchController = TextEditingController();
-    filteredProducts = shopItem.products ?? [];
+    filteredProducts = [];
     searchController.addListener(_onSearchChanged);
+    fetchStoreDetails();
+  }
+
+  Future<void> fetchStoreDetails() async {
+    statusRequest = StatusRequest.loading;
+    update();
+
+    final data = StoreDetailsData(Get.find<Crud>());
+    final response = await data.storeDetails(storeId);
+    statusRequest = handelingData(response);
+
+    if (statusRequest == StatusRequest.success && response is Map<String, dynamic>) {
+      store = StoreModel.fromJson(response);
+      filteredProducts = store?.products ?? [];
+      update();
+      return;
+    }
+
+    if (response is StatusRequest) {
+      statusRequest = response;
+    } else {
+      statusRequest = StatusRequest.failure;
+    }
+    update();
   }
 
   void _onSearchChanged() {
     String query = searchController.text.toLowerCase();
     if (query.isEmpty) {
-      filteredProducts = shopItem.products ?? [];
+      filteredProducts = store?.products ?? [];
     } else {
-      filteredProducts = (shopItem.products ?? []).where((product) {
-        return (product.name ?? '').toLowerCase().contains(query) ||
-            (product.description ?? '').toLowerCase().contains(query);
+      filteredProducts = (store?.products ?? []).where((product) {
+        return (product.name ?? '').toLowerCase().contains(query);
       }).toList();
     }
     update();
   }
 
   Map<int?, List<Products>> getProductsByCategory() {
-    Map<int?, List<Products>> categories = {};
-    for (var product in filteredProducts) {
-      int? categoryId = product.categoryId;
-      if (categoryId != null) {
-        if (!categories.containsKey(categoryId)) {
-          categories[categoryId] = [];
-        }
-        categories[categoryId]!.add(product);
-      }
-    }
-    return categories;
+    // API الجديد لا يرجع category_id للمنتج، لذلك نجمع كل المنتجات ضمن مجموعة واحدة.
+    return {null: filteredProducts};
   }
 
   int getProductQuantity(int productId) {
@@ -73,7 +100,7 @@ class ShopDetailsController extends GetxController {
       return;
     }
 
-    final product = (shopItem.products ?? []).firstWhere(
+    final product = (store?.products ?? []).firstWhere(
       (p) => p.id == productId,
       orElse: () => Products(),
     );
@@ -102,7 +129,18 @@ class ShopDetailsController extends GetxController {
     if (existingIndex != -1) {
       cartController.increaseQuantity(productId);
     } else {
-      cartController.addItem(product, shopItem, quantity: 1);
+      final storeForCart = store ??
+          StoreModel(
+            id: shopItemSummary?.id,
+            name: shopItemSummary?.name,
+            imageUrl: shopItemSummary?.imageUrl,
+            deliveryFee: shopItemSummary?.deliveryFee,
+            minOrder: shopItemSummary?.minOrder,
+            categoryName: shopItemSummary?.categoryName,
+            rating: shopItemSummary?.rating,
+            productsCount: shopItemSummary?.productsCount,
+          );
+      cartController.addItem(product, storeForCart, quantity: 1);
     }
 
     update();
@@ -128,29 +166,9 @@ class ShopDetailsController extends GetxController {
     return product.salePrice ?? product.regularPrice ?? 0;
   }
 
-  bool isShopOpen() {
-    if (shopItem.workSchedule == null) return true;
-
-    // يمكن إضافة منطق للتحقق من الوقت الحالي
-    // حالياً نرجع true كقيمة افتراضية
-    return true;
-  }
-
-  String getCurrentWorkHours() {
-    if (shopItem.workSchedule == null) return "مفتوح";
-
-    // يمكن إضافة منطق للحصول على ساعات اليوم الحالي
-    // حالياً نرجع قيمة افتراضية
-    return "مفتوح الآن - 11:00 ص - 02:00 ص";
-  }
-
   /// إعادة تحميل الصفحة (سحب للتحديث)
   Future<void> refreshPage() async {
-    statusRequest = StatusRequest.loading;
-    update();
-    await Future.delayed(const Duration(milliseconds: 400));
-    statusRequest = StatusRequest.success;
-    update();
+    await fetchStoreDetails();
   }
 
   @override

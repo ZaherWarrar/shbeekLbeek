@@ -12,9 +12,14 @@ class InformationShopCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetBuilder<ShopDetailsController>(
       builder: (controller) {
-        final shopItem = controller.shopItem;
-        final workHours = controller.getCurrentWorkHours();
-        final isOpen = controller.isShopOpen();
+        final store = controller.store;
+        final summary = controller.shopItemSummary;
+        final shopId = store?.id ?? summary?.id ?? 0;
+        final shopName = store?.name ?? summary?.name ?? "المطعم";
+        final category = store?.categoryName ?? summary?.categoryName;
+        final imageUrl = store?.imageUrl ?? summary?.imageUrl ?? '';
+        final rating = store?.rating ?? summary?.rating ?? 0;
+        final deliveryFee = store?.deliveryFee ?? summary?.deliveryFee;
 
         return Container(
           height: 180,
@@ -35,7 +40,7 @@ class InformationShopCard extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        shopItem.name ?? "المطعم",
+                        shopName,
                         style: const TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
@@ -47,15 +52,14 @@ class InformationShopCard extends StatelessWidget {
                     const SizedBox(width: 8),
                     GetBuilder<FavoritesController>(
                       builder: (favoritesController) {
-                        final shopId = shopItem.id ?? 0;
                         final isFavorite = shopId != 0 &&
                             favoritesController.isFavorite('category', shopId);
                         final favoriteItem = RestaurantModel(
                           id: shopId,
-                          name: shopItem.name ?? '',
-                          image: shopItem.imageUrl ?? '',
-                          rating: 0,
-                          category: shopItem.type ?? '',
+                          name: shopName,
+                          image: imageUrl,
+                          rating: rating,
+                          category: category ?? '',
                           favoriteType: 'category',
                           isFavorite: isFavorite,
                         );
@@ -119,12 +123,12 @@ class InformationShopCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      "4.8 (500+ تقييم) ",
+                      rating == 0 ? "—" : rating.toStringAsFixed(1),
                       style: TextStyle(fontSize: 14, color: Colors.grey[700]),
                     ),
-                    if (shopItem.type != null) ...[
+                    if ((category ?? '').isNotEmpty) ...[
                       Text(
-                        " · ${shopItem.type}",
+                        " · $category",
                         style: TextStyle(fontSize: 14, color: Colors.grey[700]),
                       ),
                     ],
@@ -152,8 +156,8 @@ class InformationShopCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      shopItem.deliveryFee != null
-                          ? "رسوم التوصيل: ${shopItem.deliveryFee} ليرة"
+                      deliveryFee != null
+                          ? "رسوم التوصيل: $deliveryFee ليرة"
                           : "التوصيل خلال 25-35 دقيقة",
                       style: TextStyle(fontSize: 14, color: Colors.grey[700]),
                     ),
@@ -161,40 +165,7 @@ class InformationShopCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
 
-                // حالة الفتح + الساعات
-                Row(
-                  children: [
-                    Container(
-                      height: 26,
-                      width: 26,
-                      decoration: BoxDecoration(
-                        color: isOpen
-                            ? const Color.fromARGB(149, 197, 225, 165)
-                            : Colors.grey.shade300,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Center(
-                        child: IconButton(
-                          padding: EdgeInsets.zero,
-                          onPressed: () {},
-                          icon: Icon(
-                            Icons.timer_outlined,
-                            color: isOpen ? Colors.green : Colors.grey,
-                            size: 20,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        workHours,
-                        style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
+                const SizedBox.shrink(),
               ],
             ),
           ),

@@ -82,14 +82,14 @@ class StoresPage extends StatelessWidget {
                                   final store = controller.filteredShops[index];
                                   return StoreCardWidget(
                                     name: store.name ?? "متجر",
-                                    category: store.type ?? "عام",
-                                    rating: 4.5,
+                                    category: store.categoryName ?? "عام",
+                                    rating: store.rating ?? 0,
                                     image: store.imageUrl ?? "",
                                     deliveryTime: store.deliveryFee ?? "مجاني",
                                     onTap: () {
                                       Get.toNamed(
                                         AppRoutes.resturantDetails,
-                                        arguments: store,
+                                        arguments: store.id,
                                       );
                                     },
                                   );

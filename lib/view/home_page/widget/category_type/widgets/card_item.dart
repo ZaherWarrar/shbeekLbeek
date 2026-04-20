@@ -30,7 +30,7 @@ class CardItem extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         if (storeItem != null) {
-          Get.toNamed(AppRoutes.resturantDetails, arguments: storeItem);
+          Get.toNamed(AppRoutes.resturantDetails, arguments: storeItem.id);
         } else {
           Get.snackbar(
             'تنبيه',

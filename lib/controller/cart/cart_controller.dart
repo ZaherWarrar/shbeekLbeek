@@ -3,6 +3,7 @@ import 'package:app/core/services/cart_preferences.dart';
 import 'package:app/data/datasorce/model/item_model.dart';
 import 'package:app/core/class/crud.dart';
 import 'package:app/data/datasorce/remot/coupons_data.dart';
+import 'package:app/data/datasorce/model/store_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -41,6 +42,7 @@ void onInit() {
 
   void _loadCart() {
     cartItems = _prefs.getCart();
+    deliveryFee = _deriveDeliveryFeeFromCart() ?? deliveryFee;
     discountCode = _prefs.getDiscountCode();
     if (discountCode != null) {
       discountCodeController.text = discountCode!;
@@ -50,6 +52,28 @@ void onInit() {
       notesController.text = notes!;
     }
     update();
+  }
+
+  double? _deriveDeliveryFeeFromCart() {
+    // إذا كانت السلة تحتوي عناصر من أكثر من متجر، نأخذ أعلى رسوم توصيل كحل آمن.
+    double? fee;
+    for (final item in cartItems) {
+      final raw = item['deliveryFee'] ?? item['shopDeliveryFee'];
+      final parsed = _parseFee(raw);
+      if (parsed == null) continue;
+      fee = fee == null ? parsed : (parsed > fee ? parsed : fee);
+    }
+    return fee;
+  }
+
+  double? _parseFee(dynamic raw) {
+    if (raw == null) return null;
+    if (raw is num) return raw.toDouble();
+    final s = raw.toString().trim();
+    if (s.isEmpty) return null;
+    // حذف أي نص غير رقمي (مثلاً "ليرة")
+    final cleaned = s.replaceAll(RegExp(r'[^0-9.]'), '');
+    return double.tryParse(cleaned);
   }
 
   Future<void> _saveCart() async {
@@ -76,8 +100,20 @@ void onInit() {
     return _prefs.hasActiveOrder();
   }
 
+  int getQuantity(int productId) {
+    final item = cartItems.firstWhere(
+      (e) => e['productId'] == productId,
+      orElse: () => <String, dynamic>{},
+    );
+    if (item.isEmpty) return 0;
+    final q = item['quantity'];
+    if (q is int) return q;
+    if (q is double) return q.toInt();
+    return int.tryParse(q?.toString() ?? '') ?? 0;
+  }
+
   // إضافة منتج للسلة
-  void addItem(Products product, ItemModel shop, {int quantity = 1}) {
+  void addItem(Products product, StoreModel shop, {int quantity = 1}) {
     // التحقق من وجود طلب نشط
     if (hasActiveOrder()) {
       Get.snackbar(
@@ -117,8 +153,9 @@ void onInit() {
         'productId': product.id!,
         'shopId': shop.id!,
         'shopName': shop.name ?? '',
+        'deliveryFee': shop.deliveryFee,
         'productName': product.name ?? '',
-        'productDescription': product.description ?? '',
+        'productDescription': '',
         'productImage': product.imageUrl ?? '',
         'price': price,
         'quantity': quantity,
@@ -126,6 +163,7 @@ void onInit() {
       });
     }
 
+    deliveryFee = _deriveDeliveryFeeFromCart() ?? deliveryFee;
     _saveCart();
     update();
     Get.snackbar(
@@ -139,6 +177,7 @@ void onInit() {
   // حذف منتج من السلة
   void removeItem(int productId) {
     cartItems.removeWhere((item) => item['productId'] == productId);
+    deliveryFee = _deriveDeliveryFeeFromCart() ?? deliveryFee;
     _saveCart();
     update();
     Get.snackbar(
@@ -198,12 +237,8 @@ void onInit() {
 
   // حساب رسوم التوصيل
   double get calculatedDeliveryFee {
-    // يمكن إضافة منطق للتحقق من minTotalForFreeDeliver
-    // حالياً نرجع قيمة ثابتة
-    if (subtotal >= 100) {
-      // إذا كان المجموع >= 100، التوصيل مجاني
-      return 0.0;
-    }
+    // رسوم التوصيل تُحسب من المتجر (محفوظة ضمن عناصر السلة) ولا نعتمد عتبة 100
+    // لأن الأسعار بالليرة وقد تجعل التوصيل دائماً "مجاني" بالخطأ.
     return deliveryFee;
   }
 
@@ -342,6 +377,7 @@ void onInit() {
     notes = null;
     notesController.clear();
     await _prefs.clearCart();
+    deliveryFee = 10.0;
     update();
     Get.snackbar("تم المسح", "تم مسح السلة بالكامل");
   }

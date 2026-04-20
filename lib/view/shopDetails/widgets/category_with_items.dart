@@ -2,6 +2,7 @@ import 'package:app/controller/cart/cart_controller.dart';
 import 'package:app/controller/shop_details/shop_details_controller.dart';
 import 'package:app/core/constant/app_color.dart';
 import 'package:app/core/constant/app_images.dart';
+import 'package:app/core/constant/routes/app_routes.dart';
 import 'package:app/core/function/fontsize.dart';
 import 'package:app/data/datasorce/model/item_model.dart';
 import 'package:app/view/favorets/widget/favorates_tabs/favorate_tabs_controller.dart';
@@ -76,19 +77,33 @@ class CategoryWithItems extends StatelessWidget {
 
                         return Padding(
                           padding: EdgeInsets.all(isSmallScreen ? 6.0 : 8.0),
-                          child: Container(
-                            height: containerHeight,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: isSmallScreen ? 8.0 : 12.0,
-                                vertical: isSmallScreen ? 10.0 : 15.0,
+                          child: InkWell(
+                            onTap: productId == 0
+                                ? null
+                                : () => Get.toNamed(
+                                      AppRoutes.productDetails,
+                                      arguments: {
+                                        'productId': productId,
+                                        'storeId': controller.storeId,
+                                        'storeName': controller.store?.name,
+                                        'storeImageUrl': controller.store?.imageUrl,
+                                        'storeDeliveryFee': controller.store?.deliveryFee,
+                                      },
+                                    ),
+                            borderRadius: BorderRadius.circular(20),
+                            child: Container(
+                              height: containerHeight,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(20),
                               ),
-                              child: Row(
-                                children: [
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: isSmallScreen ? 8.0 : 12.0,
+                                  vertical: isSmallScreen ? 10.0 : 15.0,
+                                ),
+                                child: Row(
+                                  children: [
                                   // النصوص
                                   Expanded(
                                     child: Column(
@@ -110,7 +125,7 @@ class CategoryWithItems extends StatelessWidget {
                                         SizedBox(
                                           width: double.infinity,
                                           child: Text(
-                                            product.description ?? "",
+                                            "",
                                             style: TextStyle(
                                               fontSize: isSmallScreen ? 10 : 12,
                                               color: Colors.grey[700],
@@ -310,6 +325,7 @@ class CategoryWithItems extends StatelessWidget {
                                 ],
                               ),
                             ),
+                          ),
                           ),
                         );
                       }).toList(),

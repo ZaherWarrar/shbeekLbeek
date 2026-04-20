@@ -42,7 +42,7 @@ class ListAllShopsWidget extends StatelessWidget {
 
                 return GestureDetector(
                   onTap: () {
-                    Get.toNamed(AppRoutes.resturantDetails, arguments: item);
+                    Get.toNamed(AppRoutes.resturantDetails, arguments: item.id);
                   },
                   child: Container(
                     margin: const EdgeInsets.only(bottom: 14),

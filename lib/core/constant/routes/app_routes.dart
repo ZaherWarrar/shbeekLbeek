@@ -24,6 +24,7 @@ import 'package:app/view/payment/view/payment_view.dart';
 import 'package:app/view/privacy/privacy_view.dart';
 import 'package:app/view/shopDetails/shop_details_view.dart';
 import 'package:app/view/termsPage/terms_pages.dart';
+import 'package:app/view/product_details/product_details_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -34,6 +35,7 @@ class AppRoutes {
   static const String home = '/homePage';
   static const String chooseCity = '/chooseCity';
   static const String resturantDetails = '/resDe';
+  static const String productDetails = '/productDetails';
   static const String allShops = '/allSho';
   static const String cartView = '/carVi';
   static const String orderConfirmation = '/orderConfirmation';
@@ -73,6 +75,10 @@ class AppRoutes {
       binding: ShopDetailsBinding(),
       name: resturantDetails,
       page: () => const ShopDetailsView(),
+    ),
+    GetPage(
+      name: productDetails,
+      page: () => const ProductDetailsView(),
     ),
     GetPage(
       binding: OrderBinding(),

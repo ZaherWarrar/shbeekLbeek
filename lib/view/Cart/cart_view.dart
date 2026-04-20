@@ -295,7 +295,7 @@ class CartView extends StatelessWidget {
                                       : ListView.separated(
                                           shrinkWrap: true,
                                           itemCount: list.length,
-                                          separatorBuilder: (_, __) =>
+                                          separatorBuilder: (_, _) =>
                                               const Divider(),
                                           itemBuilder: (context, index) {
                                             final a = list[index];

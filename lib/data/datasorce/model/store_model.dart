@@ -1,24 +1,30 @@
-class ItemModel {
+import 'package:app/data/datasorce/model/item_model.dart';
+
+class StoreModel {
   int? id;
   String? name;
   String? logoUrl;
   String? imageUrl;
   String? deliveryFee;
   String? minOrder;
+  int? categoryId;
   String? categoryName;
   double? rating;
   int? productsCount;
+  List<Products>? products;
 
-  ItemModel({
+  StoreModel({
     this.id,
     this.name,
     this.logoUrl,
     this.imageUrl,
     this.deliveryFee,
     this.minOrder,
+    this.categoryId,
     this.categoryName,
     this.rating,
     this.productsCount,
+    this.products,
   });
 
   static double? _toDouble(dynamic value) {
@@ -34,16 +40,25 @@ class ItemModel {
     return int.tryParse(value.toString());
   }
 
-  ItemModel.fromJson(Map<String, dynamic> json) {
+  StoreModel.fromJson(Map<String, dynamic> json) {
     id = _toInt(json['id']);
     name = json['name']?.toString();
     logoUrl = json['logo_url']?.toString();
     imageUrl = json['image_url']?.toString();
     deliveryFee = json['delivery_fee']?.toString();
     minOrder = json['min_order']?.toString();
+    categoryId = _toInt(json['category_id']);
     categoryName = json['category_name']?.toString();
     rating = _toDouble(json['rating']);
     productsCount = _toInt(json['products_count']);
+
+    final p = json['products'];
+    if (p is List) {
+      products = p
+          .map((e) => e is Map<String, dynamic> ? Products.fromJson(e) : null)
+          .whereType<Products>()
+          .toList();
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -54,60 +69,14 @@ class ItemModel {
     data['image_url'] = imageUrl;
     data['delivery_fee'] = deliveryFee;
     data['min_order'] = minOrder;
+    data['category_id'] = categoryId;
     data['category_name'] = categoryName;
     data['rating'] = rating;
     data['products_count'] = productsCount;
+    if (products != null) {
+      data['products'] = products!.map((v) => v.toJson()).toList();
+    }
     return data;
   }
 }
 
-class Products {
-  int? id;
-  String? name;
-  String? imageUrl;
-  /// دعم API الجديد: price قد يكون رقم أو نص
-  dynamic price;
-  /// دعم التوافق مع السلة الحالية
-  int? regularPrice;
-  int? salePrice;
-
-  Products(
-      {this.id,
-      this.name,
-      this.price,
-      this.regularPrice,
-      this.salePrice,
-      this.imageUrl});
-
-  Products.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    name = json['name'];
-    regularPrice = json['regular_price'];
-    salePrice = json['sale_price'];
-    imageUrl = json['image_url'];
-    price = json['price'];
-    // إذا API الجديد يعطي price فقط، نخزنه كـ regularPrice ليتوافق مع السلة الحالية
-    regularPrice ??= _parsePriceToInt(price);
-  }
-
-  static int? _parsePriceToInt(dynamic value) {
-    if (value == null) return null;
-    if (value is int) return value;
-    if (value is num) return value.toInt();
-    final s = value.toString();
-    final d = double.tryParse(s);
-    if (d != null) return d.toInt();
-    return int.tryParse(s);
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['id'] = id;
-    data['name'] = name;
-    data['regular_price'] = regularPrice;
-    data['sale_price'] = salePrice;
-    data['image_url'] = imageUrl;
-    data['price'] = price;
-    return data;
-  }
-}

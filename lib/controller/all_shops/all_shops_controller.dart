@@ -55,26 +55,19 @@ class AllShopsController extends GetxController {
       case 0: 
         break;
       case 1: 
-        filteredShops = filteredShops.where((shop) {
-          return shop.type?.toLowerCase().contains('restaurant') == true ||
-              shop.type?.toLowerCase().contains('مطعم') == true;
-        }).toList();
+        // فلتر حسب اسم التصنيف (بديل عن type بعد تغيير الـ API)
+        filteredShops = filteredShops
+            .where((shop) => (shop.categoryName ?? '').isNotEmpty)
+            .toList();
         break;
       case 2: 
         break;
       case 3: 
-        filteredShops = filteredShops.where((shop) {
-          // التحقق من وجود منتجات مع salePrice
-          if (shop.products == null || shop.products!.isEmpty) {
-            return false;
-          }
-          return shop.products!.any((product) => product.salePrice != null);
-        }).toList();
+        // عروض/خصومات: لم يعد لدينا products ضمن قائمة المتاجر
+        // يمكن لاحقاً استخدام endpoint خاص أو products_count/flags إن توفرت.
         break;
       case 4: // الأعلى (حسب التقييم)
-        // ترتيب حسب التقييم (يمكن إضافة rating field لاحقاً)
-        // حالياً نرتب حسب الاسم
-        filteredShops.sort((a, b) => (a.name ?? '').compareTo(b.name ?? ''));
+        filteredShops.sort((a, b) => (b.rating ?? 0).compareTo(a.rating ?? 0));
         break;
     }
 
@@ -84,24 +77,10 @@ class AllShopsController extends GetxController {
       filteredShops = filteredShops.where((shop) {
         // البحث في اسم المتجر
         final nameMatch = (shop.name ?? '').toLowerCase().contains(query);
-
-        // البحث في الوصف
-        final descMatch = (shop.description ?? '').toLowerCase().contains(
-          query,
-        );
-
-        // البحث في نوع المتجر
-        final typeMatch = (shop.type ?? '').toLowerCase().contains(query);
-
-        // البحث في أسماء المنتجات
-        bool productMatch = false;
-        if (shop.products != null) {
-          productMatch = shop.products!.any(
-            (product) => (product.name ?? '').toLowerCase().contains(query),
-          );
-        }
-
-        return nameMatch || descMatch || typeMatch || productMatch;
+        // البحث في اسم التصنيف
+        final categoryMatch =
+            (shop.categoryName ?? '').toLowerCase().contains(query);
+        return nameMatch || categoryMatch;
       }).toList();
     }
 

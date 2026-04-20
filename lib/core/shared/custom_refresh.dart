@@ -9,10 +9,13 @@ class CustomRefresh extends StatelessWidget {
     required this.body,
     required this.fun,
     required this.statusRequest,
+    this.preferBodyWhenLoading = false,
   });
   final Widget body;
   final Future<dynamic> Function() fun;
   final StatusRequest statusRequest;
+  /// عند true يعرض body بدل Lottie أثناء التحميل (لصفحة الرئيسية مع Skeleton).
+  final bool preferBodyWhenLoading;
   @override
   Widget build(BuildContext context) {
     return RefreshIndicator(
@@ -20,10 +23,13 @@ class CustomRefresh extends StatelessWidget {
       displacement: 0,
       color: AppColor().primaryColor,
       onRefresh: () async {
-        await Future.delayed(Duration(seconds: 2));
         await fun();
       },
-      child: CustomLodingPage(statusRequest: statusRequest, body: body),
+      child: CustomLodingPage(
+        statusRequest: statusRequest,
+        body: body,
+        preferBodyWhenLoading: preferBodyWhenLoading,
+      ),
     );
   }
 }

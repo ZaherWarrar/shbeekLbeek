@@ -22,6 +22,22 @@ class Assets {
   /// assets/images/category4.png
   static const String imagesCategory4 = "assets/images/category4.png";
 
+  /// Assets for imagesDelevBoy
+  /// assets/images/delev_boy.png
+  static const String imagesDelevBoy = "assets/images/delev_boy.png";
+
+  /// Assets for imagesDelevMoto
+  /// assets/images/delev_moto.png
+  static const String imagesDelevMoto = "assets/images/delev_moto.png";
+
+  /// Assets for imagesFirstOnBo
+  /// assets/images/first_onBo.png
+  static const String imagesFirstOnBo = "assets/images/first_onBo.png";
+
+  /// Assets for imagesFoodLoading
+  /// assets/images/FoodLoading.json
+  static const String imagesFoodLoading = "assets/images/FoodLoading.json";
+
   /// Assets for imagesLoding
   /// assets/images/loding.json
   static const String imagesLoding = "assets/images/loding.json";

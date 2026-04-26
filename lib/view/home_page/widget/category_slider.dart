@@ -1,4 +1,5 @@
 import 'package:app/controller/home/home_controller.dart';
+import 'package:app/core/constant/app_color.dart';
 import 'package:app/core/function/fontsize.dart';
 import 'package:app/data/datasorce/model/main_categores.dart';
 import 'package:app/main.dart';
@@ -37,43 +38,54 @@ class CategorySlider extends StatelessWidget {
                 scrollDirection: Axis.horizontal,
                 itemBuilder: (context, index) {
                   MainCategoriesModel data = controller.mainCat[index];
+                  final isSelected = controller.selectedCategoryId == data.id;
                   return Padding(
                     padding: const EdgeInsets.only(right: 16),
-                    child: FittedBox(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          SizedBox(
-                            width: 80,
-                            height: 80,
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(60),
-                              child: Image.network(
-                                data.imageUrl ?? '',
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return const Icon(
-                                    Icons.image_not_supported_outlined,
-                                    size: 40,
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          FittedBox(
-                            child: Text(
-                              data.name!,
-                              style: TextStyle(
-                                fontSize: getResponsiveFontSize(
-                                  context,
-                                  fontSize: 20,
+                    child: InkWell(
+                      onTap: () => controller.selectCategory(data.id),
+                      borderRadius: BorderRadius.circular(16),
+                      child: Padding(
+                        padding: const EdgeInsets.all(6),
+                        child: FittedBox(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SizedBox(
+                                width: 80,
+                                height: 80,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(60),
+                                  child: Image.network(
+                                    data.imageUrl ?? '',
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return const Icon(
+                                        Icons.image_not_supported_outlined,
+                                        size: 40,
+                                      );
+                                    },
+                                  ),
                                 ),
-                                fontWeight: FontWeight.w600,
                               ),
-                            ),
+                              const SizedBox(height: 8),
+                              FittedBox(
+                                child: Text(
+                                  data.name ?? '',
+                                  style: TextStyle(
+                                    fontSize: getResponsiveFontSize(
+                                      context,
+                                      fontSize: isSelected ? 24 : 20,
+                                    ),
+                                    fontWeight: FontWeight.w600,
+                                    color: isSelected
+                                        ? AppColor().primaryColor
+                                        : Colors.black87,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
                     ),
                   );

@@ -20,4 +20,7 @@ class ApiLinks {
   static const String store = '$baseUrl/store';
   static const String productDetails = '$baseUrl/products';
   static const String productRecommended = '$baseUrl/products/recomended';
+  static const String productReviews = '$baseUrl/product-reviews';
+  static const String storeReviews = '$baseUrl/reviews';
+  static const String userBalance = '$baseUrl/user/balance';
 }

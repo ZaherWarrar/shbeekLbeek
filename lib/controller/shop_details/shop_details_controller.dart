@@ -1,10 +1,14 @@
 import 'package:app/controller/cart/cart_controller.dart';
 import 'package:app/core/class/statusrequest.dart';
+import 'package:app/core/constant/routes/app_routes.dart';
 import 'package:app/core/function/handelingdata.dart';
 import 'package:app/core/class/crud.dart';
+import 'package:app/core/services/session_service.dart';
 import 'package:app/data/datasorce/model/item_model.dart';
 import 'package:app/data/datasorce/model/store_model.dart';
+import 'package:app/data/datasorce/model/store_review_model.dart';
 import 'package:app/data/datasorce/remot/store_details_data.dart';
+import 'package:app/data/datasorce/remot/store_reviews_data.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -13,9 +17,15 @@ class ShopDetailsController extends GetxController {
   StoreModel? store;
   late final int storeId;
   late TextEditingController searchController;
+  final SessionService session = Get.find<SessionService>();
 
   StatusRequest statusRequest = StatusRequest.none;
   List<Products> filteredProducts = [];
+  StoreReviewsResponseModel? reviewsResponse;
+  StatusRequest reviewsStatus = StatusRequest.none;
+  final TextEditingController reviewTextController = TextEditingController();
+  int reviewRating = 5;
+  bool isSubmittingReview = false;
 
   @override
   void onInit() {
@@ -52,6 +62,7 @@ class ShopDetailsController extends GetxController {
     if (statusRequest == StatusRequest.success && response is Map<String, dynamic>) {
       store = StoreModel.fromJson(response);
       filteredProducts = store?.products ?? [];
+      await fetchReviews();
       update();
       return;
     }
@@ -61,6 +72,60 @@ class ShopDetailsController extends GetxController {
     } else {
       statusRequest = StatusRequest.failure;
     }
+    update();
+  }
+
+  Future<void> fetchReviews() async {
+    reviewsStatus = StatusRequest.loading;
+    update();
+
+    final data = StoreReviewsData(Get.find<Crud>());
+    final res = await data.fetchStoreReviews(storeId);
+    final stat = handelingData(res);
+    if (stat != StatusRequest.success || res is! Map<String, dynamic>) {
+      reviewsStatus = res is StatusRequest ? res : StatusRequest.failure;
+      update();
+      return;
+    }
+    reviewsResponse = StoreReviewsResponseModel.fromJson(res);
+    reviewsStatus = StatusRequest.success;
+    update();
+  }
+
+  void setReviewRating(int value) {
+    reviewRating = value.clamp(1, 5);
+    update();
+  }
+
+  Future<void> submitReview() async {
+    if (isSubmittingReview) return;
+    if (!session.isLoggedIn) {
+      Get.snackbar("تنبيه", "يجب تسجيل الدخول أولاً");
+      Get.toNamed(AppRoutes.login);
+      return;
+    }
+    isSubmittingReview = true;
+    update();
+
+    final data = StoreReviewsData(Get.find<Crud>());
+    final text = reviewTextController.text.trim();
+    final res = await data.createReview(
+      storeId: storeId,
+      rating: reviewRating,
+      text: text.isEmpty ? null : text,
+    );
+    final stat = handelingData(res);
+    if (stat == StatusRequest.success) {
+      reviewTextController.clear();
+      reviewRating = 5;
+      await fetchReviews();
+      Get.back();
+      Get.snackbar("تم", "تم إرسال تقييمك بنجاح");
+    } else {
+      Get.snackbar("خطأ", "فشل إرسال التقييم");
+    }
+
+    isSubmittingReview = false;
     update();
   }
 
@@ -174,6 +239,7 @@ class ShopDetailsController extends GetxController {
   @override
   void onClose() {
     searchController.dispose();
+    reviewTextController.dispose();
     super.onClose();
   }
 }

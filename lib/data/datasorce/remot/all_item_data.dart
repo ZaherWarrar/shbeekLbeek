@@ -6,9 +6,14 @@ class AllItemData {
 
   AllItemData(this.crud);
 
-  Future<Object> allItemData(int cityId) async {
+  Future<Object> allItemData(int cityId, {int? categoryId}) async {
     var response = await crud
-        .getData("${ApiLinks.home}$cityId/stores", {});
+        .getData(
+      categoryId == null
+          ? "${ApiLinks.home}$cityId/stores"
+          : "${ApiLinks.home}$cityId/stores/$categoryId",
+      {},
+    );
     return response.fold((l) => l, (r) => r);
   }
 }

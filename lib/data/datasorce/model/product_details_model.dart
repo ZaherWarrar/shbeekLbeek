@@ -2,25 +2,33 @@ class ProductDetailsModel {
   int? id;
   String? name;
   String? description;
+  String? type;
+  List<ProductVariationModel> variations = [];
   String? imageUrl;
   dynamic price;
-  double? rating;
+  double? ratingValue;
+  int? ratingCount;
   int? storeId;
   String? storeName;
   String? storeImageUrl;
   String? storeDeliveryFee;
+  String? deliveryTime;
+  List<String> categoryTree = [];
 
   ProductDetailsModel({
     this.id,
     this.name,
     this.description,
+    this.type,
     this.imageUrl,
     this.price,
-    this.rating,
+    this.ratingValue,
+    this.ratingCount,
     this.storeId,
     this.storeName,
     this.storeImageUrl,
     this.storeDeliveryFee,
+    this.deliveryTime,
   });
 
   static int? _toInt(dynamic value) {
@@ -34,6 +42,13 @@ class ProductDetailsModel {
     if (value == null) return null;
     if (value is num) return value.toDouble();
     return double.tryParse(value.toString());
+  }
+
+  static List<String> _toStringList(dynamic value) {
+    if (value is List) {
+      return value.map((e) => e?.toString() ?? '').where((s) => s.isNotEmpty).toList();
+    }
+    return [];
   }
 
   int get priceInt {
@@ -50,9 +65,11 @@ class ProductDetailsModel {
     id = _toInt(json['id']);
     name = json['name']?.toString();
     description = json['description']?.toString();
+    type = json['type']?.toString();
     imageUrl = json['image_url']?.toString();
     price = json['price'];
-    rating = _toDouble(json['rating']);
+    ratingValue = _toDouble(json['rating_value'] ?? json['rating']);
+    ratingCount = _toInt(json['rating_count']);
     storeId = _toInt(json['store_id'] ?? json['storeId']);
     storeName = (json['store_name'] ?? json['storeName'])?.toString();
     storeImageUrl = (json['store_image_url'] ??
@@ -64,6 +81,35 @@ class ProductDetailsModel {
     storeDeliveryFee =
         (json['store_delivery_fee'] ?? json['delivery_fee'] ?? json['storeDeliveryFee'])
             ?.toString();
+    deliveryTime = json['delivery_time']?.toString();
+    categoryTree = _toStringList(json['category_tree']);
+
+    final v = json['variations'];
+    if (v is List) {
+      variations = v
+          .map((e) => e is Map<String, dynamic> ? ProductVariationModel.fromJson(e) : null)
+          .whereType<ProductVariationModel>()
+          .toList();
+    }
+  }
+}
+
+class ProductVariationModel {
+  int? id;
+  String? name;
+
+  ProductVariationModel({this.id, this.name});
+
+  static int? _toInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value.toString());
+  }
+
+  ProductVariationModel.fromJson(Map<String, dynamic> json) {
+    id = _toInt(json['id']);
+    name = json['name']?.toString();
   }
 }
 

@@ -42,6 +42,7 @@ class HomeControllerImp extends HomeController {
   MainCategoresData mainCategoresData = MainCategoresData(Get.find());
   StatusRequest mainCatStat = StatusRequest.none;
   List<MainCategoriesModel> mainCat = [];
+  int? selectedCategoryId;
   // ============ home section =============================================
   List<HomeSectionModel> homeSection = [];
   List<SectionModel> sectionModel = [];
@@ -63,7 +64,8 @@ class HomeControllerImp extends HomeController {
   Future<void> fetchSliders() async {
     sliderStat = StatusRequest.loading;
     update();
-    var response = await sliderData.sliderData(cityId);
+    var response =
+        await sliderData.sliderData(cityId, categoryId: selectedCategoryId);
     sliderStat = handelingData(response);
     if (sliderStat == StatusRequest.success) {
       List<dynamic> sliderList = [];
@@ -196,7 +198,11 @@ class HomeControllerImp extends HomeController {
     sectionState = StatusRequest.loading;
     update();
 
-    var response = await homeSectionData.sectionData(cityId, sectionName);
+    var response = await homeSectionData.sectionData(
+      cityId,
+      sectionName,
+      categoryId: selectedCategoryId,
+    );
     sectionState = handelingData(response);
 
     if (sectionState == StatusRequest.success && response is List) {
@@ -213,7 +219,8 @@ class HomeControllerImp extends HomeController {
   Future<void> fetchAllItem() async {
     allItemState = StatusRequest.loading;
     update();
-    var response = await allItemData.allItemData(cityId);
+    var response =
+        await allItemData.allItemData(cityId, categoryId: selectedCategoryId);
     allItemState = handelingData(response);
     if (allItemState == StatusRequest.success) {
       List<dynamic> itemList = [];
@@ -250,6 +257,26 @@ class HomeControllerImp extends HomeController {
     return hasNoData || anyLoading;
   }
 
+  Future<void> selectCategory(int? categoryId) async {
+    selectedCategoryId = categoryId;
+    // إعادة تعيين الحالات ليظهر Skeleton حتى تحميل كل الأقسام
+    sliderStat = StatusRequest.loading;
+    allItemState = StatusRequest.loading;
+    homeSectionState = StatusRequest.loading;
+    slides = [];
+    extendedSlides = [];
+    items = [];
+    homeSection = [];
+    finalSection = {};
+    update();
+
+    await Future.wait([
+      fetchSliders(),
+      fetchAllItem(),
+      fetchHomeSection(),
+    ]);
+  }
+
   @override
   void onInit() async {
     super.onInit();
@@ -262,9 +289,13 @@ class HomeControllerImp extends HomeController {
       update();
       return;
     }
+    // أول تحميل: نحمل الأصناف أولاً ثم نختار أول صنف ونحمل باقي البيانات حسبه
+    await fetchMainCategores();
+    if (selectedCategoryId == null && mainCat.isNotEmpty) {
+      selectedCategoryId = mainCat.first.id;
+    }
     await Future.wait([
       fetchSliders(),
-      fetchMainCategores(),
       fetchAllItem(),
       fetchHomeSection(),
     ]);

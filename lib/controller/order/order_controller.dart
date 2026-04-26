@@ -42,6 +42,8 @@ class OrderController extends GetxController {
       return {
         "product": {"id": item['productId'] as int},
         "quantity": item['quantity'] as int,
+        "variation_name": item['variationName']?.toString(),
+        "notes": item['itemNotes']?.toString(),
       };
     }).toList();
 

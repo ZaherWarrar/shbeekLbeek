@@ -6,9 +6,14 @@ class SliderData {
 
   SliderData(this.crud);
 
-  Future<Object> sliderData(int cityId) async {
+  Future<Object> sliderData(int cityId, {int? categoryId}) async {
     var response = await crud
-        .getData("${ApiLinks.home}$cityId/slider", {});
+        .getData(
+      categoryId == null
+          ? "${ApiLinks.home}$cityId/slider"
+          : "${ApiLinks.home}$cityId/slider/$categoryId",
+      {},
+    );
     return response.fold((l) => l, (r) => r);
   }
 }

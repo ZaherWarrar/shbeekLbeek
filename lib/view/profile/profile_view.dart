@@ -51,6 +51,11 @@ class ProfileView extends StatelessWidget {
                   route: AppRoutes.paympa,
                 ),
                 ProfileItemData(
+                  title: 'المحفظة',
+                  icon: Icons.account_balance_wallet_outlined,
+                  route: AppRoutes.wallet,
+                ),
+                ProfileItemData(
                   title: 'تغيير المدينة',
                   icon: Icons.map_outlined,
                   route: AppRoutes.chooseCity,

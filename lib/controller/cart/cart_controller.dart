@@ -102,7 +102,21 @@ void onInit() {
 
   int getQuantity(int productId) {
     final item = cartItems.firstWhere(
-      (e) => e['productId'] == productId,
+      (e) => e['productId'] == productId && (e['variationName'] == null),
+      orElse: () => <String, dynamic>{},
+    );
+    if (item.isEmpty) return 0;
+    final q = item['quantity'];
+    if (q is int) return q;
+    if (q is double) return q.toInt();
+    return int.tryParse(q?.toString() ?? '') ?? 0;
+  }
+
+  int getQuantityByVariation(int productId, String? variationName) {
+    final item = cartItems.firstWhere(
+      (e) =>
+          e['productId'] == productId &&
+          (e['variationName']?.toString() ?? '') == (variationName ?? ''),
       orElse: () => <String, dynamic>{},
     );
     if (item.isEmpty) return 0;
@@ -113,7 +127,13 @@ void onInit() {
   }
 
   // إضافة منتج للسلة
-  void addItem(Products product, StoreModel shop, {int quantity = 1}) {
+  void addItem(
+    Products product,
+    StoreModel shop, {
+    int quantity = 1,
+    String? variationName,
+    String? itemNotes,
+  }) {
     // التحقق من وجود طلب نشط
     if (hasActiveOrder()) {
       Get.snackbar(
@@ -136,7 +156,9 @@ void onInit() {
 
     // التحقق من وجود المنتج في السلة
     int existingIndex = cartItems.indexWhere(
-      (item) => item['productId'] == product.id,
+      (item) =>
+          item['productId'] == product.id &&
+          (item['variationName']?.toString() ?? '') == (variationName ?? ''),
     );
 
     if (existingIndex != -1) {
@@ -154,6 +176,8 @@ void onInit() {
         'shopId': shop.id!,
         'shopName': shop.name ?? '',
         'deliveryFee': shop.deliveryFee,
+        'variationName': variationName,
+        'itemNotes': itemNotes,
         'productName': product.name ?? '',
         'productDescription': '',
         'productImage': product.imageUrl ?? '',
@@ -188,9 +212,37 @@ void onInit() {
     );
   }
 
+  void removeItemByVariation(int productId, String? variationName) {
+    cartItems.removeWhere(
+      (item) =>
+          item['productId'] == productId &&
+          (item['variationName']?.toString() ?? '') == (variationName ?? ''),
+    );
+    deliveryFee = _deriveDeliveryFeeFromCart() ?? deliveryFee;
+    _saveCart();
+    update();
+  }
+
   // زيادة كمية منتج
   void increaseQuantity(int productId) {
-    int index = cartItems.indexWhere((item) => item['productId'] == productId);
+    int index =
+        cartItems.indexWhere((item) => item['productId'] == productId && (item['variationName'] == null));
+    if (index != -1) {
+      cartItems[index]['quantity'] = (cartItems[index]['quantity'] as int) + 1;
+      cartItems[index]['subtotal'] =
+          (cartItems[index]['price'] as int) *
+          (cartItems[index]['quantity'] as int);
+      _saveCart();
+      update();
+    }
+  }
+
+  void increaseQuantityByVariation(int productId, String? variationName) {
+    int index = cartItems.indexWhere(
+      (item) =>
+          item['productId'] == productId &&
+          (item['variationName']?.toString() ?? '') == (variationName ?? ''),
+    );
     if (index != -1) {
       cartItems[index]['quantity'] = (cartItems[index]['quantity'] as int) + 1;
       cartItems[index]['subtotal'] =
@@ -203,7 +255,8 @@ void onInit() {
 
   // تقليل كمية منتج
   void decreaseQuantity(int productId) {
-    int index = cartItems.indexWhere((item) => item['productId'] == productId);
+    int index =
+        cartItems.indexWhere((item) => item['productId'] == productId && (item['variationName'] == null));
     if (index != -1) {
       int currentQuantity = cartItems[index]['quantity'] as int;
       if (currentQuantity > 1) {
@@ -216,6 +269,27 @@ void onInit() {
       } else {
         // إذا كانت الكمية 1، نحذف المنتج
         removeItem(productId);
+      }
+    }
+  }
+
+  void decreaseQuantityByVariation(int productId, String? variationName) {
+    int index = cartItems.indexWhere(
+      (item) =>
+          item['productId'] == productId &&
+          (item['variationName']?.toString() ?? '') == (variationName ?? ''),
+    );
+    if (index != -1) {
+      int currentQuantity = cartItems[index]['quantity'] as int;
+      if (currentQuantity > 1) {
+        cartItems[index]['quantity'] = currentQuantity - 1;
+        cartItems[index]['subtotal'] =
+            (cartItems[index]['price'] as int) *
+            (cartItems[index]['quantity'] as int);
+        _saveCart();
+        update();
+      } else {
+        removeItemByVariation(productId, variationName);
       }
     }
   }

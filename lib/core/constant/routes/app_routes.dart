@@ -25,6 +25,7 @@ import 'package:app/view/privacy/privacy_view.dart';
 import 'package:app/view/shopDetails/shop_details_view.dart';
 import 'package:app/view/termsPage/terms_pages.dart';
 import 'package:app/view/product_details/product_details_view.dart';
+import 'package:app/view/wallet/wallet_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -47,6 +48,7 @@ class AppRoutes {
   static const String ordhis = '/OrderHistoryPage';
   static const String addrslis = '/Addresspage';
   static const String paympa = '/Paymentpage';
+  static const String wallet = '/wallet';
   static const String start = '/start';
   static const String onboarding = '/onbo';
 
@@ -98,6 +100,7 @@ class AppRoutes {
       binding: AddressBinding(),
     ),
     GetPage(name: paympa, page: () => PaymentPage(), binding: PaymentBinding()),
+    GetPage(name: wallet, page: () => const WalletView()),
      GetPage(name: onboarding, page: () => OnboardingView()),
     
   ];

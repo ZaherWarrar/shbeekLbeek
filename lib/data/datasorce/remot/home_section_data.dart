@@ -11,9 +11,13 @@ class HomeSectionData {
         .getData("${ApiLinks.baseUrl}/home_sections", {});
     return response.fold((l) => l, (r) => r);
   }
-  Future<Object> sectionData(int cityId , String sectionName) async {
-    var response = await crud
-        .getData("${ApiLinks.home}$cityId/section_products/$sectionName", {});
+  Future<Object> sectionData(int cityId, String sectionName, {int? categoryId}) async {
+    var response = await crud.getData(
+      categoryId == null
+          ? "${ApiLinks.home}$cityId/section_products/$sectionName"
+          : "${ApiLinks.home}$cityId/section_products/$sectionName/$categoryId",
+      {},
+    );
     return response.fold((l) => l, (r) => r);
   }
 }

@@ -59,6 +59,11 @@ class ProductDetailsView extends StatelessWidget {
       init: ProductDetailsController(productId: pid),
       builder: (controller) {
         final product = controller.product;
+        final isVariable =
+            (product?.type ?? '').toLowerCase() == 'variable' &&
+            (product?.variations.isNotEmpty ?? false);
+        final selectedVariation = controller.selectedVariation;
+        final selectedVariationName = selectedVariation?.name;
         final effectiveStoreId = product?.storeId ?? argStoreId;
         final effectiveStoreName = product?.storeName ?? argStoreName;
         final effectiveStoreImage = product?.storeImageUrl ?? argStoreImageUrl;
@@ -166,7 +171,9 @@ class ProductDetailsView extends StatelessWidget {
                             child: Row(
                               children: [
                                 Text(
-                                  (product?.rating ?? 0).toStringAsFixed(1),
+                                  (product?.ratingValue ?? 0).toStringAsFixed(
+                                    1,
+                                  ),
                                   style: TextStyle(
                                     color: AppColor().titleColor,
                                     fontWeight: FontWeight.w700,
@@ -250,6 +257,66 @@ class ProductDetailsView extends StatelessWidget {
                           color: AppColor().descriptionColor,
                         ),
                       ),
+                      if (isVariable) ...[
+                        const SizedBox(height: 18),
+                        Text(
+                          'اختر خيار المنتج',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            color: AppColor().titleColor,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Wrap(
+                          spacing: 10,
+                          runSpacing: 10,
+                          children: product!.variations.map((v) {
+                            final isSelected = selectedVariation?.id == v.id;
+                            return ChoiceChip(
+                              label: Text(v.name ?? ''),
+                              selected: isSelected,
+                              selectedColor: AppColor().primaryColor.withValues(
+                                alpha: 0.18,
+                              ),
+                              onSelected: (_) => controller.selectVariation(v),
+                              labelStyle: TextStyle(
+                                color: isSelected
+                                    ? AppColor().primaryColor
+                                    : AppColor().titleColor,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ],
+                      const SizedBox(height: 18),
+                      Text(
+                        'ملاحظة على المنتج (اختياري)',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: AppColor().titleColor,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      TextField(
+                        controller: controller.itemNotesController,
+                        maxLines: 2,
+                        decoration: InputDecoration(
+                          hintText: 'مثال: بدون سكر / زيادة صوص...',
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(color: Colors.grey.shade300),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(color: Colors.grey.shade300),
+                          ),
+                        ),
+                      ),
                       const SizedBox(height: 18),
 
                       // منتجات مقترحة
@@ -286,6 +353,38 @@ class ProductDetailsView extends StatelessWidget {
                                 name: rec.name ?? 'منتج',
                                 price: _formatPrice(rec.priceInt),
                                 imageUrl: rec.imageUrl ?? '',
+                                onAdd: () {
+                                  final cart = Get.find<CartController>();
+                                  final storeId =
+                                      rec.storeId ?? effectiveStoreId;
+                                  if (storeId == null || storeId <= 0) {
+                                    Get.snackbar(
+                                      'تنبيه',
+                                      'لا يمكن إضافة المنتج بدون معرّف المتجر',
+                                    );
+                                    return;
+                                  }
+                                  final shop = StoreModel(
+                                    id: storeId,
+                                    name:
+                                        rec.storeName ??
+                                        effectiveStoreName ??
+                                        'متجر',
+                                    imageUrl:
+                                        rec.storeImageUrl ??
+                                        effectiveStoreImage,
+                                    deliveryFee:
+                                        rec.storeDeliveryFee ??
+                                        effectiveStoreDeliveryFee,
+                                  );
+                                  final p = Products(
+                                    id: rec.id,
+                                    name: rec.name,
+                                    imageUrl: rec.imageUrl,
+                                    regularPrice: rec.priceInt,
+                                  );
+                                  cart.addItem(p, shop, quantity: 1);
+                                },
                                 onTap: () {
                                   final recId = rec.id;
                                   if (recId != null && recId > 0) {
@@ -293,11 +392,15 @@ class ProductDetailsView extends StatelessWidget {
                                       AppRoutes.productDetails,
                                       arguments: {
                                         'productId': recId,
-                                        'storeId': rec.storeId ?? effectiveStoreId,
-                                        'storeName': rec.storeName ?? effectiveStoreName,
+                                        'storeId':
+                                            rec.storeId ?? effectiveStoreId,
+                                        'storeName':
+                                            rec.storeName ?? effectiveStoreName,
                                         'storeImageUrl':
-                                            rec.storeImageUrl ?? effectiveStoreImage,
-                                        'storeDeliveryFee': rec.storeDeliveryFee ??
+                                            rec.storeImageUrl ??
+                                            effectiveStoreImage,
+                                        'storeDeliveryFee':
+                                            rec.storeDeliveryFee ??
                                             effectiveStoreDeliveryFee,
                                       },
                                     );
@@ -306,6 +409,305 @@ class ProductDetailsView extends StatelessWidget {
                               );
                             },
                           ),
+                        ),
+
+                      const SizedBox(height: 18),
+
+                      // التقييمات (آخر الصفحة)
+                      Row(
+                        children: [
+                          Text(
+                            'التقييمات',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                              color: AppColor().titleColor,
+                            ),
+                          ),
+                          const Spacer(),
+                          TextButton(
+                            style: TextButton.styleFrom(
+                              foregroundColor: AppColor().primaryColor,
+                              textStyle: const TextStyle(
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            onPressed: () {
+                              Get.bottomSheet(
+                                GetBuilder<ProductDetailsController>(
+                                  builder: (c) {
+                                    return Container(
+                                      padding: const EdgeInsets.all(16),
+                                      decoration: BoxDecoration(
+                                        color: AppColor().backgroundColor,
+                                        borderRadius:
+                                            const BorderRadius.vertical(
+                                              top: Radius.circular(20),
+                                            ),
+                                      ),
+                                      child: SafeArea(
+                                        top: false,
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  'أضف تقييمك',
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.w800,
+                                                    color:
+                                                        AppColor().titleColor,
+                                                  ),
+                                                ),
+                                                const Spacer(),
+                                                IconButton(
+                                                  onPressed: () => Get.back(),
+                                                  icon: Icon(
+                                                    Icons.close,
+                                                    color:
+                                                        AppColor().titleColor,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 8),
+                                            Row(
+                                              children: List.generate(5, (i) {
+                                                final star = i + 1;
+                                                final filled =
+                                                    star <= c.reviewRating;
+                                                return IconButton(
+                                                  visualDensity:
+                                                      VisualDensity.compact,
+                                                  onPressed:
+                                                      c.isSubmittingReview
+                                                      ? null
+                                                      : () => c.setReviewRating(
+                                                          star,
+                                                        ),
+                                                  icon: Icon(
+                                                    filled
+                                                        ? Icons.star
+                                                        : Icons.star_border,
+                                                    color:
+                                                        AppColor().primaryColor,
+                                                  ),
+                                                );
+                                              }),
+                                            ),
+                                            TextField(
+                                              controller:
+                                                  c.reviewTextController,
+                                              maxLines: 3,
+                                              decoration: InputDecoration(
+                                                hintText:
+                                                    'ملاحظات على التقييم (اختياري)',
+                                                filled: true,
+                                                fillColor: Colors.white,
+                                                border: OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(14),
+                                                  borderSide: BorderSide(
+                                                    color: Colors.grey.shade300,
+                                                  ),
+                                                ),
+                                                enabledBorder:
+                                                    OutlineInputBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            14,
+                                                          ),
+                                                      borderSide: BorderSide(
+                                                        color: Colors
+                                                            .grey
+                                                            .shade300,
+                                                      ),
+                                                    ),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 12),
+                                            SizedBox(
+                                              width: double.infinity,
+                                              height: 48,
+                                              child: ElevatedButton(
+                                                onPressed: c.isSubmittingReview
+                                                    ? null
+                                                    : () => c.submitReview(),
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor:
+                                                      AppColor().primaryColor,
+                                                  foregroundColor: Colors.white,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          14,
+                                                        ),
+                                                  ),
+                                                ),
+                                                child: c.isSubmittingReview
+                                                    ? const SizedBox(
+                                                        height: 18,
+                                                        width: 18,
+                                                        child:
+                                                            CircularProgressIndicator(
+                                                              strokeWidth: 2,
+                                                              color:
+                                                                  Colors.white,
+                                                            ),
+                                                      )
+                                                    : const Text(
+                                                        'إرسال التقييم',
+                                                      ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                                isScrollControlled: true,
+                              );
+                            },
+                            child: const Text('إضافة تقييم'),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Builder(
+                        builder: (context) {
+                          final rr = controller.reviewsResponse;
+                          final avg = rr?.averageRating ?? 0;
+                          final total = rr?.totalReviews ?? 0;
+                          return Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(18),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      avg.toStringAsFixed(1),
+                                      style: TextStyle(
+                                        color: AppColor().titleColor,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Icon(
+                                      Icons.star,
+                                      size: 16,
+                                      color: AppColor().primaryColor,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                '($total تقييم)',
+                                style: TextStyle(
+                                  color: AppColor().descriptionColor,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 10),
+                      if (controller.reviewsStatus == StatusRequest.loading)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 6),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: AppColor().primaryColor,
+                              strokeWidth: 2,
+                            ),
+                          ),
+                        )
+                      else if (controller.reviewsResponse == null ||
+                          controller.reviewsResponse!.reviews.isEmpty)
+                        Text(
+                          'لا يوجد تقييمات حالياً',
+                          style: TextStyle(color: AppColor().descriptionColor),
+                        )
+                      else
+                        Column(
+                          children: controller.reviewsResponse!.reviews
+                              .take(3)
+                              .map((r) {
+                                final userName = r.user?.name ?? 'مستخدم';
+                                final rating = (r.rating ?? 0).clamp(0, 5);
+                                final text = (r.text ?? '').trim();
+                                return Container(
+                                  margin: const EdgeInsets.only(bottom: 10),
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(16),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(
+                                          alpha: 0.03,
+                                        ),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 6),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Text(
+                                            userName,
+                                            style: TextStyle(
+                                              color: AppColor().titleColor,
+                                              fontWeight: FontWeight.w800,
+                                            ),
+                                          ),
+                                          const Spacer(),
+                                          Row(
+                                            children: List.generate(5, (i) {
+                                              final filled = (i + 1) <= rating;
+                                              return Icon(
+                                                filled
+                                                    ? Icons.star
+                                                    : Icons.star_border,
+                                                size: 16,
+                                                color: AppColor().primaryColor,
+                                              );
+                                            }),
+                                          ),
+                                        ],
+                                      ),
+                                      if (text.isNotEmpty) ...[
+                                        const SizedBox(height: 6),
+                                        Text(
+                                          text,
+                                          style: TextStyle(
+                                            color: AppColor().descriptionColor,
+                                            height: 1.5,
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                );
+                              })
+                              .toList(),
                         ),
 
                       const SizedBox(height: 90),
@@ -318,7 +720,9 @@ class ProductDetailsView extends StatelessWidget {
               builder: (cart) {
                 final id = product?.id ?? pid;
                 final safeId = id;
-                final qty = cart.getQuantity(safeId);
+                final qty = isVariable
+                    ? cart.getQuantityByVariation(safeId, selectedVariationName)
+                    : cart.getQuantity(safeId);
                 return GetBuilder<FavoritesController>(
                   builder: (fav) {
                     final isFav = fav.isFavorite('product', safeId);
@@ -330,7 +734,7 @@ class ProductDetailsView extends StatelessWidget {
                           id: safeId,
                           name: product?.name ?? '',
                           image: product?.imageUrl ?? '',
-                          rating: product?.rating ?? 0,
+                          rating: product?.ratingValue ?? 0,
                           category: (product?.priceInt ?? 0).toString(),
                           favoriteType: 'product',
                           isFavorite: isFav,
@@ -343,6 +747,15 @@ class ProductDetailsView extends StatelessWidget {
                       },
                       onAdd: () {
                         if (product == null) return;
+                        if (isVariable &&
+                            (selectedVariationName == null ||
+                                selectedVariationName.isEmpty)) {
+                          Get.snackbar(
+                            'تنبيه',
+                            'الرجاء اختيار خيار المنتج أولاً',
+                          );
+                          return;
+                        }
                         final storeId = effectiveStoreId;
                         if (storeId == null || storeId <= 0) {
                           Get.snackbar(
@@ -363,13 +776,38 @@ class ProductDetailsView extends StatelessWidget {
                           imageUrl: product.imageUrl,
                           regularPrice: product.priceInt,
                         );
-                        cart.addItem(p, shop, quantity: 1);
+                        cart.addItem(
+                          p,
+                          shop,
+                          quantity: 1,
+                          variationName: isVariable
+                              ? selectedVariationName
+                              : null,
+                          itemNotes:
+                              controller.itemNotesController.text.trim().isEmpty
+                              ? null
+                              : controller.itemNotesController.text.trim(),
+                        );
                       },
                       onIncrease: () {
-                        cart.increaseQuantity(safeId);
+                        if (isVariable) {
+                          cart.increaseQuantityByVariation(
+                            safeId,
+                            selectedVariationName,
+                          );
+                        } else {
+                          cart.increaseQuantity(safeId);
+                        }
                       },
                       onDecrease: () {
-                        cart.decreaseQuantity(safeId);
+                        if (isVariable) {
+                          cart.decreaseQuantityByVariation(
+                            safeId,
+                            selectedVariationName,
+                          );
+                        } else {
+                          cart.decreaseQuantity(safeId);
+                        }
                       },
                     );
                   },
@@ -511,12 +949,14 @@ class _RecommendedCard extends StatelessWidget {
     required this.name,
     required this.price,
     required this.imageUrl,
+    required this.onAdd,
     required this.onTap,
   });
 
   final String name;
   final String price;
   final String imageUrl;
+  final VoidCallback onAdd;
   final VoidCallback onTap;
 
   @override
@@ -586,7 +1026,7 @@ class _RecommendedCard extends StatelessWidget {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: GestureDetector(
-                    onTap: onTap,
+                    onTap: onAdd,
                     child: Container(
                       height: 32,
                       width: 32,

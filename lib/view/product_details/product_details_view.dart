@@ -56,14 +56,14 @@ class ProductDetailsView extends StatelessWidget {
     final int pid = productId;
 
     return GetBuilder<ProductDetailsController>(
+      global: false,
       init: ProductDetailsController(productId: pid),
       builder: (controller) {
         final product = controller.product;
         final isVariable =
             (product?.type ?? '').toLowerCase() == 'variable' &&
             (product?.variations.isNotEmpty ?? false);
-        final selectedVariation = controller.selectedVariation;
-        final selectedVariationName = selectedVariation?.name;
+        final selectedVariationName = controller.selectedVariationNameCombined;
         final effectiveStoreId = product?.storeId ?? argStoreId;
         final effectiveStoreName = product?.storeName ?? argStoreName;
         final effectiveStoreImage = product?.storeImageUrl ?? argStoreImageUrl;
@@ -272,14 +272,15 @@ class ProductDetailsView extends StatelessWidget {
                           spacing: 10,
                           runSpacing: 10,
                           children: product!.variations.map((v) {
-                            final isSelected = selectedVariation?.id == v.id;
+                            final isSelected = controller.selectedVariations
+                                .any((e) => e.id == v.id && e.name == v.name);
                             return ChoiceChip(
                               label: Text(v.name ?? ''),
                               selected: isSelected,
                               selectedColor: AppColor().primaryColor.withValues(
                                 alpha: 0.18,
                               ),
-                              onSelected: (_) => controller.selectVariation(v),
+                              onSelected: (_) => controller.toggleVariation(v),
                               labelStyle: TextStyle(
                                 color: isSelected
                                     ? AppColor().primaryColor
@@ -403,6 +404,7 @@ class ProductDetailsView extends StatelessWidget {
                                             rec.storeDeliveryFee ??
                                             effectiveStoreDeliveryFee,
                                       },
+                                      preventDuplicates: false,
                                     );
                                   }
                                 },
@@ -747,9 +749,7 @@ class ProductDetailsView extends StatelessWidget {
                       },
                       onAdd: () {
                         if (product == null) return;
-                        if (isVariable &&
-                            (selectedVariationName == null ||
-                                selectedVariationName.isEmpty)) {
+                        if (isVariable && !controller.hasSelectedVariations) {
                           Get.snackbar(
                             'تنبيه',
                             'الرجاء اختيار خيار المنتج أولاً',

@@ -361,6 +361,12 @@ class ShopDetailsView extends StatelessWidget {
                                 final userName = r.user?.name ?? 'مستخدم';
                                 final rating = (r.rating ?? 0).clamp(0, 5);
                                 final text = (r.text ?? '').trim();
+                                final myIdStr =
+                                    (controller.session.userId ?? '').trim();
+                                final isMine = myIdStr.isNotEmpty &&
+                                    (myIdStr == (r.userId?.toString() ?? '') ||
+                                        myIdStr ==
+                                            (r.user?.id?.toString() ?? ''));
                                 return Container(
                                   margin: const EdgeInsets.only(bottom: 10),
                                   padding: const EdgeInsets.all(12),
@@ -391,6 +397,160 @@ class ShopDetailsView extends StatelessWidget {
                                             ),
                                           ),
                                           const Spacer(),
+                                          if (isMine && (r.id ?? 0) > 0)
+                                            PopupMenuButton<String>(
+                                              icon: Icon(
+                                                Icons.more_vert,
+                                                color: AppColor().titleColor,
+                                              ),
+                                              onSelected: (value) async {
+                                                if (value == 'edit') {
+                                                  controller.beginEditReview(r);
+                                                  Get.bottomSheet(
+                                                    GetBuilder<ShopDetailsController>(
+                                                      builder: (c) {
+                                                        return Container(
+                                                          padding: const EdgeInsets.all(16),
+                                                          decoration: BoxDecoration(
+                                                            color: AppColor().backgroundColor,
+                                                            borderRadius: const BorderRadius.vertical(
+                                                              top: Radius.circular(20),
+                                                            ),
+                                                          ),
+                                                          child: SafeArea(
+                                                            top: false,
+                                                            child: Column(
+                                                              mainAxisSize: MainAxisSize.min,
+                                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                                              children: [
+                                                                Row(
+                                                                  children: [
+                                                                    Text(
+                                                                      'تعديل التقييم',
+                                                                      style: TextStyle(
+                                                                        fontSize: 16,
+                                                                        fontWeight: FontWeight.w800,
+                                                                        color: AppColor().titleColor,
+                                                                      ),
+                                                                    ),
+                                                                    const Spacer(),
+                                                                    IconButton(
+                                                                      onPressed: () {
+                                                                        c.resetReviewForm();
+                                                                        Get.back();
+                                                                      },
+                                                                      icon: Icon(
+                                                                        Icons.close,
+                                                                        color: AppColor().titleColor,
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                                const SizedBox(height: 8),
+                                                                Row(
+                                                                  children: List.generate(5, (i) {
+                                                                    final star = i + 1;
+                                                                    final filled = star <= c.reviewRating;
+                                                                    return IconButton(
+                                                                      visualDensity: VisualDensity.compact,
+                                                                      onPressed: c.isSubmittingReview
+                                                                          ? null
+                                                                          : () => c.setReviewRating(star),
+                                                                      icon: Icon(
+                                                                        filled ? Icons.star : Icons.star_border,
+                                                                        color: AppColor().primaryColor,
+                                                                      ),
+                                                                    );
+                                                                  }),
+                                                                ),
+                                                                TextField(
+                                                                  controller: c.reviewTextController,
+                                                                  maxLines: 3,
+                                                                  decoration: InputDecoration(
+                                                                    hintText: 'ملاحظات (اختياري)',
+                                                                    filled: true,
+                                                                    fillColor: Colors.white,
+                                                                    border: OutlineInputBorder(
+                                                                      borderRadius: BorderRadius.circular(14),
+                                                                      borderSide: BorderSide(color: Colors.grey.shade300),
+                                                                    ),
+                                                                    enabledBorder: OutlineInputBorder(
+                                                                      borderRadius: BorderRadius.circular(14),
+                                                                      borderSide: BorderSide(color: Colors.grey.shade300),
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                                const SizedBox(height: 12),
+                                                                SizedBox(
+                                                                  width: double.infinity,
+                                                                  height: 48,
+                                                                  child: ElevatedButton(
+                                                                    onPressed: c.isSubmittingReview
+                                                                        ? null
+                                                                        : () => c.updateReview(),
+                                                                    style: ElevatedButton.styleFrom(
+                                                                      backgroundColor: AppColor().primaryColor,
+                                                                      foregroundColor: Colors.white,
+                                                                      shape: RoundedRectangleBorder(
+                                                                        borderRadius: BorderRadius.circular(14),
+                                                                      ),
+                                                                    ),
+                                                                    child: c.isSubmittingReview
+                                                                        ? const SizedBox(
+                                                                            height: 18,
+                                                                            width: 18,
+                                                                            child: CircularProgressIndicator(
+                                                                              strokeWidth: 2,
+                                                                              color: Colors.white,
+                                                                            ),
+                                                                          )
+                                                                        : const Text('حفظ التعديل'),
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        );
+                                                      },
+                                                    ),
+                                                    isScrollControlled: true,
+                                                  );
+                                                } else if (value == 'delete') {
+                                                  final ok = await Get.dialog<bool>(
+                                                    AlertDialog(
+                                                      title: const Text('حذف التقييم'),
+                                                      content: const Text('هل أنت متأكد من حذف التقييم؟'),
+                                                      actions: [
+                                                        TextButton(
+                                                          onPressed: () => Get.back(result: false),
+                                                          child: const Text('إلغاء'),
+                                                        ),
+                                                        TextButton(
+                                                          onPressed: () => Get.back(result: true),
+                                                          child: const Text(
+                                                            'حذف',
+                                                            style: TextStyle(color: Colors.red),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  );
+                                                  if (ok == true) {
+                                                    await controller.deleteReview(r.id!);
+                                                  }
+                                                }
+                                              },
+                                              itemBuilder: (context) => const [
+                                                PopupMenuItem(
+                                                  value: 'edit',
+                                                  child: Text('تعديل'),
+                                                ),
+                                                PopupMenuItem(
+                                                  value: 'delete',
+                                                  child: Text('حذف'),
+                                                ),
+                                              ],
+                                            ),
                                           Row(
                                             children: List.generate(5, (i) {
                                               final filled =

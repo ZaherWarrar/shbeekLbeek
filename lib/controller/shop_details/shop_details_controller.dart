@@ -26,6 +26,7 @@ class ShopDetailsController extends GetxController {
   final TextEditingController reviewTextController = TextEditingController();
   int reviewRating = 5;
   bool isSubmittingReview = false;
+  int? editingReviewId;
 
   @override
   void onInit() {
@@ -123,6 +124,78 @@ class ShopDetailsController extends GetxController {
       Get.snackbar("تم", "تم إرسال تقييمك بنجاح");
     } else {
       Get.snackbar("خطأ", "فشل إرسال التقييم");
+    }
+
+    isSubmittingReview = false;
+    update();
+  }
+
+  void beginEditReview(StoreReviewModel review) {
+    editingReviewId = review.id;
+    reviewRating = (review.rating ?? 5).clamp(1, 5);
+    reviewTextController.text = (review.text ?? '').toString();
+    update();
+  }
+
+  void resetReviewForm() {
+    editingReviewId = null;
+    reviewRating = 5;
+    reviewTextController.clear();
+    update();
+  }
+
+  Future<void> updateReview() async {
+    final rid = editingReviewId;
+    if (rid == null || rid <= 0) return;
+    if (isSubmittingReview) return;
+    if (!session.isLoggedIn) {
+      Get.snackbar("تنبيه", "يجب تسجيل الدخول أولاً");
+      Get.toNamed(AppRoutes.login);
+      return;
+    }
+    isSubmittingReview = true;
+    update();
+
+    final data = StoreReviewsData(Get.find<Crud>());
+    final text = reviewTextController.text.trim();
+    final res = await data.updateReview(
+      reviewId: rid,
+      rating: reviewRating,
+      text: text.isEmpty ? null : text,
+    );
+    final stat = handelingData(res);
+    if (stat == StatusRequest.success) {
+      await fetchReviews();
+      resetReviewForm();
+      Get.back();
+      Get.snackbar("تم", "تم تعديل التقييم بنجاح");
+    } else {
+      Get.snackbar("خطأ", "فشل تعديل التقييم");
+    }
+
+    isSubmittingReview = false;
+    update();
+  }
+
+  Future<void> deleteReview(int reviewId) async {
+    if (reviewId <= 0) return;
+    if (isSubmittingReview) return;
+    if (!session.isLoggedIn) {
+      Get.snackbar("تنبيه", "يجب تسجيل الدخول أولاً");
+      Get.toNamed(AppRoutes.login);
+      return;
+    }
+    isSubmittingReview = true;
+    update();
+
+    final data = StoreReviewsData(Get.find<Crud>());
+    final res = await data.deleteReview(reviewId);
+    final stat = handelingData(res);
+    if (stat == StatusRequest.success) {
+      await fetchReviews();
+      Get.snackbar("تم", "تم حذف التقييم");
+    } else {
+      Get.snackbar("خطأ", "فشل حذف التقييم");
     }
 
     isSubmittingReview = false;

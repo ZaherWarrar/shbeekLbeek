@@ -160,7 +160,7 @@ class RecommendedProductModel {
             ? Map<String, dynamic>.from(nested)
             : <String, dynamic>{};
 
-    id = _toInt(json['id'] ?? json['product_id'] ?? nestedMap['id']);
+    id = _toInt(json['id'] ?? json['id'] ?? nestedMap['id']);
     name = (json['name'] ?? nestedMap['name'])?.toString();
     imageUrl = (json['image_url'] ?? nestedMap['image_url'])?.toString();
     price = json['price'] ?? nestedMap['price'];
@@ -170,7 +170,11 @@ class RecommendedProductModel {
     storeImageUrl =
         (json['store_image_url'] ?? nestedMap['store_image_url'])?.toString();
     storeDeliveryFee =
-        (json['store_delivery_fee'] ?? nestedMap['store_delivery_fee'])?.toString();
+        (json['store_delivery_fee'] ??
+                json['delivery_fee'] ??
+                nestedMap['store_delivery_fee'] ??
+                nestedMap['delivery_fee'])
+            ?.toString();
   }
 }
 

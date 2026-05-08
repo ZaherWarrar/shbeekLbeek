@@ -22,7 +22,7 @@ class ProductDetailsController extends GetxController {
   StatusRequest statusRequest = StatusRequest.none;
   ProductDetailsModel? product;
   List<RecommendedProductModel> recommended = [];
-  ProductVariationModel? selectedVariation;
+  final List<ProductVariationModel> selectedVariations = [];
   final TextEditingController itemNotesController = TextEditingController();
   final TextEditingController reviewTextController = TextEditingController();
   int reviewRating = 5;
@@ -43,12 +43,14 @@ class ProductDetailsController extends GetxController {
     }
 
     product = ProductDetailsModel.fromJson(detailsRes);
-    // اختيار افتراضي إذا كان المنتج variable وفيه خيارات
+    // اختيار افتراضي إذا كان المنتج variable وفيه خيارات (متعدد الاختيار)
     if ((product?.type ?? '').toLowerCase() == 'variable' &&
         (product?.variations.isNotEmpty ?? false)) {
-      selectedVariation ??= product!.variations.first;
+      if (selectedVariations.isEmpty) {
+        selectedVariations.add(product!.variations.first);
+      }
     } else {
-      selectedVariation = null;
+      selectedVariations.clear();
     }
 
     final recRes = await _data.fetchRecommended(productId);
@@ -100,8 +102,29 @@ class ProductDetailsController extends GetxController {
     fetchAll();
   }
 
-  void selectVariation(ProductVariationModel v) {
-    selectedVariation = v;
+  void toggleVariation(ProductVariationModel v) {
+    final idx = selectedVariations.indexWhere((e) => e.id == v.id && e.name == v.name);
+    if (idx == -1) {
+      selectedVariations.add(v);
+    } else {
+      selectedVariations.removeAt(idx);
+    }
+    update();
+  }
+
+  String? get selectedVariationNameCombined {
+    final names = selectedVariations
+        .map((e) => (e.name ?? '').trim())
+        .where((s) => s.isNotEmpty)
+        .toList();
+    if (names.isEmpty) return null;
+    return names.join(', ');
+  }
+
+  bool get hasSelectedVariations => selectedVariationNameCombined != null;
+
+  void clearVariationsSelection() {
+    selectedVariations.clear();
     update();
   }
 

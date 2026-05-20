@@ -1,4 +1,6 @@
 import 'package:app/core/services/session_service.dart';
+import 'package:app/core/shared/notifications/notification_api.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:app/binding/my_binding.dart';
@@ -9,6 +11,12 @@ import 'package:app/localization/translation.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+//تفعيل الفاير بيز
+await Firebase.initializeApp();
+
+  // 2. تشغيل كلاس الإشعارات
+  NotificationApi notificationApi = NotificationApi();
+  await notificationApi.init();
   //  تهيئة SessionService
   await Get.putAsync(() => SessionService().init());
 

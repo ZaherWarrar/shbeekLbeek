@@ -1,7 +1,13 @@
-# Fix Complete ✅
+# TODO - Inner Categories in ShopDetails
 
-- [x] Step 1: Edit android/app/build.gradle.kts to add coreLibraryDesugaringEnabled and dependency.
-- [x] Step 2: Run `flutter clean && flutter pub get`.
-- [x] Step 3: Test build with `flutter build apk --debug`.
+- [ ] Update `Products` model to parse `inner_category` from API.
+  - File: `lib/data/datasorce/model/item_model.dart`
 
-**Result:** Core library desugaring enabled for flutter_local_notifications. Build failure fixed. Run `flutter run` to launch the app.
+- [ ] Update `ShopDetailsController.getProductsByCategory()` to group `filteredProducts` by `product.innerCategory.id` (instead of returning `{null: ...}`).
+  - File: `lib/controller/shop_details/shop_details_controller.dart`
+
+- [ ] Update `CategoryWithItems` UI title to show inner category name.
+  - File: `lib/view/shopDetails/widgets/category_with_items.dart`
+
+- [ ] Sanity check: ensure product quantity, navigation to ProductDetails, favorites, and cart updates still work after model changes.
+- [ ] Run `flutter analyze` / tests if available.

@@ -34,22 +34,39 @@ class CategoryWithItems extends StatelessWidget {
               );
             }
 
+            final sortedEntries = categories.entries.toList()
+              ..sort((a, b) {
+                final aName =
+                    (a.value.isNotEmpty
+                        ? a.value.first.innerCategory?.name
+                        : null) ??
+                    '';
+                final bName =
+                    (b.value.isNotEmpty
+                        ? b.value.first.innerCategory?.name
+                        : null) ??
+                    '';
+                return aName.compareTo(bName);
+              });
+
             return Column(
-              children: categories.entries.map((entry) {
-                int? categoryId = entry.key;
-                List<Products> products = entry.value;
+              children: sortedEntries.map((entry) {
+                final List<Products> products = entry.value;
+                final categoryName = products.isNotEmpty
+                    ? (products.first.innerCategory?.name ?? 'غير مصنّف')
+                    : 'غير مصنّف';
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 20),
-                    // عنوان التصنيف
+                    // عنوان التصنيف (inner category name)
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Align(
                         alignment: Alignment.centerRight,
                         child: Text(
-                          "الفئة ${categoryId ?? ""}",
+                          "${products.isNotEmpty ? (products.first.innerCategory?.name ?? '') : ''}",
                           style: TextStyle(
                             color: AppColor().titleColor,
                             fontSize: getResponsiveFontSize(
@@ -62,6 +79,14 @@ class CategoryWithItems extends StatelessWidget {
                     ),
 
                     // Loop on items inside category
+                    if (products.isNotEmpty) ...[
+                      // فاصل بين الـ inner categories
+                      // const Divider(
+                      //   height: 1,
+                      //   thickness: 1,
+                      //   color: Colors.black12,
+                      // ),
+                    ],
                     Column(
                       children: products.map<Widget>((product) {
                         final productId = product.id ?? 0;
@@ -81,15 +106,17 @@ class CategoryWithItems extends StatelessWidget {
                             onTap: productId == 0
                                 ? null
                                 : () => Get.toNamed(
-                                      AppRoutes.productDetails,
-                                      arguments: {
-                                        'productId': productId,
-                                        'storeId': controller.storeId,
-                                        'storeName': controller.store?.name,
-                                        'storeImageUrl': controller.store?.imageUrl,
-                                        'storeDeliveryFee': controller.store?.deliveryFee,
-                                      },
-                                    ),
+                                    AppRoutes.productDetails,
+                                    arguments: {
+                                      'productId': productId,
+                                      'storeId': controller.storeId,
+                                      'storeName': controller.store?.name,
+                                      'storeImageUrl':
+                                          controller.store?.imageUrl,
+                                      'storeDeliveryFee':
+                                          controller.store?.deliveryFee,
+                                    },
+                                  ),
                             borderRadius: BorderRadius.circular(20),
                             child: Container(
                               height: containerHeight,
@@ -104,228 +131,238 @@ class CategoryWithItems extends StatelessWidget {
                                 ),
                                 child: Row(
                                   children: [
-                                  // النصوص
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          product.name ?? "منتج",
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: isSmallScreen ? 14 : 16,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        SizedBox(height: isSmallScreen ? 3 : 5),
-                                        SizedBox(
-                                          width: double.infinity,
-                                          child: Text(
-                                            "",
+                                    // النصوص
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            product.name ?? "منتج",
                                             style: TextStyle(
-                                              fontSize: isSmallScreen ? 10 : 12,
-                                              color: Colors.grey[700],
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: isSmallScreen ? 14 : 16,
                                             ),
-                                            maxLines: isSmallScreen ? 2 : 3,
+                                            maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                           ),
-                                        ),
-                                        SizedBox(
-                                          height: isSmallScreen ? 6 : 10,
-                                        ),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Expanded(
-                                              child: Row(
-                                                children: [
-                                                  Flexible(
-                                                    child: Text(
-                                                      "$price ليرة",
-                                                      style: TextStyle(
-                                                        color:
-                                                            Colors.deepOrange,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontSize: isSmallScreen
-                                                            ? 14
-                                                            : 16,
+                                          SizedBox(
+                                            height: isSmallScreen ? 3 : 5,
+                                          ),
+                                          SizedBox(
+                                            width: double.infinity,
+                                            child: Text(
+                                              "",
+                                              style: TextStyle(
+                                                fontSize: isSmallScreen
+                                                    ? 10
+                                                    : 12,
+                                                color: Colors.grey[700],
+                                              ),
+                                              maxLines: isSmallScreen ? 2 : 3,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            height: isSmallScreen ? 6 : 10,
+                                          ),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Expanded(
+                                                child: Row(
+                                                  children: [
+                                                    Flexible(
+                                                      child: Text(
+                                                        "$price ليرة",
+                                                        style: TextStyle(
+                                                          color:
+                                                              Colors.deepOrange,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          fontSize:
+                                                              isSmallScreen
+                                                              ? 14
+                                                              : 16,
+                                                        ),
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
                                                       ),
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
+                                                    ),
+                                                    const SizedBox(width: 4),
+                                                    GetBuilder<
+                                                      FavoritesController
+                                                    >(
+                                                      builder: (favoritesController) {
+                                                        final isFavorite =
+                                                            favoritesController
+                                                                .isFavorite(
+                                                                  'product',
+                                                                  productId,
+                                                                );
+                                                        final favoriteItem =
+                                                            RestaurantModel(
+                                                              id: productId,
+                                                              name:
+                                                                  product
+                                                                      .name ??
+                                                                  '',
+                                                              image:
+                                                                  product
+                                                                      .imageUrl ??
+                                                                  '',
+                                                              rating: 0,
+                                                              category: price
+                                                                  .toString(),
+                                                              favoriteType:
+                                                                  'product',
+                                                              isFavorite:
+                                                                  isFavorite,
+                                                            );
+
+                                                        return IconButton(
+                                                          iconSize:
+                                                              isSmallScreen
+                                                              ? 18
+                                                              : 20,
+                                                          padding:
+                                                              EdgeInsets.zero,
+                                                          constraints:
+                                                              const BoxConstraints(
+                                                                minWidth: 24,
+                                                                minHeight: 24,
+                                                              ),
+                                                          onPressed:
+                                                              productId <= 0
+                                                              ? null
+                                                              : () {
+                                                                  favoritesController.toggleFavoriteById(
+                                                                    type:
+                                                                        'product',
+                                                                    id: productId,
+                                                                    item:
+                                                                        favoriteItem,
+                                                                  );
+                                                                },
+                                                          icon: Icon(
+                                                            isFavorite
+                                                                ? Icons.favorite
+                                                                : Icons
+                                                                      .favorite_border,
+                                                            color: AppColor()
+                                                                .primaryColor,
+                                                          ),
+                                                        );
+                                                      },
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              // العداد
+                                              Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  IconButton(
+                                                    onPressed: () {
+                                                      controller
+                                                          .decreaseQuantity(
+                                                            productId,
+                                                          );
+                                                    },
+                                                    icon: Icon(
+                                                      Icons.remove,
+                                                      size: isSmallScreen
+                                                          ? 20
+                                                          : 25,
+                                                    ),
+                                                    color:
+                                                        AppColor().primaryColor,
+                                                    padding: EdgeInsets.all(
+                                                      isSmallScreen ? 4 : 8,
+                                                    ),
+                                                    constraints: BoxConstraints(
+                                                      minWidth: isSmallScreen
+                                                          ? 32
+                                                          : 40,
+                                                      minHeight: isSmallScreen
+                                                          ? 32
+                                                          : 40,
                                                     ),
                                                   ),
-                                                  const SizedBox(width: 4),
-                                                  GetBuilder<
-                                                    FavoritesController
-                                                  >(
-                                                    builder: (favoritesController) {
-                                                      final isFavorite =
-                                                          favoritesController
-                                                              .isFavorite(
-                                                                'product',
-                                                                productId,
-                                                              );
-                                                      final favoriteItem =
-                                                          RestaurantModel(
-                                                            id: productId,
-                                                            name:
-                                                                product.name ??
-                                                                '',
-                                                            image:
-                                                                product
-                                                                    .imageUrl ??
-                                                                '',
-                                                            rating: 0,
-                                                            category: price
-                                                                .toString(),
-                                                            favoriteType:
-                                                                'product',
-                                                            isFavorite:
-                                                                isFavorite,
+                                                  Text(
+                                                    "$quantity",
+                                                    style: TextStyle(
+                                                      fontSize: isSmallScreen
+                                                          ? 16
+                                                          : 20,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  IconButton(
+                                                    onPressed: () {
+                                                      controller
+                                                          .increaseQuantity(
+                                                            productId,
                                                           );
-
-                                                      return IconButton(
-                                                        iconSize: isSmallScreen
-                                                            ? 18
-                                                            : 20,
-                                                        padding:
-                                                            EdgeInsets.zero,
-                                                        constraints:
-                                                            const BoxConstraints(
-                                                              minWidth: 24,
-                                                              minHeight: 24,
-                                                            ),
-                                                        onPressed:
-                                                            productId <= 0
-                                                            ? null
-                                                            : () {
-                                                                favoritesController.toggleFavoriteById(
-                                                                  type:
-                                                                      'product',
-                                                                  id: productId,
-                                                                  item:
-                                                                      favoriteItem,
-                                                                );
-                                                              },
-                                                        icon: Icon(
-                                                          isFavorite
-                                                              ? Icons.favorite
-                                                              : Icons
-                                                                    .favorite_border,
-                                                          color: AppColor()
-                                                              .primaryColor,
-                                                        ),
-                                                      );
                                                     },
+                                                    icon: Icon(
+                                                      Icons.add,
+                                                      size: isSmallScreen
+                                                          ? 20
+                                                          : 25,
+                                                    ),
+                                                    color:
+                                                        AppColor().primaryColor,
+                                                    padding: EdgeInsets.all(
+                                                      isSmallScreen ? 4 : 8,
+                                                    ),
+                                                    constraints: BoxConstraints(
+                                                      minWidth: isSmallScreen
+                                                          ? 32
+                                                          : 40,
+                                                      minHeight: isSmallScreen
+                                                          ? 32
+                                                          : 40,
+                                                    ),
                                                   ),
                                                 ],
                                               ),
-                                            ),
-                                            const SizedBox(width: 8),
-                                            // العداد
-                                            Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                IconButton(
-                                                  onPressed: () {
-                                                    controller.decreaseQuantity(
-                                                      productId,
-                                                    );
-                                                  },
-                                                  icon: Icon(
-                                                    Icons.remove,
-                                                    size: isSmallScreen
-                                                        ? 20
-                                                        : 25,
-                                                  ),
-                                                  color:
-                                                      AppColor().primaryColor,
-                                                  padding: EdgeInsets.all(
-                                                    isSmallScreen ? 4 : 8,
-                                                  ),
-                                                  constraints: BoxConstraints(
-                                                    minWidth: isSmallScreen
-                                                        ? 32
-                                                        : 40,
-                                                    minHeight: isSmallScreen
-                                                        ? 32
-                                                        : 40,
-                                                  ),
-                                                ),
-                                                Text(
-                                                  "$quantity",
-                                                  style: TextStyle(
-                                                    fontSize: isSmallScreen
-                                                        ? 16
-                                                        : 20,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                                IconButton(
-                                                  onPressed: () {
-                                                    controller.increaseQuantity(
-                                                      productId,
-                                                    );
-                                                  },
-                                                  icon: Icon(
-                                                    Icons.add,
-                                                    size: isSmallScreen
-                                                        ? 20
-                                                        : 25,
-                                                  ),
-                                                  color:
-                                                      AppColor().primaryColor,
-                                                  padding: EdgeInsets.all(
-                                                    isSmallScreen ? 4 : 8,
-                                                  ),
-                                                  constraints: BoxConstraints(
-                                                    minWidth: isSmallScreen
-                                                        ? 32
-                                                        : 40,
-                                                    minHeight: isSmallScreen
-                                                        ? 32
-                                                        : 40,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-
-                                  SizedBox(width: isSmallScreen ? 2 : 3),
-
-                                  // الصورة
-                                  SizedBox(
-                                    height: imageSize,
-                                    width: imageSize,
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(20),
-                                      child: Image.network(
-                                        product.imageUrl ?? "",
-                                        fit: BoxFit.cover,
-                                        errorBuilder:
-                                            (context, error, stackTrace) {
-                                              return Image.asset(
-                                                Assets.imagesLogo,
-                                                fit: BoxFit.cover,
-                                              );
-                                            },
+                                            ],
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                  ),
-                                ],
+
+                                    SizedBox(width: isSmallScreen ? 2 : 3),
+
+                                    // الصورة
+                                    SizedBox(
+                                      height: imageSize,
+                                      width: imageSize,
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(20),
+                                        child: Image.network(
+                                          product.imageUrl ?? "",
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                                return Image.asset(
+                                                  Assets.imagesLogo,
+                                                  fit: BoxFit.cover,
+                                                );
+                                              },
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
                           ),
                         );
                       }).toList(),

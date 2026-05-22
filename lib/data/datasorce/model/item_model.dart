@@ -61,23 +61,51 @@ class ItemModel {
   }
 }
 
+class InnerCategory {
+  int? id;
+  String? name;
+  String? description;
+
+  InnerCategory({this.id, this.name, this.description});
+
+  InnerCategory.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
+    name = json['name']?.toString();
+    description = json['description']?.toString();
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['name'] = name;
+    data['description'] = description;
+    return data;
+  }
+}
+
 class Products {
   int? id;
   String? name;
   String? imageUrl;
+
   /// دعم API الجديد: price قد يكون رقم أو نص
   dynamic price;
+
   /// دعم التوافق مع السلة الحالية
   int? regularPrice;
   int? salePrice;
 
-  Products(
-      {this.id,
-      this.name,
-      this.price,
-      this.regularPrice,
-      this.salePrice,
-      this.imageUrl});
+  InnerCategory? innerCategory;
+
+  Products({
+    this.id,
+    this.name,
+    this.price,
+    this.regularPrice,
+    this.salePrice,
+    this.imageUrl,
+    this.innerCategory,
+  });
 
   Products.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -86,6 +114,14 @@ class Products {
     salePrice = json['sale_price'];
     imageUrl = json['image_url'];
     price = json['price'];
+
+    final ic = json['inner_category'];
+    if (ic is Map<String, dynamic>) {
+      innerCategory = InnerCategory.fromJson(ic);
+    } else {
+      innerCategory = null;
+    }
+
     // إذا API الجديد يعطي price فقط، نخزنه كـ regularPrice ليتوافق مع السلة الحالية
     regularPrice ??= _parsePriceToInt(price);
   }
@@ -108,6 +144,9 @@ class Products {
     data['sale_price'] = salePrice;
     data['image_url'] = imageUrl;
     data['price'] = price;
+    if (innerCategory != null) {
+      data['inner_category'] = innerCategory!.toJson();
+    }
     return data;
   }
 }

@@ -8,6 +8,7 @@ import 'package:app/data/datasorce/model/item_model.dart';
 import 'package:app/data/datasorce/model/store_model.dart';
 import 'package:app/data/datasorce/model/store_review_model.dart';
 import 'package:app/data/datasorce/remot/store_details_data.dart';
+import 'package:app/link_api.dart';
 import 'package:app/data/datasorce/remot/store_reviews_data.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -60,9 +61,61 @@ class ShopDetailsController extends GetxController {
     final response = await data.storeDetails(storeId);
     statusRequest = handelingData(response);
 
-    if (statusRequest == StatusRequest.success && response is Map<String, dynamic>) {
+    if (statusRequest == StatusRequest.success &&
+        response is Map<String, dynamic>) {
       store = StoreModel.fromJson(response);
-      filteredProducts = store?.products ?? [];
+
+      // ✅ Direct: نجلب المنتجات لكل inner category من endpoint خاص
+      filteredProducts = [];
+      final innerCats = store?.innerCategories ?? [];
+
+      final crud = Get.find<Crud>();
+
+      for (final inner in innerCats) {
+        final innerId = inner.id;
+        if (innerId == null) continue;
+
+        final endpoint =
+            '${ApiLinks.baseUrl}/stores/$storeId/products/$innerId';
+
+        final eitherRes = await crud.getData(endpoint, {});
+        final stat = handelingData(eitherRes);
+
+        if (stat == StatusRequest.success) {
+          final body = eitherRes.fold((l) => l, (r) => r);
+
+          // نتوقع items/products كقائمة
+          if (body is Map<String, dynamic>) {
+            final candidate =
+                body['items'] ??
+                body['products'] ??
+                body['data'] ??
+                body['data_items'];
+
+            if (candidate is List) {
+              filteredProducts.addAll(
+                candidate
+                    .whereType<Map<String, dynamic>>()
+                    .map((e) => Products.fromJson(e))
+                    .toList(),
+              );
+            }
+          } else if (body is List) {
+            filteredProducts.addAll(
+              body
+                  .whereType<Map<String, dynamic>>()
+                  .map((e) => Products.fromJson(e))
+                  .toList(),
+            );
+          }
+        }
+      }
+
+      // fallback لو endpoint ما رجع شي
+      filteredProducts = filteredProducts.isNotEmpty
+          ? filteredProducts
+          : (store?.products ?? []);
+
       await fetchReviews();
       update();
       return;
@@ -215,8 +268,15 @@ class ShopDetailsController extends GetxController {
   }
 
   Map<int?, List<Products>> getProductsByCategory() {
-    // API الجديد لا يرجع category_id للمنتج، لذلك نجمع كل المنتجات ضمن مجموعة واحدة.
-    return {null: filteredProducts};
+    final Map<int?, List<Products>> categorized = {};
+
+    for (final p in filteredProducts) {
+      final innerId = p.innerCategory?.id;
+      categorized.putIfAbsent(innerId, () => []);
+      categorized[innerId]!.add(p);
+    }
+
+    return categorized;
   }
 
   int getProductQuantity(int productId) {
@@ -267,7 +327,8 @@ class ShopDetailsController extends GetxController {
     if (existingIndex != -1) {
       cartController.increaseQuantity(productId);
     } else {
-      final storeForCart = store ??
+      final storeForCart =
+          store ??
           StoreModel(
             id: shopItemSummary?.id,
             name: shopItemSummary?.name,

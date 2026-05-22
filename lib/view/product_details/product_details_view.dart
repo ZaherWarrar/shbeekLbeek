@@ -7,6 +7,7 @@ import 'package:app/core/shared/custom_refresh.dart';
 import 'package:app/core/constant/routes/app_routes.dart';
 import 'package:app/data/datasorce/model/item_model.dart';
 import 'package:app/data/datasorce/model/store_model.dart';
+import 'package:app/view/product_details/widgets/product_variation_selector.dart';
 import 'package:app/view/shopDetails/widgets/cart_floating_button.dart';
 import 'package:app/view/favorets/widget/favorates_tabs/favorate_tabs_controller.dart';
 import 'package:app/view/favorets/widget/favorates_tabs/favorates_tabs_model.dart';
@@ -268,27 +269,10 @@ class ProductDetailsView extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 10),
-                        Wrap(
-                          spacing: 10,
-                          runSpacing: 10,
-                          children: product!.variations.map((v) {
-                            final isSelected = controller.selectedVariations
-                                .any((e) => e.id == v.id && e.name == v.name);
-                            return ChoiceChip(
-                              label: Text(v.name ?? ''),
-                              selected: isSelected,
-                              selectedColor: AppColor().primaryColor.withValues(
-                                alpha: 0.18,
-                              ),
-                              onSelected: (_) => controller.toggleVariation(v),
-                              labelStyle: TextStyle(
-                                color: isSelected
-                                    ? AppColor().primaryColor
-                                    : AppColor().titleColor,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            );
-                          }).toList(),
+                        ProductVariationSelector(
+                          variations: product!.variations,
+                          selectedVariations: controller.selectedVariations,
+                          onToggle: controller.toggleVariation,
                         ),
                       ],
                       const SizedBox(height: 18),

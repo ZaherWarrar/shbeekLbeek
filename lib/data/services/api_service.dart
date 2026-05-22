@@ -24,94 +24,76 @@ class ApiService {
     await prefs.remove('token');
   }
 
-  // GET request
-  static Future<Map<String, dynamic>> get(String endpoint) async {
+  static Future<Map<String, String>> _buildHeaders() async {
     final token = await getToken();
-    final headers = {
+    return {
       'Content-Type': 'application/json',
       if (token != null) 'Authorization': 'Bearer $token',
     };
+  }
 
+  static Future<Map<String, dynamic>> _request(
+    Future<http.Response> Function(Map<String, String> headers) request,
+  ) async {
     try {
-      final response = await http.get(
-        Uri.parse('$baseUrl$endpoint'),
-        headers: headers,
-      );
-
+      final response = await request(await _buildHeaders());
       return _handleResponse(response);
     } catch (e) {
       throw Exception('Network error: $e');
     }
+  }
+
+  // GET request
+  static Future<Map<String, dynamic>> get(String endpoint) async {
+    return _request(
+      (headers) => http.get(Uri.parse('$baseUrl$endpoint'), headers: headers),
+    );
   }
 
   // POST request
   static Future<Map<String, dynamic>> post(
-      String endpoint, Map<String, dynamic> data) async {
-    final token = await getToken();
-    final headers = {
-      'Content-Type': 'application/json',
-      if (token != null) 'Authorization': 'Bearer $token',
-    };
-
-    try {
-      final response = await http.post(
+    String endpoint,
+    Map<String, dynamic> data,
+  ) async {
+    return _request(
+      (headers) => http.post(
         Uri.parse('$baseUrl$endpoint'),
         headers: headers,
         body: jsonEncode(data),
-      );
-
-      return _handleResponse(response);
-    } catch (e) {
-      throw Exception('Network error: $e');
-    }
+      ),
+    );
   }
 
   // PUT request
   static Future<Map<String, dynamic>> put(
-      String endpoint, Map<String, dynamic> data) async {
-    final token = await getToken();
-    final headers = {
-      'Content-Type': 'application/json',
-      if (token != null) 'Authorization': 'Bearer $token',
-    };
-
-    try {
-      final response = await http.put(
+    String endpoint,
+    Map<String, dynamic> data,
+  ) async {
+    return _request(
+      (headers) => http.put(
         Uri.parse('$baseUrl$endpoint'),
         headers: headers,
         body: jsonEncode(data),
-      );
-
-      return _handleResponse(response);
-    } catch (e) {
-      throw Exception('Network error: $e');
-    }
+      ),
+    );
   }
 
   // DELETE request
   static Future<Map<String, dynamic>> delete(String endpoint) async {
-    final token = await getToken();
-    final headers = {
-      'Content-Type': 'application/json',
-      if (token != null) 'Authorization': 'Bearer $token',
-    };
-
-    try {
-      final response = await http.delete(
-        Uri.parse('$baseUrl$endpoint'),
-        headers: headers,
-      );
-
-      return _handleResponse(response);
-    } catch (e) {
-      throw Exception('Network error: $e');
-    }
+    return _request(
+      (headers) =>
+          http.delete(Uri.parse('$baseUrl$endpoint'), headers: headers),
+    );
   }
 
   // Handle response
   static Map<String, dynamic> _handleResponse(http.Response response) {
     if (response.statusCode >= 200 && response.statusCode < 300) {
-      return jsonDecode(response.body);
+      final body = response.body.trim();
+      if (body.isEmpty) {
+        return <String, dynamic>{};
+      }
+      return jsonDecode(body) as Map<String, dynamic>;
     } else {
       throw Exception('HTTP ${response.statusCode}: ${response.body}');
     }

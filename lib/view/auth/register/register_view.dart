@@ -11,7 +11,6 @@ import 'package:app/core/function/valid_function.dart';
 import 'package:app/core/shared/custom_app_bar.dart';
 import 'package:app/core/shared/custom_button.dart';
 import 'package:app/core/shared/custom_text_form_fild.dart';
-import 'package:app/main.dart';
 
 class RegisterView extends StatelessWidget {
   const RegisterView({super.key});
@@ -22,6 +21,8 @@ class RegisterView extends StatelessWidget {
       Get.delete<RegisterControllerImb>();
     }
     Get.put(RegisterControllerImb());
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
       backgroundColor: AppColor().backgroundColor,
@@ -36,23 +37,23 @@ class RegisterView extends StatelessWidget {
 
           return Container(
             padding: EdgeInsets.only(
-              top: h * 0.05,
-              left: w * 0.05,
-              right: w * 0.05,
+              top: screenHeight * 0.05,
+              left: screenWidth * 0.05,
+              right: screenWidth * 0.05,
             ),
             color: AppColor().backgroundColor,
-            height: h,
-            width: w,
+            height: screenHeight,
+            width: screenWidth,
             child: Form(
               key: controller.formStat,
               child: ListView(
                 children: [
                   SizedBox(
-                    height: h * 0.2,
+                    height: screenHeight * 0.2,
                     child: Image.asset(Assets.imagesLogo, fit: BoxFit.contain),
                   ),
 
-                  SizedBox(height: h * 0.05),
+                  SizedBox(height: screenHeight * 0.05),
 
                   CustomTextFormFild(
                     hint: "2".tr,
@@ -65,7 +66,7 @@ class RegisterView extends StatelessWidget {
                     scure: false,
                   ),
 
-                  SizedBox(height: h * 0.05),
+                  SizedBox(height: screenHeight * 0.05),
 
                   CustomTextFormFild(
                     hint: "10".tr,
@@ -82,7 +83,7 @@ class RegisterView extends StatelessWidget {
 
                   GoToLogin(onTap: () => controller.goToLogin()),
 
-                  SizedBox(height: h * 0.05),
+                  SizedBox(height: screenHeight * 0.05),
 
                   // ✅ Checkbox الموافقة على سياسة الخصوصية
                   CheckboxListTile(
@@ -129,11 +130,11 @@ class RegisterView extends StatelessWidget {
                     ),
                   ),
 
-                  SizedBox(height: h * 0.02),
+                  SizedBox(height: screenHeight * 0.02),
 
                   CustomButton(
-                    hi: h * 0.05,
-                    we: w * 0.2,
+                    hi: screenHeight * 0.05,
+                    we: screenWidth * 0.2,
                     fontsize: 25,
                     padding: 10,
                     title: "16".tr,

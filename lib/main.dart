@@ -11,8 +11,8 @@ import 'package:app/localization/translation.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-//تفعيل الفاير بيز
-await Firebase.initializeApp();
+  //تفعيل الفاير بيز
+  await Firebase.initializeApp();
 
   // 2. تشغيل كلاس الإشعارات
   NotificationApi notificationApi = NotificationApi();
@@ -28,15 +28,14 @@ await Firebase.initializeApp();
   // 👇 تحديد أول صفحة
   String initialRoute;
 
-
-   if (!session.isOnboardingDone) {
+  if (!session.isOnboardingDone) {
     initialRoute = AppRoutes.onboarding;
   } else if (session.isLoggedIn) {
-    initialRoute = AppRoutes.home; 
+    initialRoute = AppRoutes.home;
   } else {
     initialRoute = AppRoutes.login;
   }
-  runApp( MyApp(initialRoute: initialRoute));
+  runApp(MyApp(initialRoute: initialRoute));
 }
 
 late double w;

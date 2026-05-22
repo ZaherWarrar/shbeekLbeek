@@ -6,7 +6,10 @@ import 'package:app/core/shared/custom_refresh.dart';
 import 'package:app/controller/shop_details/shop_details_controller.dart';
 import 'package:app/view/shopDetails/widgets/cart_floating_button.dart';
 import 'package:app/view/shopDetails/widgets/category_with_items.dart';
+import 'package:app/data/datasorce/model/store_review_model.dart';
 import 'package:app/view/shopDetails/widgets/information_shop_card.dart';
+import 'package:app/view/shopDetails/widgets/review_form_sheet.dart';
+import 'package:app/view/shopDetails/widgets/shop_review_card.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -133,155 +136,7 @@ class ShopDetailsView extends StatelessWidget {
                                     fontWeight: FontWeight.w800,
                                   ),
                                 ),
-                                onPressed: () {
-                                  Get.bottomSheet(
-                                    GetBuilder<ShopDetailsController>(
-                                      builder: (c) {
-                                        return Container(
-                                          padding: const EdgeInsets.all(16),
-                                          decoration: BoxDecoration(
-                                            color: AppColor().backgroundColor,
-                                            borderRadius:
-                                                const BorderRadius.vertical(
-                                              top: Radius.circular(20),
-                                            ),
-                                          ),
-                                          child: SafeArea(
-                                            top: false,
-                                            child: Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Row(
-                                                  children: [
-                                                    Text(
-                                                      'أضف تقييمك',
-                                                      style: TextStyle(
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.w800,
-                                                        color: AppColor()
-                                                            .titleColor,
-                                                      ),
-                                                    ),
-                                                    const Spacer(),
-                                                    IconButton(
-                                                      onPressed: () =>
-                                                          Get.back(),
-                                                      icon: Icon(
-                                                        Icons.close,
-                                                        color: AppColor()
-                                                            .titleColor,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                const SizedBox(height: 8),
-                                                Row(
-                                                  children:
-                                                      List.generate(5, (i) {
-                                                    final star = i + 1;
-                                                    final filled =
-                                                        star <= c.reviewRating;
-                                                    return IconButton(
-                                                      visualDensity:
-                                                          VisualDensity.compact,
-                                                      onPressed:
-                                                          c.isSubmittingReview
-                                                              ? null
-                                                              : () => c
-                                                                  .setReviewRating(
-                                                                      star),
-                                                      icon: Icon(
-                                                        filled
-                                                            ? Icons.star
-                                                            : Icons.star_border,
-                                                        color: AppColor()
-                                                            .primaryColor,
-                                                      ),
-                                                    );
-                                                  }),
-                                                ),
-                                                TextField(
-                                                  controller:
-                                                      c.reviewTextController,
-                                                  maxLines: 3,
-                                                  decoration: InputDecoration(
-                                                    hintText:
-                                                        'ملاحظات (اختياري)',
-                                                    filled: true,
-                                                    fillColor: Colors.white,
-                                                    border: OutlineInputBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              14),
-                                                      borderSide: BorderSide(
-                                                        color: Colors
-                                                            .grey.shade300,
-                                                      ),
-                                                    ),
-                                                    enabledBorder:
-                                                        OutlineInputBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              14),
-                                                      borderSide: BorderSide(
-                                                        color: Colors
-                                                            .grey.shade300,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 12),
-                                                SizedBox(
-                                                  width: double.infinity,
-                                                  height: 48,
-                                                  child: ElevatedButton(
-                                                    onPressed:
-                                                        c.isSubmittingReview
-                                                            ? null
-                                                            : () =>
-                                                                c.submitReview(),
-                                                    style: ElevatedButton
-                                                        .styleFrom(
-                                                      backgroundColor:
-                                                          AppColor()
-                                                              .primaryColor,
-                                                      foregroundColor:
-                                                          Colors.white,
-                                                      shape:
-                                                          RoundedRectangleBorder(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(14),
-                                                      ),
-                                                    ),
-                                                    child: c.isSubmittingReview
-                                                        ? const SizedBox(
-                                                            height: 18,
-                                                            width: 18,
-                                                            child:
-                                                                CircularProgressIndicator(
-                                                              strokeWidth: 2,
-                                                              color:
-                                                                  Colors.white,
-                                                            ),
-                                                          )
-                                                        : const Text(
-                                                            'إرسال التقييم',
-                                                          ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                    isScrollControlled: true,
-                                  );
-                                },
+                                onPressed: () => _openAddReviewSheet(controller),
                                 child: const Text('إضافة تقييم'),
                               ),
                             ],
@@ -357,382 +212,21 @@ class ShopDetailsView extends StatelessWidget {
                             Column(
                               children: controller.reviewsResponse!.reviews
                                   .take(3)
-                                  .map((r) {
-                                final userName = r.user?.name ?? 'مستخدم';
-                                final rating = (r.rating ?? 0).clamp(0, 5);
-                                final text = (r.text ?? '').trim();
-                                final myIdStr =
-                                    (controller.session.userId ?? '').trim();
-                                final isMine = myIdStr.isNotEmpty &&
-                                    (myIdStr == (r.userId?.toString() ?? '') ||
-                                        myIdStr ==
-                                            (r.user?.id?.toString() ?? ''));
-                                return Container(
-                                  margin: const EdgeInsets.only(bottom: 10),
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(16),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withValues(
-                                          alpha: 0.03,
-                                        ),
-                                        blurRadius: 10,
-                                        offset: const Offset(0, 6),
+                                  .map(
+                                    (r) => ShopReviewCard(
+                                      review: r,
+                                      isMine: _isMyReview(controller, r),
+                                      onEdit: () => _openEditReviewSheet(
+                                        controller,
+                                        r,
                                       ),
-                                    ],
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Directionality(
-                                        textDirection: TextDirection.ltr,
-                                        child: Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            if (isMine && (r.id ?? 0) > 0)
-                                              PopupMenuButton<String>(
-                                                padding: EdgeInsets.zero,
-                                                constraints:
-                                                    const BoxConstraints(
-                                                  minWidth: 36,
-                                                  minHeight: 36,
-                                                ),
-                                                icon: Icon(
-                                                  Icons.more_vert,
-                                                  color: AppColor().titleColor,
-                                                ),
-                                                onSelected: (value) async {
-                                                if (value == 'edit') {
-                                                  controller.beginEditReview(r);
-                                                  Get.bottomSheet(
-                                                    GetBuilder<ShopDetailsController>(
-                                                      builder: (c) {
-                                                        return Container(
-                                                          padding: const EdgeInsets.all(16),
-                                                          decoration: BoxDecoration(
-                                                            color: AppColor().backgroundColor,
-                                                            borderRadius: const BorderRadius.vertical(
-                                                              top: Radius.circular(20),
-                                                            ),
-                                                          ),
-                                                          child: SafeArea(
-                                                            top: false,
-                                                            child: Column(
-                                                              mainAxisSize: MainAxisSize.min,
-                                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                                              children: [
-                                                                Row(
-                                                                  children: [
-                                                                    Text(
-                                                                      'تعديل التقييم',
-                                                                      style: TextStyle(
-                                                                        fontSize: 16,
-                                                                        fontWeight: FontWeight.w800,
-                                                                        color: AppColor().titleColor,
-                                                                      ),
-                                                                    ),
-                                                                    const Spacer(),
-                                                                    IconButton(
-                                                                      onPressed: () {
-                                                                        c.resetReviewForm();
-                                                                        Get.back();
-                                                                      },
-                                                                      icon: Icon(
-                                                                        Icons.close,
-                                                                        color: AppColor().titleColor,
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                                const SizedBox(height: 8),
-                                                                Row(
-                                                                  children: List.generate(5, (i) {
-                                                                    final star = i + 1;
-                                                                    final filled = star <= c.reviewRating;
-                                                                    return IconButton(
-                                                                      visualDensity: VisualDensity.compact,
-                                                                      onPressed: c.isSubmittingReview
-                                                                          ? null
-                                                                          : () => c.setReviewRating(star),
-                                                                      icon: Icon(
-                                                                        filled ? Icons.star : Icons.star_border,
-                                                                        color: AppColor().primaryColor,
-                                                                      ),
-                                                                    );
-                                                                  }),
-                                                                ),
-                                                                TextField(
-                                                                  controller: c.reviewTextController,
-                                                                  maxLines: 3,
-                                                                  decoration: InputDecoration(
-                                                                    hintText: 'ملاحظات (اختياري)',
-                                                                    filled: true,
-                                                                    fillColor: Colors.white,
-                                                                    border: OutlineInputBorder(
-                                                                      borderRadius: BorderRadius.circular(14),
-                                                                      borderSide: BorderSide(color: Colors.grey.shade300),
-                                                                    ),
-                                                                    enabledBorder: OutlineInputBorder(
-                                                                      borderRadius: BorderRadius.circular(14),
-                                                                      borderSide: BorderSide(color: Colors.grey.shade300),
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                                const SizedBox(height: 12),
-                                                                SizedBox(
-                                                                  width: double.infinity,
-                                                                  height: 48,
-                                                                  child: ElevatedButton(
-                                                                    onPressed: c.isSubmittingReview
-                                                                        ? null
-                                                                        : () => c.updateReview(),
-                                                                    style: ElevatedButton.styleFrom(
-                                                                      backgroundColor: AppColor().primaryColor,
-                                                                      foregroundColor: Colors.white,
-                                                                      shape: RoundedRectangleBorder(
-                                                                        borderRadius: BorderRadius.circular(14),
-                                                                      ),
-                                                                    ),
-                                                                    child: c.isSubmittingReview
-                                                                        ? const SizedBox(
-                                                                            height: 18,
-                                                                            width: 18,
-                                                                            child: CircularProgressIndicator(
-                                                                              strokeWidth: 2,
-                                                                              color: Colors.white,
-                                                                            ),
-                                                                          )
-                                                                        : const Text('حفظ التعديل'),
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ),
-                                                        );
-                                                      },
-                                                    ),
-                                                    isScrollControlled: true,
-                                                  );
-                                                } else if (value == 'delete') {
-                                                  final ok =
-                                                      await Get.dialog<bool>(
-                                                    Dialog(
-                                                      backgroundColor:
-                                                          AppColor()
-                                                              .backgroundColor,
-                                                      shape:
-                                                          RoundedRectangleBorder(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(20),
-                                                      ),
-                                                      child: Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .all(20),
-                                                        child: Column(
-                                                          mainAxisSize:
-                                                              MainAxisSize.min,
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .stretch,
-                                                          children: [
-                                                            Text(
-                                                              'حذف التقييم',
-                                                              textAlign:
-                                                                  TextAlign
-                                                                      .center,
-                                                              style: TextStyle(
-                                                                fontSize: 18,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w800,
-                                                                color: AppColor()
-                                                                    .titleColor,
-                                                              ),
-                                                            ),
-                                                            const SizedBox(
-                                                                height: 12),
-                                                            Text(
-                                                              'هل أنت متأكد من حذف التقييم؟',
-                                                              textAlign:
-                                                                  TextAlign
-                                                                      .center,
-                                                              style: TextStyle(
-                                                                fontSize: 14,
-                                                                height: 1.5,
-                                                                color: AppColor()
-                                                                    .descriptionColor,
-                                                              ),
-                                                            ),
-                                                            const SizedBox(
-                                                                height: 22),
-                                                            Row(
-                                                              children: [
-                                                                Expanded(
-                                                                  child:
-                                                                      OutlinedButton(
-                                                                    onPressed: () =>
-                                                                        Get.back(
-                                                                            result:
-                                                                                false),
-                                                                    style: OutlinedButton
-                                                                        .styleFrom(
-                                                                      foregroundColor:
-                                                                          AppColor()
-                                                                              .titleColor,
-                                                                      side: BorderSide(
-                                                                          color: Colors
-                                                                              .grey
-                                                                              .shade400),
-                                                                      padding: const EdgeInsets
-                                                                          .symmetric(
-                                                                          vertical:
-                                                                              14),
-                                                                      shape:
-                                                                          RoundedRectangleBorder(
-                                                                        borderRadius:
-                                                                            BorderRadius.circular(14),
-                                                                      ),
-                                                                    ),
-                                                                    child: const Text(
-                                                                      'إلغاء',
-                                                                      style: TextStyle(
-                                                                          fontWeight:
-                                                                              FontWeight.w700),
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                                const SizedBox(
-                                                                    width: 10),
-                                                                Expanded(
-                                                                  child:
-                                                                      ElevatedButton(
-                                                                    onPressed: () =>
-                                                                        Get.back(
-                                                                            result:
-                                                                                true),
-                                                                    style: ElevatedButton
-                                                                        .styleFrom(
-                                                                      backgroundColor:
-                                                                          Colors.red.shade700,
-                                                                      foregroundColor:
-                                                                          Colors
-                                                                              .white,
-                                                                      padding: const EdgeInsets
-                                                                          .symmetric(
-                                                                          vertical:
-                                                                              14),
-                                                                      elevation:
-                                                                          0,
-                                                                      shape:
-                                                                          RoundedRectangleBorder(
-                                                                        borderRadius:
-                                                                            BorderRadius.circular(14),
-                                                                      ),
-                                                                    ),
-                                                                    child:
-                                                                        const Text(
-                                                                      'حذف',
-                                                                      style: TextStyle(
-                                                                          fontWeight:
-                                                                              FontWeight.w800),
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  );
-                                                  if (ok == true) {
-                                                    await controller
-                                                        .deleteReview(r.id!);
-                                                  }
-                                                }
-                                              },
-                                              itemBuilder: (context) => const [
-                                                PopupMenuItem(
-                                                  value: 'edit',
-                                                  child: Text('تعديل'),
-                                                ),
-                                                PopupMenuItem(
-                                                  value: 'delete',
-                                                  child: Text('حذف'),
-                                                ),
-                                              ],
-                                            )
-                                            else
-                                              const SizedBox(width: 36),
-                                            Expanded(
-                                              child: Directionality(
-                                                textDirection:
-                                                    TextDirection.rtl,
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.end,
-                                                  children: [
-                                                    Flexible(
-                                                      child: Text(
-                                                        userName,
-                                                        maxLines: 1,
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                        style: TextStyle(
-                                                          color: AppColor()
-                                                              .titleColor,
-                                                          fontWeight:
-                                                              FontWeight.w800,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    const SizedBox(width: 8),
-                                                    Row(
-                                                      mainAxisSize:
-                                                          MainAxisSize.min,
-                                                      children: List.generate(
-                                                          5, (i) {
-                                                        final filled =
-                                                            (i + 1) <= rating;
-                                                        return Icon(
-                                                          filled
-                                                              ? Icons.star
-                                                              : Icons
-                                                                  .star_border,
-                                                          size: 16,
-                                                          color: AppColor()
-                                                              .primaryColor,
-                                                        );
-                                                      }),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
+                                      onDelete: () => _confirmDeleteReview(
+                                        controller,
+                                        r,
                                       ),
-                                      if (text.isNotEmpty) ...[
-                                        const SizedBox(height: 6),
-                                        Text(
-                                          text,
-                                          style: TextStyle(
-                                            color:
-                                                AppColor().descriptionColor,
-                                            height: 1.5,
-                                          ),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                                );
-                              }).toList(),
+                                    ),
+                                  )
+                                  .toList(),
                             ),
                         ],
                       ),
@@ -746,5 +240,136 @@ class ShopDetailsView extends StatelessWidget {
         );
       },
     );
+  }
+}
+
+bool _isMyReview(ShopDetailsController controller, StoreReviewModel review) {
+  final myIdStr = (controller.session.userId ?? '').trim();
+  if (myIdStr.isEmpty) return false;
+  return myIdStr == (review.userId?.toString() ?? '') ||
+      myIdStr == (review.user?.id?.toString() ?? '');
+}
+
+void _openAddReviewSheet(ShopDetailsController controller) {
+  Get.bottomSheet(
+    GetBuilder<ShopDetailsController>(
+      builder: (c) => ReviewFormSheet(
+        controller: c,
+        title: 'أضف تقييمك',
+        submitText: 'إرسال التقييم',
+        onSubmit: c.submitReview,
+      ),
+    ),
+    isScrollControlled: true,
+  );
+}
+
+void _openEditReviewSheet(
+  ShopDetailsController controller,
+  StoreReviewModel review,
+) {
+  controller.beginEditReview(review);
+  Get.bottomSheet(
+    GetBuilder<ShopDetailsController>(
+      builder: (c) => ReviewFormSheet(
+        controller: c,
+        title: 'تعديل التقييم',
+        submitText: 'حفظ التعديل',
+        onSubmit: c.updateReview,
+        onClose: () {
+          c.resetReviewForm();
+          Get.back();
+        },
+      ),
+    ),
+    isScrollControlled: true,
+  );
+}
+
+Future<void> _confirmDeleteReview(
+  ShopDetailsController controller,
+  StoreReviewModel review,
+) async {
+  final reviewId = review.id;
+  if (reviewId == null || reviewId <= 0) return;
+
+  final ok = await Get.dialog<bool>(
+    Dialog(
+      backgroundColor: AppColor().backgroundColor,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'حذف التقييم',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: AppColor().titleColor,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'هل أنت متأكد من حذف التقييم؟',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                height: 1.5,
+                color: AppColor().descriptionColor,
+              ),
+            ),
+            const SizedBox(height: 22),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Get.back(result: false),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColor().titleColor,
+                      side: BorderSide(color: Colors.grey.shade400),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    child: const Text(
+                      'إلغاء',
+                      style: TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => Get.back(result: true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red.shade700,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    child: const Text(
+                      'حذف',
+                      style: TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+
+  if (ok == true) {
+    await controller.deleteReview(reviewId);
   }
 }

@@ -21,7 +21,10 @@ class ShopDetailsController extends GetxController {
   final SessionService session = Get.find<SessionService>();
 
   StatusRequest statusRequest = StatusRequest.none;
+  List<Products> _allProducts = [];
   List<Products> filteredProducts = [];
+  /// null = عرض الكل
+  int? selectedInnerCategoryId;
   StoreReviewsResponseModel? reviewsResponse;
   StatusRequest reviewsStatus = StatusRequest.none;
   final TextEditingController reviewTextController = TextEditingController();
@@ -112,9 +115,10 @@ class ShopDetailsController extends GetxController {
       }
 
       // fallback لو endpoint ما رجع شي
-      filteredProducts = filteredProducts.isNotEmpty
-          ? filteredProducts
-          : (store?.products ?? []);
+      _allProducts = filteredProducts.isNotEmpty
+          ? List<Products>.from(filteredProducts)
+          : List<Products>.from(store?.products ?? []);
+      _applySearchFilter();
 
       await fetchReviews();
       update();
@@ -256,15 +260,61 @@ class ShopDetailsController extends GetxController {
   }
 
   void _onSearchChanged() {
-    String query = searchController.text.toLowerCase();
-    if (query.isEmpty) {
-      filteredProducts = store?.products ?? [];
-    } else {
-      filteredProducts = (store?.products ?? []).where((product) {
-        return (product.name ?? '').toLowerCase().contains(query);
-      }).toList();
-    }
+    _applySearchFilter();
     update();
+  }
+
+  void _applySearchFilter() {
+    final query = searchController.text.toLowerCase().trim();
+    if (query.isEmpty) {
+      filteredProducts = List<Products>.from(_allProducts);
+      return;
+    }
+    filteredProducts = _allProducts
+        .where(
+          (product) => (product.name ?? '').toLowerCase().contains(query),
+        )
+        .toList();
+  }
+
+  void selectInnerCategory(int? categoryId) {
+    selectedInnerCategoryId = categoryId;
+    update();
+  }
+
+  List<({int? id, String name})> get innerCategoryTabs {
+    final tabs = <({int? id, String name})>[(id: null, name: 'الكل')];
+    final fromStore = store?.innerCategories ?? [];
+
+    if (fromStore.isNotEmpty) {
+      for (final c in fromStore) {
+        final id = c.id;
+        final name = (c.name ?? '').trim();
+        if (id != null && name.isNotEmpty) {
+          tabs.add((id: id, name: name));
+        }
+      }
+      return tabs;
+    }
+
+    final seen = <int>{};
+    for (final p in filteredProducts) {
+      final id = p.innerCategory?.id;
+      final name = (p.innerCategory?.name ?? '').trim();
+      if (id != null && name.isNotEmpty && seen.add(id)) {
+        tabs.add((id: id, name: name));
+      }
+    }
+    return tabs;
+  }
+
+  List<Products> get displayedProducts {
+    if (selectedInnerCategoryId == null) {
+      return filteredProducts;
+    }
+    return filteredProducts
+        .where((p) => p.innerCategory?.id == selectedInnerCategoryId)
+        .toList();
   }
 
   Map<int?, List<Products>> getProductsByCategory() {
@@ -298,7 +348,7 @@ class ShopDetailsController extends GetxController {
       return;
     }
 
-    final product = (store?.products ?? []).firstWhere(
+    final product = _allProducts.firstWhere(
       (p) => p.id == productId,
       orElse: () => Products(),
     );

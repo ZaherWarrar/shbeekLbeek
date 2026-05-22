@@ -11,7 +11,12 @@ class StoreModel {
   String? categoryName;
   double? rating;
   int? productsCount;
+
+  // products قديمة/موجودة حسب الـ API
   List<Products>? products;
+
+  // ✅ Inner categories (الموجودة في رد store/$storeId)
+  List<InnerCategory>? innerCategories;
 
   StoreModel({
     this.id,
@@ -25,6 +30,7 @@ class StoreModel {
     this.rating,
     this.productsCount,
     this.products,
+    this.innerCategories,
   });
 
   static double? _toDouble(dynamic value) {
@@ -59,6 +65,17 @@ class StoreModel {
           .whereType<Products>()
           .toList();
     }
+
+    // ✅ inner_categories
+    final innerCats = json['inner_categories'];
+    if (innerCats is List) {
+      innerCategories = innerCats
+          .map(
+            (e) => e is Map<String, dynamic> ? InnerCategory.fromJson(e) : null,
+          )
+          .whereType<InnerCategory>()
+          .toList();
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -79,4 +96,3 @@ class StoreModel {
     return data;
   }
 }
-

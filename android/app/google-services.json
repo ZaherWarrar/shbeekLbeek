@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "235928214420",
+    "project_id": "shbeeklbeek",
+    "storage_bucket": "shbeeklbeek.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:235928214420:android:062c1f0e499987d8560d81",
+        "android_client_info": {
+          "package_name": "com.shbeeklbeek.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_qP50hkVP3efmuH_UbjfntoSiDIvx3jk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

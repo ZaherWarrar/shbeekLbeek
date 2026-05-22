@@ -31,8 +31,11 @@ dependencies:
   collection: ^1.19.1
   cupertino_icons: ^1.0.8
   dartz: ^0.10.1
+  firebase_core: ^4.7.0
+  firebase_messaging: ^16.2.0
   flutter:
     sdk: flutter
+  flutter_local_notifications: ^21.0.0
   flutter_map: ^7.0.2
   flutter_svg: ^2.2.1
   geocoding: ^3.0.0

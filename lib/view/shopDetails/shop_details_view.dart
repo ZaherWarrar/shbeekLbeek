@@ -387,23 +387,25 @@ class ShopDetailsView extends StatelessWidget {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Row(
-                                        children: [
-                                          Text(
-                                            userName,
-                                            style: TextStyle(
-                                              color: AppColor().titleColor,
-                                              fontWeight: FontWeight.w800,
-                                            ),
-                                          ),
-                                          const Spacer(),
-                                          if (isMine && (r.id ?? 0) > 0)
-                                            PopupMenuButton<String>(
-                                              icon: Icon(
-                                                Icons.more_vert,
-                                                color: AppColor().titleColor,
-                                              ),
-                                              onSelected: (value) async {
+                                      Directionality(
+                                        textDirection: TextDirection.ltr,
+                                        child: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            if (isMine && (r.id ?? 0) > 0)
+                                              PopupMenuButton<String>(
+                                                padding: EdgeInsets.zero,
+                                                constraints:
+                                                    const BoxConstraints(
+                                                  minWidth: 36,
+                                                  minHeight: 36,
+                                                ),
+                                                icon: Icon(
+                                                  Icons.more_vert,
+                                                  color: AppColor().titleColor,
+                                                ),
+                                                onSelected: (value) async {
                                                 if (value == 'edit') {
                                                   controller.beginEditReview(r);
                                                   Get.bottomSheet(
@@ -516,27 +518,142 @@ class ShopDetailsView extends StatelessWidget {
                                                     isScrollControlled: true,
                                                   );
                                                 } else if (value == 'delete') {
-                                                  final ok = await Get.dialog<bool>(
-                                                    AlertDialog(
-                                                      title: const Text('حذف التقييم'),
-                                                      content: const Text('هل أنت متأكد من حذف التقييم؟'),
-                                                      actions: [
-                                                        TextButton(
-                                                          onPressed: () => Get.back(result: false),
-                                                          child: const Text('إلغاء'),
+                                                  final ok =
+                                                      await Get.dialog<bool>(
+                                                    Dialog(
+                                                      backgroundColor:
+                                                          AppColor()
+                                                              .backgroundColor,
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(20),
+                                                      ),
+                                                      child: Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(20),
+                                                        child: Column(
+                                                          mainAxisSize:
+                                                              MainAxisSize.min,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .stretch,
+                                                          children: [
+                                                            Text(
+                                                              'حذف التقييم',
+                                                              textAlign:
+                                                                  TextAlign
+                                                                      .center,
+                                                              style: TextStyle(
+                                                                fontSize: 18,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w800,
+                                                                color: AppColor()
+                                                                    .titleColor,
+                                                              ),
+                                                            ),
+                                                            const SizedBox(
+                                                                height: 12),
+                                                            Text(
+                                                              'هل أنت متأكد من حذف التقييم؟',
+                                                              textAlign:
+                                                                  TextAlign
+                                                                      .center,
+                                                              style: TextStyle(
+                                                                fontSize: 14,
+                                                                height: 1.5,
+                                                                color: AppColor()
+                                                                    .descriptionColor,
+                                                              ),
+                                                            ),
+                                                            const SizedBox(
+                                                                height: 22),
+                                                            Row(
+                                                              children: [
+                                                                Expanded(
+                                                                  child:
+                                                                      OutlinedButton(
+                                                                    onPressed: () =>
+                                                                        Get.back(
+                                                                            result:
+                                                                                false),
+                                                                    style: OutlinedButton
+                                                                        .styleFrom(
+                                                                      foregroundColor:
+                                                                          AppColor()
+                                                                              .titleColor,
+                                                                      side: BorderSide(
+                                                                          color: Colors
+                                                                              .grey
+                                                                              .shade400),
+                                                                      padding: const EdgeInsets
+                                                                          .symmetric(
+                                                                          vertical:
+                                                                              14),
+                                                                      shape:
+                                                                          RoundedRectangleBorder(
+                                                                        borderRadius:
+                                                                            BorderRadius.circular(14),
+                                                                      ),
+                                                                    ),
+                                                                    child: const Text(
+                                                                      'إلغاء',
+                                                                      style: TextStyle(
+                                                                          fontWeight:
+                                                                              FontWeight.w700),
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                                const SizedBox(
+                                                                    width: 10),
+                                                                Expanded(
+                                                                  child:
+                                                                      ElevatedButton(
+                                                                    onPressed: () =>
+                                                                        Get.back(
+                                                                            result:
+                                                                                true),
+                                                                    style: ElevatedButton
+                                                                        .styleFrom(
+                                                                      backgroundColor:
+                                                                          Colors.red.shade700,
+                                                                      foregroundColor:
+                                                                          Colors
+                                                                              .white,
+                                                                      padding: const EdgeInsets
+                                                                          .symmetric(
+                                                                          vertical:
+                                                                              14),
+                                                                      elevation:
+                                                                          0,
+                                                                      shape:
+                                                                          RoundedRectangleBorder(
+                                                                        borderRadius:
+                                                                            BorderRadius.circular(14),
+                                                                      ),
+                                                                    ),
+                                                                    child:
+                                                                        const Text(
+                                                                      'حذف',
+                                                                      style: TextStyle(
+                                                                          fontWeight:
+                                                                              FontWeight.w800),
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ],
                                                         ),
-                                                        TextButton(
-                                                          onPressed: () => Get.back(result: true),
-                                                          child: const Text(
-                                                            'حذف',
-                                                            style: TextStyle(color: Colors.red),
-                                                          ),
-                                                        ),
-                                                      ],
+                                                      ),
                                                     ),
                                                   );
                                                   if (ok == true) {
-                                                    await controller.deleteReview(r.id!);
+                                                    await controller
+                                                        .deleteReview(r.id!);
                                                   }
                                                 }
                                               },
@@ -550,22 +667,56 @@ class ShopDetailsView extends StatelessWidget {
                                                   child: Text('حذف'),
                                                 ),
                                               ],
+                                            )
+                                            else
+                                              const SizedBox(width: 36),
+                                            Expanded(
+                                              child: Directionality(
+                                                textDirection:
+                                                    TextDirection.rtl,
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.end,
+                                                  children: [
+                                                    Flexible(
+                                                      child: Text(
+                                                        userName,
+                                                        maxLines: 1,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                        style: TextStyle(
+                                                          color: AppColor()
+                                                              .titleColor,
+                                                          fontWeight:
+                                                              FontWeight.w800,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 8),
+                                                    Row(
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
+                                                      children: List.generate(
+                                                          5, (i) {
+                                                        final filled =
+                                                            (i + 1) <= rating;
+                                                        return Icon(
+                                                          filled
+                                                              ? Icons.star
+                                                              : Icons
+                                                                  .star_border,
+                                                          size: 16,
+                                                          color: AppColor()
+                                                              .primaryColor,
+                                                        );
+                                                      }),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
                                             ),
-                                          Row(
-                                            children: List.generate(5, (i) {
-                                              final filled =
-                                                  (i + 1) <= rating;
-                                              return Icon(
-                                                filled
-                                                    ? Icons.star
-                                                    : Icons.star_border,
-                                                size: 16,
-                                                color:
-                                                    AppColor().primaryColor,
-                                              );
-                                            }),
-                                          ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
                                       if (text.isNotEmpty) ...[
                                         const SizedBox(height: 6),

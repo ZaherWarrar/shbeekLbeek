@@ -17,7 +17,6 @@ class OtpController extends GetxController {
   final OtpData otpData = OtpData(Get.find());
   final session = Get.find<SessionService>();
 
-
   @override
   void onInit() {
     phoneNumber = Get.arguments['phone_number'];
@@ -38,7 +37,6 @@ class OtpController extends GetxController {
 
       if (statusRequest == StatusRequest.success &&
           response is Map<String, dynamic>) {
-
         // ====== حفظ التوكن ======
         if (response.containsKey('token')) {
           await session.saveLogin(
@@ -73,7 +71,6 @@ class OtpController extends GetxController {
 
         Get.snackbar('نجاح', 'تم التحقق بنجاح');
         Get.offAllNamed(AppRoutes.start);
-
       } else {
         Get.snackbar('فشل', 'رمز غير صالح');
       }

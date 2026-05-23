@@ -1,16 +1,10 @@
-import 'package:app/controller/shop_details/shop_details_controller.dart';
+import 'package:app/controller/product_details/product_details_controller.dart';
 import 'package:app/core/constant/app_color.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class ReviewFormSheet extends StatelessWidget {
-  final ShopDetailsController controller;
-  final String title;
-  final String submitText;
-  final VoidCallback onSubmit;
-  final VoidCallback? onClose;
-
-  const ReviewFormSheet({
+class ProductReviewFormSheet extends StatefulWidget {
+  const ProductReviewFormSheet({
     super.key,
     required this.controller,
     required this.title,
@@ -19,14 +13,25 @@ class ReviewFormSheet extends StatelessWidget {
     this.onClose,
   });
 
+  final ProductDetailsController controller;
+  final String title;
+  final String submitText;
+  final Future<void> Function() onSubmit;
+  final VoidCallback? onClose;
+
   @override
-  Widget build(BuildContext context) {
-    return GetBuilder<ShopDetailsController>(
-      builder: (c) => _buildContent(c),
-    );
+  State<ProductReviewFormSheet> createState() => _ProductReviewFormSheetState();
+}
+
+class _ProductReviewFormSheetState extends State<ProductReviewFormSheet> {
+  ProductDetailsController get c => widget.controller;
+
+  void _refresh() {
+    if (mounted) setState(() {});
   }
 
-  Widget _buildContent(ShopDetailsController c) {
+  @override
+  Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -42,7 +47,7 @@ class ReviewFormSheet extends StatelessWidget {
             Row(
               children: [
                 Text(
-                  title,
+                  widget.title,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
@@ -51,7 +56,7 @@ class ReviewFormSheet extends StatelessWidget {
                 ),
                 const Spacer(),
                 IconButton(
-                  onPressed: onClose ?? () => Get.back(),
+                  onPressed: widget.onClose ?? () => Get.back(),
                   icon: Icon(Icons.close, color: AppColor().titleColor),
                 ),
               ],
@@ -65,7 +70,10 @@ class ReviewFormSheet extends StatelessWidget {
                   visualDensity: VisualDensity.compact,
                   onPressed: c.isSubmittingReview
                       ? null
-                      : () => c.setReviewRating(star),
+                      : () {
+                          c.setReviewRating(star);
+                          _refresh();
+                        },
                   icon: Icon(
                     filled ? Icons.star : Icons.star_border,
                     color: AppColor().primaryColor,
@@ -95,7 +103,13 @@ class ReviewFormSheet extends StatelessWidget {
               width: double.infinity,
               height: 48,
               child: ElevatedButton(
-                onPressed: c.isSubmittingReview ? null : onSubmit,
+                onPressed: c.isSubmittingReview
+                    ? null
+                    : () async {
+                        _refresh();
+                        await widget.onSubmit();
+                        _refresh();
+                      },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColor().primaryColor,
                   foregroundColor: Colors.white,
@@ -112,7 +126,7 @@ class ReviewFormSheet extends StatelessWidget {
                           color: Colors.white,
                         ),
                       )
-                    : Text(submitText),
+                    : Text(widget.submitText),
               ),
             ),
           ],

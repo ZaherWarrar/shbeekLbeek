@@ -252,15 +252,14 @@ bool _isMyReview(ShopDetailsController controller, StoreReviewModel review) {
 
 void _openAddReviewSheet(ShopDetailsController controller) {
   Get.bottomSheet(
-    GetBuilder<ShopDetailsController>(
-      builder: (c) => ReviewFormSheet(
-        controller: c,
-        title: 'أضف تقييمك',
-        submitText: 'إرسال التقييم',
-        onSubmit: c.submitReview,
-      ),
+    ReviewFormSheet(
+      controller: controller,
+      title: 'أضف تقييمك',
+      submitText: 'إرسال التقييم',
+      onSubmit: controller.submitReview,
     ),
     isScrollControlled: true,
+    backgroundColor: Colors.transparent,
   );
 }
 
@@ -270,19 +269,18 @@ void _openEditReviewSheet(
 ) {
   controller.beginEditReview(review);
   Get.bottomSheet(
-    GetBuilder<ShopDetailsController>(
-      builder: (c) => ReviewFormSheet(
-        controller: c,
-        title: 'تعديل التقييم',
-        submitText: 'حفظ التعديل',
-        onSubmit: c.updateReview,
-        onClose: () {
-          c.resetReviewForm();
-          Get.back();
-        },
-      ),
+    ReviewFormSheet(
+      controller: controller,
+      title: 'تعديل التقييم',
+      submitText: 'حفظ التعديل',
+      onSubmit: controller.updateReview,
+      onClose: () {
+        controller.resetReviewForm();
+        Get.back();
+      },
     ),
     isScrollControlled: true,
+    backgroundColor: Colors.transparent,
   );
 }
 

@@ -2,6 +2,7 @@ import 'package:app/binding/all_shops_binding.dart';
 import 'package:app/binding/cart_binding.dart';
 import 'package:app/binding/order_binding.dart';
 import 'package:app/binding/otp_binding.dart';
+import 'package:app/binding/product_details_binding.dart';
 import 'package:app/binding/shop_details_binding.dart';
 import 'package:app/core/middleware/choose_city_middleware.dart';
 import 'package:app/view/Cart/cart_view.dart';
@@ -79,6 +80,7 @@ class AppRoutes {
       page: () => const ShopDetailsView(),
     ),
     GetPage(
+      binding: ProductDetailsBinding(),
       name: productDetails,
       page: () => const ProductDetailsView(),
     ),

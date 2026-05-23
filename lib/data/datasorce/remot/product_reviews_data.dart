@@ -51,5 +51,38 @@ class ProductReviewsData {
     );
     return response.fold((l) => l, (r) => r);
   }
+
+  Future<Object> updateReview({
+    required int reviewId,
+    required int rating,
+    String? text,
+  }) async {
+    final headers = _getHeaders(requireAuth: true);
+    if (!headers.containsKey("Authorization")) {
+      return StatusRequest.unauthorized;
+    }
+    final body = <String, dynamic>{
+      "rating": rating,
+      "text": text,
+    };
+    final response = await crud.putData(
+      "${ApiLinks.productReviews}/$reviewId",
+      body,
+      headers: headers,
+    );
+    return response.fold((l) => l, (r) => r);
+  }
+
+  Future<Object> deleteReview(int reviewId) async {
+    final headers = _getHeaders(requireAuth: true);
+    if (!headers.containsKey("Authorization")) {
+      return StatusRequest.unauthorized;
+    }
+    final response = await crud.deleteData(
+      "${ApiLinks.productReviews}/$reviewId",
+      headers: headers,
+    );
+    return response.fold((l) => l, (r) => r);
+  }
 }
 

@@ -29,6 +29,7 @@ class ProductDetailsController extends GetxController {
   ProductReviewsResponseModel? reviewsResponse;
   StatusRequest reviewsStatus = StatusRequest.none;
   bool isSubmittingReview = false;
+  int? editingReviewId;
 
   Future<void> fetchAll() async {
     statusRequest = StatusRequest.loading;
@@ -135,7 +136,7 @@ class ProductDetailsController extends GetxController {
 
   Future<void> submitReview() async {
     if (isSubmittingReview) return;
-    if (session.token == null || (session.token?.isEmpty ?? true)) {
+    if (!session.isLoggedIn) {
       Get.snackbar("تنبيه", "يجب تسجيل الدخول أولاً");
       Get.toNamed(AppRoutes.login);
       return;
@@ -155,10 +156,80 @@ class ProductDetailsController extends GetxController {
       reviewTextController.clear();
       reviewRating = 5;
       await fetchReviews();
-      Get.back(); // close sheet/dialog
+      Get.back();
       Get.snackbar("تم", "تم إرسال تقييمك بنجاح");
     } else {
       Get.snackbar("خطأ", "فشل إرسال التقييم");
+    }
+
+    isSubmittingReview = false;
+    update();
+  }
+
+  void beginEditReview(ProductReviewModel review) {
+    editingReviewId = review.id;
+    reviewRating = (review.rating ?? 5).clamp(1, 5);
+    reviewTextController.text = (review.text ?? '').toString();
+    update();
+  }
+
+  void resetReviewForm() {
+    editingReviewId = null;
+    reviewRating = 5;
+    reviewTextController.clear();
+    update();
+  }
+
+  Future<void> updateReview() async {
+    final rid = editingReviewId;
+    if (rid == null || rid <= 0) return;
+    if (isSubmittingReview) return;
+    if (!session.isLoggedIn) {
+      Get.snackbar("تنبيه", "يجب تسجيل الدخول أولاً");
+      Get.toNamed(AppRoutes.login);
+      return;
+    }
+    isSubmittingReview = true;
+    update();
+
+    final text = reviewTextController.text.trim();
+    final res = await _reviewsData.updateReview(
+      reviewId: rid,
+      rating: reviewRating,
+      text: text.isEmpty ? null : text,
+    );
+    final stat = handelingData(res);
+    if (stat == StatusRequest.success) {
+      await fetchReviews();
+      resetReviewForm();
+      Get.back();
+      Get.snackbar("تم", "تم تعديل التقييم بنجاح");
+    } else {
+      Get.snackbar("خطأ", "فشل تعديل التقييم");
+    }
+
+    isSubmittingReview = false;
+    update();
+  }
+
+  Future<void> deleteReview(int reviewId) async {
+    if (reviewId <= 0) return;
+    if (isSubmittingReview) return;
+    if (!session.isLoggedIn) {
+      Get.snackbar("تنبيه", "يجب تسجيل الدخول أولاً");
+      Get.toNamed(AppRoutes.login);
+      return;
+    }
+    isSubmittingReview = true;
+    update();
+
+    final res = await _reviewsData.deleteReview(reviewId);
+    final stat = handelingData(res);
+    if (stat == StatusRequest.success) {
+      await fetchReviews();
+      Get.snackbar("تم", "تم حذف التقييم");
+    } else {
+      Get.snackbar("خطأ", "فشل حذف التقييم");
     }
 
     isSubmittingReview = false;

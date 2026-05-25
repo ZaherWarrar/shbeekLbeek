@@ -1,9 +1,8 @@
 import 'package:app/controller/cart/cart_controller.dart';
 import 'package:app/controller/order/order_controller.dart';
 import 'package:app/core/constant/app_color.dart';
-import 'package:app/core/constant/routes/app_routes.dart';
-import 'package:app/view/adress/controller/address_controller.dart';
-import 'package:app/view/adress/view/add_address_page.dart';
+import 'package:app/controller/address/address_controller.dart';
+import 'package:app/view/address/add_address_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -145,7 +144,7 @@ class CartCheckoutSection extends StatelessWidget {
                 : ListView.separated(
                     shrinkWrap: true,
                     itemCount: list.length,
-                    separatorBuilder: (_, __) => const Divider(),
+                    separatorBuilder: (_, _) => const Divider(),
                     itemBuilder: (context, index) {
                       final address = list[index];
                       return ListTile(

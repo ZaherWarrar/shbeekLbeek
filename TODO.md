@@ -1,7 +1,7 @@
 # TODO - Inner Categories in ShopDetails
 
 - [ ] Update `Products` model to parse `inner_category` from API.
-  - File: `lib/data/datasorce/model/item_model.dart`
+  - File: `lib/data/datasource/model/item_model.dart`
 
 - [ ] Update `ShopDetailsController.getProductsByCategory()` to group `filteredProducts` by `product.innerCategory.id` (instead of returning `{null: ...}`).
   - File: `lib/controller/shop_details/shop_details_controller.dart`

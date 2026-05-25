@@ -10,8 +10,7 @@ import 'package:app/view/Cart/widget/summary_row_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:app/core/shared/custom_app_bar.dart';
 import 'package:get/get.dart';
-import 'package:app/view/adress/controller/address_controller.dart';
-import 'package:app/view/adress/view/add_address_page.dart';
+
 
 class CartView extends StatelessWidget {
   const CartView({super.key});

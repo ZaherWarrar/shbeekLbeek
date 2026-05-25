@@ -2,10 +2,15 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class SendNotification {
+  // ignore: non_constant_identifier_names
   static Future<void> SendNotificationApi(
+    // ignore: strict_top_level_inference
     tokenserver,
+    // ignore: strict_top_level_inference
     token,
+    // ignore: strict_top_level_inference
     bodies,
+    // ignore: strict_top_level_inference
     title,
   ) async {
     String url =
@@ -30,8 +35,10 @@ class SendNotification {
       body: jsonEncode(messages),
     );
     if (res.statusCode == 200) {
+      // ignore: avoid_print
       print('notification send successfuly');
     } else {
+      // ignore: avoid_print
       print('notification not not not send successfuly');
     }
   }

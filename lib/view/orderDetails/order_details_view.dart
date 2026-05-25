@@ -1,7 +1,7 @@
 import 'package:app/core/constant/app_color.dart';
 import 'package:app/core/shared/custom_app_bar.dart';
-import 'package:app/view/orderHistoory/controller/order_his_controller.dart';
-import 'package:app/view/orderHistoory/model/order_his_model.dart';
+import 'package:app/controller/orderHistoory/order_his_controller.dart';
+import 'package:app/data/datasource/model/order_his_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

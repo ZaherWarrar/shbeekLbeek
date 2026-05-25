@@ -1,5 +1,5 @@
 import 'package:app/core/constant/app_color.dart';
-import 'package:app/data/datasorce/model/product_details_model.dart';
+import 'package:app/data/datasource/model/product_details_model.dart';
 import 'package:flutter/material.dart';
 
 class ProductVariationSelector extends StatelessWidget {

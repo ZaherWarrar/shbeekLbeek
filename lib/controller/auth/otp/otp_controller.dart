@@ -1,8 +1,8 @@
 import 'package:app/core/class/statusrequest.dart';
 import 'package:app/core/constant/routes/app_routes.dart';
-import 'package:app/core/function/handelingdata.dart';
+import 'package:app/core/function/handling_data.dart';
 import 'package:app/core/services/session_service.dart';
-import 'package:app/data/datasorce/remot/otp_data.dart';
+import 'package:app/data/datasource/remot/otp_data.dart';
 import 'package:get/get.dart';
 
 class OtpController extends GetxController {
@@ -33,7 +33,7 @@ class OtpController extends GetxController {
 
     try {
       final response = await otpData.otpData(otpCode.value, phoneNumber);
-      statusRequest = handelingData(response);
+      statusRequest = handlingData(response);
 
       if (statusRequest == StatusRequest.success &&
           response is Map<String, dynamic>) {

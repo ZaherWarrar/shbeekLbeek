@@ -1,7 +1,7 @@
 import 'package:app/controller/shop_details/shop_details_controller.dart';
 import 'package:app/core/constant/app_color.dart';
-import 'package:app/view/favorets/widget/favorates_tabs/favorate_tabs_controller.dart';
-import 'package:app/view/favorets/widget/favorates_tabs/favorates_tabs_model.dart';
+import 'package:app/controller/favorites/favorites_controller.dart';
+import 'package:app/view/favorites/widget/favorites_tabs/favorites_tabs_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

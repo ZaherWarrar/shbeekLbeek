@@ -1,85 +1,54 @@
-import 'package:app/core/class/statusrequest.dart';
+import 'package:app/controller/cart/cart_coupon_handler.dart';
+import 'package:app/controller/cart/cart_delivery_utils.dart';
 import 'package:app/core/services/cart_preferences.dart';
-import 'package:app/data/datasorce/model/item_model.dart';
-import 'package:app/core/class/crud.dart';
-import 'package:app/data/datasorce/remot/coupons_data.dart';
-import 'package:app/data/datasorce/model/store_model.dart';
+import 'package:app/data/datasource/model/item_model.dart';
+import 'package:app/data/datasource/model/store_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class CartController extends GetxController {
-  // قائمة المنتجات في السلة
   List<Map<String, dynamic>> cartItems = [];
+  final TextEditingController discountCodeController = TextEditingController();
+  final TextEditingController notesController = TextEditingController();
+  final CartPreferences _prefs = CartPreferences();
 
-  // كود الخصم
-  TextEditingController discountCodeController = TextEditingController();
-  String? discountCode;
-  double discountAmount = 0.0;
-  double discountPercentage = 0.0;
-  /// رسالة من API (صالح / غير صالح)
-  String? couponMessage;
-  /// جاري التحقق من الكوبون
-  bool isCheckingCoupon = false;
+  late final CartCouponHandler coupon = CartCouponHandler(
+    discountCodeController: discountCodeController,
+    prefs: _prefs,
+    onStateChanged: update,
+    getSubtotal: () => subtotal,
+  );
 
-  // الملاحظات
-  TextEditingController notesController = TextEditingController();
+  String? get discountCode => coupon.discountCode;
+  set discountCode(String? value) => coupon.discountCode = value;
+
+  double get discountAmount => coupon.discountAmount;
+  double get discountPercentage => coupon.discountPercentage;
+  String? get couponMessage => coupon.couponMessage;
+  bool get isCheckingCoupon => coupon.isCheckingCoupon;
+
   String? notes;
+  double deliveryFee = 10.0;
 
-  // رسوم التوصيل
-  double deliveryFee = 10.0; // قيمة افتراضية
-
-  // UserPreferences للحفظ
- final CartPreferences _prefs = CartPreferences();
-
-
- @override
-void onInit() {
-  super.onInit();
-  _prefs.init().then((_) {
-    _loadCart();
-  });
-}
+  @override
+  void onInit() {
+    super.onInit();
+    _prefs.init().then((_) => _loadCart());
+  }
 
   void _loadCart() {
     cartItems = _prefs.getCart();
-    deliveryFee = _deriveDeliveryFeeFromCart() ?? deliveryFee;
-    discountCode = _prefs.getDiscountCode();
-    if (discountCode != null) {
-      discountCodeController.text = discountCode!;
-    }
+    deliveryFee = deriveDeliveryFeeFromCart(cartItems) ?? deliveryFee;
+    coupon.restoreFromPrefs(_prefs.getDiscountCode());
     notes = _prefs.getNotes();
-    if (notes != null) {
-      notesController.text = notes!;
-    }
+    if (notes != null) notesController.text = notes!;
     update();
-  }
-
-  double? _deriveDeliveryFeeFromCart() {
-    // إذا كانت السلة تحتوي عناصر من أكثر من متجر، نأخذ أعلى رسوم توصيل كحل آمن.
-    double? fee;
-    for (final item in cartItems) {
-      final raw = item['deliveryFee'] ?? item['shopDeliveryFee'];
-      final parsed = _parseFee(raw);
-      if (parsed == null) continue;
-      fee = fee == null ? parsed : (parsed > fee ? parsed : fee);
-    }
-    return fee;
-  }
-
-  double? _parseFee(dynamic raw) {
-    if (raw == null) return null;
-    if (raw is num) return raw.toDouble();
-    final s = raw.toString().trim();
-    if (s.isEmpty) return null;
-    // حذف أي نص غير رقمي (مثلاً "ليرة")
-    final cleaned = s.replaceAll(RegExp(r'[^0-9.]'), '');
-    return double.tryParse(cleaned);
   }
 
   Future<void> _saveCart() async {
     await _prefs.saveCart(cartItems);
-    if (discountCode != null) {
-      await _prefs.saveDiscountCode(discountCode!);
+    if (coupon.discountCode != null) {
+      await _prefs.saveDiscountCode(coupon.discountCode!);
     }
     if (notesController.text.isNotEmpty) {
       notes = notesController.text;
@@ -90,26 +59,17 @@ void onInit() {
     }
   }
 
-  // Method عام لحفظ السلة (يمكن استدعاؤه من الخارج)
-  Future<void> saveCart() async {
-    await _saveCart();
-  }
+  Future<void> saveCart() => _saveCart();
 
-  // التحقق من وجود طلب نشط
-  bool hasActiveOrder() {
-    return _prefs.hasActiveOrder();
-  }
+  bool hasActiveOrder() => _prefs.hasActiveOrder();
 
   int getQuantity(int productId) {
     final item = cartItems.firstWhere(
-      (e) => e['productId'] == productId && (e['variationName'] == null),
+      (e) => e['productId'] == productId && e['variationName'] == null,
       orElse: () => <String, dynamic>{},
     );
     if (item.isEmpty) return 0;
-    final q = item['quantity'];
-    if (q is int) return q;
-    if (q is double) return q.toInt();
-    return int.tryParse(q?.toString() ?? '') ?? 0;
+    return parseItemQuantity(item);
   }
 
   int getQuantityByVariation(int productId, String? variationName) {
@@ -120,13 +80,9 @@ void onInit() {
       orElse: () => <String, dynamic>{},
     );
     if (item.isEmpty) return 0;
-    final q = item['quantity'];
-    if (q is int) return q;
-    if (q is double) return q.toInt();
-    return int.tryParse(q?.toString() ?? '') ?? 0;
+    return parseItemQuantity(item);
   }
 
-  // إضافة منتج للسلة
   void addItem(
     Products product,
     StoreModel shop, {
@@ -134,42 +90,32 @@ void onInit() {
     String? variationName,
     String? itemNotes,
   }) {
-    // التحقق من وجود طلب نشط
     if (hasActiveOrder()) {
       Get.snackbar(
-        "تنبيه",
-        "يوجد طلب قيد المعالجة. لا يمكن إضافة منتجات جديدة",
+        'تنبيه',
+        'يوجد طلب قيد المعالجة. لا يمكن إضافة منتجات جديدة',
         snackPosition: SnackPosition.BOTTOM,
       );
       return;
     }
-
-    // التحقق من null safety
     if (product.id == null) {
-      Get.snackbar("خطأ", "معرّف المنتج غير صحيح");
+      Get.snackbar('خطأ', 'معرّف المنتج غير صحيح');
       return;
     }
     if (shop.id == null) {
-      Get.snackbar("خطأ", "معرّف المتجر غير صحيح");
+      Get.snackbar('خطأ', 'معرّف المتجر غير صحيح');
       return;
     }
 
-    // التحقق من وجود المنتج في السلة
-    int existingIndex = cartItems.indexWhere(
+    final index = cartItems.indexWhere(
       (item) =>
           item['productId'] == product.id &&
           (item['variationName']?.toString() ?? '') == (variationName ?? ''),
     );
 
-    if (existingIndex != -1) {
-      // إذا كان موجوداً، نزيد الكمية
-      cartItems[existingIndex]['quantity'] =
-          (cartItems[existingIndex]['quantity'] as int) + quantity;
-      cartItems[existingIndex]['subtotal'] =
-          (cartItems[existingIndex]['price'] as int) *
-          (cartItems[existingIndex]['quantity'] as int);
+    if (index != -1) {
+      _bumpQuantity(index, quantity);
     } else {
-      // إذا لم يكن موجوداً، نضيفه
       final price = product.salePrice ?? product.regularPrice ?? 0;
       cartItems.add({
         'productId': product.id!,
@@ -187,28 +133,17 @@ void onInit() {
       });
     }
 
-    deliveryFee = _deriveDeliveryFeeFromCart() ?? deliveryFee;
-    _saveCart();
-    update();
-    Get.snackbar(
-      "تم الإضافة",
-      "تم إضافة ${product.name ?? 'المنتج'} للسلة",
-      snackPosition: SnackPosition.BOTTOM,
-      duration: const Duration(seconds: 2),
+    _afterCartMutation(
+      snackTitle: 'تم الإضافة',
+      snackBody: 'تم إضافة ${product.name ?? 'المنتج'} للسلة',
     );
   }
 
-  // حذف منتج من السلة
   void removeItem(int productId) {
     cartItems.removeWhere((item) => item['productId'] == productId);
-    deliveryFee = _deriveDeliveryFeeFromCart() ?? deliveryFee;
-    _saveCart();
-    update();
-    Get.snackbar(
-      "تم الحذف",
-      "تم حذف المنتج من السلة",
-      snackPosition: SnackPosition.BOTTOM,
-      duration: const Duration(seconds: 2),
+    _afterCartMutation(
+      snackTitle: 'تم الحذف',
+      snackBody: 'تم حذف المنتج من السلة',
     );
   }
 
@@ -218,258 +153,110 @@ void onInit() {
           item['productId'] == productId &&
           (item['variationName']?.toString() ?? '') == (variationName ?? ''),
     );
-    deliveryFee = _deriveDeliveryFeeFromCart() ?? deliveryFee;
-    _saveCart();
-    update();
+    _afterCartMutation();
   }
 
-  // زيادة كمية منتج
   void increaseQuantity(int productId) {
-    int index =
-        cartItems.indexWhere((item) => item['productId'] == productId && (item['variationName'] == null));
-    if (index != -1) {
-      cartItems[index]['quantity'] = (cartItems[index]['quantity'] as int) + 1;
-      cartItems[index]['subtotal'] =
-          (cartItems[index]['price'] as int) *
-          (cartItems[index]['quantity'] as int);
-      _saveCart();
-      update();
-    }
+    final index = cartItems.indexWhere(
+      (item) => item['productId'] == productId && item['variationName'] == null,
+    );
+    if (index == -1) return;
+    _bumpQuantity(index, 1);
+    _afterCartMutation();
   }
 
   void increaseQuantityByVariation(int productId, String? variationName) {
-    int index = cartItems.indexWhere(
-      (item) =>
-          item['productId'] == productId &&
-          (item['variationName']?.toString() ?? '') == (variationName ?? ''),
-    );
-    if (index != -1) {
-      cartItems[index]['quantity'] = (cartItems[index]['quantity'] as int) + 1;
-      cartItems[index]['subtotal'] =
-          (cartItems[index]['price'] as int) *
-          (cartItems[index]['quantity'] as int);
-      _saveCart();
-      update();
-    }
+    final index = _indexForVariation(productId, variationName);
+    if (index == -1) return;
+    _bumpQuantity(index, 1);
+    _afterCartMutation();
   }
 
-  // تقليل كمية منتج
   void decreaseQuantity(int productId) {
-    int index =
-        cartItems.indexWhere((item) => item['productId'] == productId && (item['variationName'] == null));
-    if (index != -1) {
-      int currentQuantity = cartItems[index]['quantity'] as int;
-      if (currentQuantity > 1) {
-        cartItems[index]['quantity'] = currentQuantity - 1;
-        cartItems[index]['subtotal'] =
-            (cartItems[index]['price'] as int) *
-            (cartItems[index]['quantity'] as int);
-        _saveCart();
-        update();
-      } else {
-        // إذا كانت الكمية 1، نحذف المنتج
-        removeItem(productId);
-      }
-    }
+    final index = cartItems.indexWhere(
+      (item) => item['productId'] == productId && item['variationName'] == null,
+    );
+    if (index == -1) return;
+    _decreaseAtIndex(index, productId, variationName: null);
   }
 
   void decreaseQuantityByVariation(int productId, String? variationName) {
-    int index = cartItems.indexWhere(
+    final index = _indexForVariation(productId, variationName);
+    if (index == -1) return;
+    _decreaseAtIndex(index, productId, variationName: variationName);
+  }
+
+  int _indexForVariation(int productId, String? variationName) {
+    return cartItems.indexWhere(
       (item) =>
           item['productId'] == productId &&
           (item['variationName']?.toString() ?? '') == (variationName ?? ''),
     );
-    if (index != -1) {
-      int currentQuantity = cartItems[index]['quantity'] as int;
-      if (currentQuantity > 1) {
-        cartItems[index]['quantity'] = currentQuantity - 1;
-        cartItems[index]['subtotal'] =
-            (cartItems[index]['price'] as int) *
-            (cartItems[index]['quantity'] as int);
-        _saveCart();
-        update();
-      } else {
-        removeItemByVariation(productId, variationName);
-      }
+  }
+
+  void _decreaseAtIndex(
+    int index,
+    int productId, {
+    required String? variationName,
+  }) {
+    final current = cartItems[index]['quantity'] as int;
+    if (current > 1) {
+      cartItems[index]['quantity'] = current - 1;
+      _syncSubtotal(index);
+      _afterCartMutation();
+    } else if (variationName != null) {
+      removeItemByVariation(productId, variationName);
+    } else {
+      removeItem(productId);
     }
   }
 
-  // حساب المجموع الفرعي
-  double get subtotal {
-    double total = 0.0;
-    for (var item in cartItems) {
-      // التعامل مع int و double بشكل آمن
-      final subtotalValue = item['subtotal'];
-      if (subtotalValue is int) {
-        total += subtotalValue.toDouble();
-      } else if (subtotalValue is double) {
-        total += subtotalValue;
-      }
-    }
-    return total;
+  void _bumpQuantity(int index, int delta) {
+    cartItems[index]['quantity'] =
+        (cartItems[index]['quantity'] as int) + delta;
+    _syncSubtotal(index);
   }
 
-  // حساب رسوم التوصيل
-  double get calculatedDeliveryFee {
-    // رسوم التوصيل تُحسب من المتجر (محفوظة ضمن عناصر السلة) ولا نعتمد عتبة 100
-    // لأن الأسعار بالليرة وقد تجعل التوصيل دائماً "مجاني" بالخطأ.
-    return deliveryFee;
+  void _syncSubtotal(int index) {
+    cartItems[index]['subtotal'] =
+        (cartItems[index]['price'] as int) *
+        (cartItems[index]['quantity'] as int);
   }
 
-  // حساب الخصم
-  double get calculatedDiscount {
-    if (discountCode == null || discountCode!.isEmpty) {
-      return 0.0;
-    }
-    // يمكن إضافة منطق للتحقق من كود الخصم من API
-    // حالياً نستخدم نسبة مئوية ثابتة (10%)
-    if (discountPercentage > 0) {
-      return subtotal * (discountPercentage / 100);
-    }
-    return discountAmount;
-  }
-
-  // حساب المجموع الإجمالي
-  double get total {
-    return subtotal + calculatedDeliveryFee - calculatedDiscount;
-  }
-
-  // تطبيق كود الخصم — التحقق من API ثم تطبيق النتيجة
-  void applyDiscount() async {
-    String code = discountCodeController.text.trim();
-    if (code.isEmpty) {
-      Get.snackbar("تنبيه", "الرجاء إدخال كود الخصم");
-      return;
-    }
-
-    isCheckingCoupon = true;
-    couponMessage = null;
+  void _afterCartMutation({String? snackTitle, String? snackBody}) {
+    deliveryFee = deriveDeliveryFeeFromCart(cartItems) ?? deliveryFee;
+    _saveCart();
     update();
-
-    try {
-      final couponData = CouponsData(Get.find<Crud>());
-      var response = await couponData.couponsCheckData(code);
-
-      if (response is StatusRequest) {
-        isCheckingCoupon = false;
-        couponMessage = null;
-        discountCode = null;
-        discountPercentage = 0.0;
-        discountAmount = 0.0;
-        _couponErrorSnackbar(response);
-        update();
-        return;
-      }
-
-      if (response is Map<String, dynamic>) {
-        final valid = response['valid'] == true;
-        final message = response['message']?.toString();
-
-        if (valid && message != null && message.isNotEmpty) {
-          couponMessage = message;
-          discountCode = code;
-          discountPercentage = 0.0;
-          discountAmount = 0.0;
-
-          final details = response['details'];
-          if (details is Map<String, dynamic>) {
-            final type = details['type']?.toString().toLowerCase();
-            final valueStr = details['value']?.toString();
-            final value = double.tryParse(valueStr ?? '') ?? 0.0;
-            if (type == 'fixed') {
-              discountAmount = value;
-            } else if (type == 'percent' || type == 'percentage') {
-              discountPercentage = value.clamp(0.0, 100.0);
-            }
-          }
-          await _prefs.saveDiscountCode(code);
-          Get.snackbar("نجاح", message);
-        } else {
-          couponMessage = message ?? "كود الخصم غير صالح";
-          discountCode = null;
-          discountPercentage = 0.0;
-          discountAmount = 0.0;
-          Get.snackbar("خطأ", couponMessage!);
-        }
-      } else {
-        couponMessage = "كود الخصم غير صالح";
-        discountCode = null;
-        discountPercentage = 0.0;
-        discountAmount = 0.0;
-        Get.snackbar("خطأ", couponMessage!);
-      }
-    } catch (e) {
-      isCheckingCoupon = false;
-      couponMessage = null;
-      discountCode = null;
-      discountPercentage = 0.0;
-      discountAmount = 0.0;
-      Get.snackbar("خطأ", "حدث خطأ أثناء التحقق من الكوبون");
-      update();
-      return;
-    }
-
-    isCheckingCoupon = false;
-    update();
-  }
-
-  void _couponErrorSnackbar(StatusRequest status) {
-    switch (status) {
-      case StatusRequest.unauthorized:
-        Get.snackbar("تنبيه", "يجب تسجيل الدخول لاستخدام كود الخصم");
-        break;
-      case StatusRequest.offlinefailure:
-        Get.snackbar("خطأ", "لا يوجد اتصال بالإنترنت");
-        break;
-      case StatusRequest.serverfailure:
-      case StatusRequest.serverException:
-        Get.snackbar("خطأ", "خطأ في الخادم، حاول لاحقاً");
-        break;
-      default:
-        Get.snackbar("خطأ", "كود الخصم غير صالح أو منتهي");
+    if (snackTitle != null && snackBody != null) {
+      Get.snackbar(
+        snackTitle,
+        snackBody,
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 2),
+      );
     }
   }
 
-  // إزالة كود الخصم
-  void removeDiscount() async {
-    discountCode = null;
-    discountCodeController.clear();
-    discountPercentage = 0.0;
-    discountAmount = 0.0;
-    couponMessage = null;
-    await _prefs.removeDiscountCode();
-    update();
-  }
+  double get subtotal => calculateSubtotal(cartItems);
+  double get calculatedDeliveryFee => deliveryFee;
+  double get calculatedDiscount => coupon.calculatedDiscount;
+  double get total => subtotal + calculatedDeliveryFee - calculatedDiscount;
 
-  // مسح السلة بالكامل
+  void applyDiscount() => coupon.apply();
+  void removeDiscount() => coupon.remove();
+
   void clearCart() async {
     cartItems.clear();
-    discountCode = null;
-    discountCodeController.clear();
-    discountPercentage = 0.0;
-    discountAmount = 0.0;
+    await coupon.remove();
     notes = null;
     notesController.clear();
     await _prefs.clearCart();
     deliveryFee = 10.0;
     update();
-    Get.snackbar("تم المسح", "تم مسح السلة بالكامل");
+    Get.snackbar('تم المسح', 'تم مسح السلة بالكامل');
   }
 
-  // الحصول على عدد المنتجات في السلة
-  int get itemCount {
-    return cartItems.fold(0, (sum, item) {
-      final quantity = item['quantity'];
-      if (quantity is int) {
-        return sum + quantity;
-      } else if (quantity is double) {
-        return sum + quantity.toInt();
-      }
-      return sum;
-    });
-  }
-
-  // التحقق من وجود منتجات في السلة
+  int get itemCount => totalItemCount(cartItems);
   bool get isEmpty => cartItems.isEmpty;
 
   @override

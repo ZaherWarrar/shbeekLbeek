@@ -1,7 +1,7 @@
 import 'package:app/core/shared/custom_refresh.dart';
-import 'package:app/view/favorets/widget/favorates_tabs/favorate_tabs_controller.dart';
-import 'package:app/view/favorets/widget/favorates_tabs/favorites_tabs.dart';
-import 'package:app/view/favorets/widget/favorites_grid.dart';
+import 'package:app/controller/favorites/favorites_controller.dart';
+import 'package:app/view/favorites/widget/favorites_grid.dart';
+import 'package:app/view/favorites/widget/favorites_tabs/favorites_tabs.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

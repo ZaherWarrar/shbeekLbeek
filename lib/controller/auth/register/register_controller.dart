@@ -1,7 +1,7 @@
 import 'package:app/core/class/statusrequest.dart';
 import 'package:app/core/constant/routes/app_routes.dart';
-import 'package:app/core/function/handelingdata.dart';
-import 'package:app/data/datasorce/remot/register_data.dart';
+import 'package:app/core/function/handling_data.dart';
+import 'package:app/data/datasource/remot/register_data.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -56,7 +56,7 @@ class RegisterControllerImb extends RegisterController {
 
     var response = await registerData.registerData(name.text, phoneNumber.text);
 
-    statusRequest = handelingData(response);
+    statusRequest = handlingData(response);
 
     if (statusRequest == StatusRequest.success) {
       Get.offAllNamed(

@@ -1,40 +1,39 @@
-import 'package:app/controller/cart/cart_controller.dart';
-import 'package:app/core/class/statusrequest.dart';
-import 'package:app/core/constant/routes/app_routes.dart';
-import 'package:app/core/function/handelingdata.dart';
+import 'package:app/controller/shop_details/shop_details_cart_ops.dart';
+import 'package:app/controller/shop_details/shop_details_product_loader.dart';
+import 'package:app/controller/shop_details/shop_details_reviews_mixin.dart';
+import 'package:app/controller/shared/reviews_form_mixin.dart';
+import 'package:app/controller/shop_details/shop_details_search_utils.dart';
 import 'package:app/core/class/crud.dart';
+import 'package:app/core/class/statusrequest.dart';
+import 'package:app/core/function/handling_data.dart';
 import 'package:app/core/services/session_service.dart';
-import 'package:app/data/datasorce/model/item_model.dart';
-import 'package:app/data/datasorce/model/store_model.dart';
-import 'package:app/data/datasorce/model/store_review_model.dart';
-import 'package:app/data/datasorce/remot/store_details_data.dart';
-import 'package:app/link_api.dart';
-import 'package:app/data/datasorce/remot/store_reviews_data.dart';
+import 'package:app/data/datasource/model/item_model.dart';
+import 'package:app/data/datasource/model/store_model.dart';
+import 'package:app/data/datasource/remot/store_details_data.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class ShopDetailsController extends GetxController {
+class ShopDetailsController extends GetxController
+    with ReviewsFormMixin, ShopDetailsReviewsMixin {
   ItemModel? shopItemSummary;
   StoreModel? store;
+  @override
   late final int storeId;
-  late TextEditingController searchController;
+  @override
   final SessionService session = Get.find<SessionService>();
 
+  late TextEditingController searchController;
   StatusRequest statusRequest = StatusRequest.none;
   List<Products> _allProducts = [];
   List<Products> filteredProducts = [];
-  /// null = عرض الكل
   int? selectedInnerCategoryId;
-  StoreReviewsResponseModel? reviewsResponse;
-  StatusRequest reviewsStatus = StatusRequest.none;
-  final TextEditingController reviewTextController = TextEditingController();
-  int reviewRating = 5;
-  bool isSubmittingReview = false;
-  int? editingReviewId;
+
+  late final ShopDetailsProductLoader _productLoader;
 
   @override
   void onInit() {
     super.onInit();
+    _productLoader = ShopDetailsProductLoader(Get.find<Crud>());
     final args = Get.arguments;
     if (args is ItemModel) {
       shopItemSummary = args;
@@ -46,7 +45,7 @@ class ShopDetailsController extends GetxController {
     }
     if (storeId <= 0) {
       Get.back();
-      Get.snackbar("خطأ", "معرّف المتجر غير صحيح");
+      Get.snackbar('خطأ', 'معرّف المتجر غير صحيح');
       return;
     }
 
@@ -62,64 +61,18 @@ class ShopDetailsController extends GetxController {
 
     final data = StoreDetailsData(Get.find<Crud>());
     final response = await data.storeDetails(storeId);
-    statusRequest = handelingData(response);
+    statusRequest = handlingData(response);
 
     if (statusRequest == StatusRequest.success &&
         response is Map<String, dynamic>) {
       store = StoreModel.fromJson(response);
-
-      // ✅ Direct: نجلب المنتجات لكل inner category من endpoint خاص
-      filteredProducts = [];
-      final innerCats = store?.innerCategories ?? [];
-
-      final crud = Get.find<Crud>();
-
-      for (final inner in innerCats) {
-        final innerId = inner.id;
-        if (innerId == null) continue;
-
-        final endpoint =
-            '${ApiLinks.baseUrl}/stores/$storeId/products/$innerId';
-
-        final eitherRes = await crud.getData(endpoint, {});
-        final stat = handelingData(eitherRes);
-
-        if (stat == StatusRequest.success) {
-          final body = eitherRes.fold((l) => l, (r) => r);
-
-          // نتوقع items/products كقائمة
-          if (body is Map<String, dynamic>) {
-            final candidate =
-                body['items'] ??
-                body['products'] ??
-                body['data'] ??
-                body['data_items'];
-
-            if (candidate is List) {
-              filteredProducts.addAll(
-                candidate
-                    .whereType<Map<String, dynamic>>()
-                    .map((e) => Products.fromJson(e))
-                    .toList(),
-              );
-            }
-          } else if (body is List) {
-            filteredProducts.addAll(
-              body
-                  .whereType<Map<String, dynamic>>()
-                  .map((e) => Products.fromJson(e))
-                  .toList(),
-            );
-          }
-        }
-      }
-
-      // fallback لو endpoint ما رجع شي
-      _allProducts = filteredProducts.isNotEmpty
-          ? List<Products>.from(filteredProducts)
-          : List<Products>.from(store?.products ?? []);
+      final loaded = await _productLoader.loadForStore(
+        storeId: storeId,
+        innerCategories: store?.innerCategories ?? [],
+        fallbackFromStore: store?.products,
+      );
+      _allProducts = loaded;
       _applySearchFilter();
-
       await fetchReviews();
       update();
       return;
@@ -133,148 +86,16 @@ class ShopDetailsController extends GetxController {
     update();
   }
 
-  Future<void> fetchReviews() async {
-    reviewsStatus = StatusRequest.loading;
-    update();
-
-    final data = StoreReviewsData(Get.find<Crud>());
-    final res = await data.fetchStoreReviews(storeId);
-    final stat = handelingData(res);
-    if (stat != StatusRequest.success || res is! Map<String, dynamic>) {
-      reviewsStatus = res is StatusRequest ? res : StatusRequest.failure;
-      update();
-      return;
-    }
-    reviewsResponse = StoreReviewsResponseModel.fromJson(res);
-    reviewsStatus = StatusRequest.success;
-    update();
-  }
-
-  void setReviewRating(int value) {
-    reviewRating = value.clamp(1, 5);
-    update();
-  }
-
-  Future<void> submitReview() async {
-    if (isSubmittingReview) return;
-    if (!session.isLoggedIn) {
-      Get.snackbar("تنبيه", "يجب تسجيل الدخول أولاً");
-      Get.toNamed(AppRoutes.login);
-      return;
-    }
-    isSubmittingReview = true;
-    update();
-
-    final data = StoreReviewsData(Get.find<Crud>());
-    final text = reviewTextController.text.trim();
-    final res = await data.createReview(
-      storeId: storeId,
-      rating: reviewRating,
-      text: text.isEmpty ? null : text,
-    );
-    final stat = handelingData(res);
-    if (stat == StatusRequest.success) {
-      reviewTextController.clear();
-      reviewRating = 5;
-      await fetchReviews();
-      Get.back();
-      Get.snackbar("تم", "تم إرسال تقييمك بنجاح");
-    } else {
-      Get.snackbar("خطأ", "فشل إرسال التقييم");
-    }
-
-    isSubmittingReview = false;
-    update();
-  }
-
-  void beginEditReview(StoreReviewModel review) {
-    editingReviewId = review.id;
-    reviewRating = (review.rating ?? 5).clamp(1, 5);
-    reviewTextController.text = (review.text ?? '').toString();
-    update();
-  }
-
-  void resetReviewForm() {
-    editingReviewId = null;
-    reviewRating = 5;
-    reviewTextController.clear();
-    update();
-  }
-
-  Future<void> updateReview() async {
-    final rid = editingReviewId;
-    if (rid == null || rid <= 0) return;
-    if (isSubmittingReview) return;
-    if (!session.isLoggedIn) {
-      Get.snackbar("تنبيه", "يجب تسجيل الدخول أولاً");
-      Get.toNamed(AppRoutes.login);
-      return;
-    }
-    isSubmittingReview = true;
-    update();
-
-    final data = StoreReviewsData(Get.find<Crud>());
-    final text = reviewTextController.text.trim();
-    final res = await data.updateReview(
-      reviewId: rid,
-      rating: reviewRating,
-      text: text.isEmpty ? null : text,
-    );
-    final stat = handelingData(res);
-    if (stat == StatusRequest.success) {
-      await fetchReviews();
-      resetReviewForm();
-      Get.back();
-      Get.snackbar("تم", "تم تعديل التقييم بنجاح");
-    } else {
-      Get.snackbar("خطأ", "فشل تعديل التقييم");
-    }
-
-    isSubmittingReview = false;
-    update();
-  }
-
-  Future<void> deleteReview(int reviewId) async {
-    if (reviewId <= 0) return;
-    if (isSubmittingReview) return;
-    if (!session.isLoggedIn) {
-      Get.snackbar("تنبيه", "يجب تسجيل الدخول أولاً");
-      Get.toNamed(AppRoutes.login);
-      return;
-    }
-    isSubmittingReview = true;
-    update();
-
-    final data = StoreReviewsData(Get.find<Crud>());
-    final res = await data.deleteReview(reviewId);
-    final stat = handelingData(res);
-    if (stat == StatusRequest.success) {
-      await fetchReviews();
-      Get.snackbar("تم", "تم حذف التقييم");
-    } else {
-      Get.snackbar("خطأ", "فشل حذف التقييم");
-    }
-
-    isSubmittingReview = false;
-    update();
-  }
-
   void _onSearchChanged() {
     _applySearchFilter();
     update();
   }
 
   void _applySearchFilter() {
-    final query = searchController.text.toLowerCase().trim();
-    if (query.isEmpty) {
-      filteredProducts = List<Products>.from(_allProducts);
-      return;
-    }
-    filteredProducts = _allProducts
-        .where(
-          (product) => (product.name ?? '').toLowerCase().contains(query),
-        )
-        .toList();
+    filteredProducts = filterProductsByQuery(
+      _allProducts,
+      searchController.text,
+    );
   }
 
   void selectInnerCategory(int? categoryId) {
@@ -309,9 +130,7 @@ class ShopDetailsController extends GetxController {
   }
 
   List<Products> get displayedProducts {
-    if (selectedInnerCategoryId == null) {
-      return filteredProducts;
-    }
+    if (selectedInnerCategoryId == null) return filteredProducts;
     return filteredProducts
         .where((p) => p.innerCategory?.id == selectedInnerCategoryId)
         .toList();
@@ -319,111 +138,40 @@ class ShopDetailsController extends GetxController {
 
   Map<int?, List<Products>> getProductsByCategory() {
     final Map<int?, List<Products>> categorized = {};
-
     for (final p in filteredProducts) {
       final innerId = p.innerCategory?.id;
       categorized.putIfAbsent(innerId, () => []);
       categorized[innerId]!.add(p);
     }
-
     return categorized;
   }
 
-  int getProductQuantity(int productId) {
-    if (!Get.isRegistered<CartController>()) {
-      return 0;
-    }
-    final cartController = Get.find<CartController>();
-    final cartItem = cartController.cartItems.firstWhere(
-      (item) => item['productId'] == productId,
-      orElse: () => <String, dynamic>{},
-    );
-    if (cartItem.isEmpty) return 0;
-    return cartItem['quantity'] as int? ?? 0;
-  }
+  int getProductQuantity(int productId) => shopCartQuantity(productId);
 
   void increaseQuantity(int productId) {
-    if (!Get.isRegistered<CartController>()) {
-      Get.snackbar("خطأ", "السلة غير متاحة");
-      return;
-    }
-
-    final product = _allProducts.firstWhere(
-      (p) => p.id == productId,
-      orElse: () => Products(),
+    shopCartIncrease(
+      productId: productId,
+      catalog: _allProducts,
+      store: store,
+      shopSummary: shopItemSummary,
+      onUpdated: update,
     );
-
-    if (product.id == null) {
-      Get.snackbar("خطأ", "المنتج غير موجود");
-      return;
-    }
-
-    final cartController = Get.find<CartController>();
-
-    // التحقق من وجود طلب نشط
-    if (cartController.hasActiveOrder()) {
-      Get.snackbar(
-        "تنبيه",
-        "يوجد طلب قيد المعالجة. لا يمكن إضافة منتجات جديدة",
-        snackPosition: SnackPosition.BOTTOM,
-      );
-      return;
-    }
-
-    final existingIndex = cartController.cartItems.indexWhere(
-      (item) => item['productId'] == productId,
-    );
-
-    if (existingIndex != -1) {
-      cartController.increaseQuantity(productId);
-    } else {
-      final storeForCart =
-          store ??
-          StoreModel(
-            id: shopItemSummary?.id,
-            name: shopItemSummary?.name,
-            imageUrl: shopItemSummary?.imageUrl,
-            deliveryFee: shopItemSummary?.deliveryFee,
-            minOrder: shopItemSummary?.minOrder,
-            categoryName: shopItemSummary?.categoryName,
-            rating: shopItemSummary?.rating,
-            productsCount: shopItemSummary?.productsCount,
-          );
-      cartController.addItem(product, storeForCart, quantity: 1);
-    }
-
-    update();
   }
 
   void decreaseQuantity(int productId) {
-    if (!Get.isRegistered<CartController>()) {
-      return;
-    }
-
-    final cartController = Get.find<CartController>();
-    final existingIndex = cartController.cartItems.indexWhere(
-      (item) => item['productId'] == productId,
-    );
-
-    if (existingIndex != -1) {
-      cartController.decreaseQuantity(productId);
-      update();
-    }
+    shopCartDecrease(productId: productId, onUpdated: update);
   }
 
   int getProductPrice(Products product) {
     return product.salePrice ?? product.regularPrice ?? 0;
   }
 
-  /// إعادة تحميل الصفحة (سحب للتحديث)
-  Future<void> refreshPage() async {
-    await fetchStoreDetails();
-  }
+  Future<void> refreshPage() => fetchStoreDetails();
 
   @override
   void onClose() {
     searchController.dispose();
-    reviewTextController.dispose();
+    disposeReviewControllers();
     super.onClose();
   }
 }

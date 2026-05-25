@@ -1,7 +1,7 @@
 import 'package:app/controller/home/home_controller.dart';
 import 'package:app/core/constant/app_color.dart';
 import 'package:app/core/function/fontsize.dart';
-import 'package:app/data/datasorce/model/main_categores.dart';
+import 'package:app/data/datasource/model/main_categores.dart';
 import 'package:app/main.dart';
 import 'package:flutter/material.dart';
 

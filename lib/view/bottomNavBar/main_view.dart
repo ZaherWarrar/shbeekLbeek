@@ -1,9 +1,9 @@
 import 'package:app/controller/bottomNavBar/main_controller.dart';
 import 'package:app/controller/home/home_controller.dart';
 import 'package:app/view/bottomNavBar/widget/custom_bottom_nav.dart';
-import 'package:app/view/favorets/favorites_view.dart';
+import 'package:app/view/favorites/favorites_view.dart';
 import 'package:app/view/home_page/home_page_view.dart';
-import 'package:app/view/orderHistoory/view/order_his_view.dart';
+import 'package:app/view/orderHistoory/order_his_view.dart';
 import 'package:app/view/profile/profile_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

@@ -1,8 +1,8 @@
 import 'package:app/core/class/crud.dart';
 import 'package:app/controller/cart/cart_controller.dart';
 import 'package:app/controller/order/order_controller.dart';
-import 'package:app/view/adress/controller/address_controller.dart';
-import 'package:app/view/favorets/widget/favorates_tabs/favorate_tabs_controller.dart';
+import 'package:app/controller/address/address_controller.dart';
+import 'package:app/controller/favorites/favorites_controller.dart';
 import 'package:get/get.dart';
 
 class InitialBindings extends Bindings {

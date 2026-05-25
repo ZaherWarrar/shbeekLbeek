@@ -1,7 +1,7 @@
 import 'package:app/core/class/statusrequest.dart';
 import 'package:app/core/constant/routes/app_routes.dart';
-import 'package:app/core/function/handelingdata.dart';
-import 'package:app/data/datasorce/remot/login_data.dart';
+import 'package:app/core/function/handling_data.dart';
+import 'package:app/data/datasource/remot/login_data.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 
@@ -32,7 +32,7 @@ class LoginControllerImb extends LoginController {
         email.text,
         phoneNumber.text,
       );
-      statusRequest = handelingData(response);
+      statusRequest = handlingData(response);
 
       if (StatusRequest.success == statusRequest) {
         Get.offAllNamed(

@@ -2,7 +2,7 @@ import 'package:app/controller/home/home_controller.dart';
 import 'package:app/core/constant/app_color.dart';
 import 'package:app/core/constant/routes/app_routes.dart';
 import 'package:app/core/function/fontsize.dart';
-import 'package:app/data/datasorce/model/item_model.dart';
+import 'package:app/data/datasource/model/item_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

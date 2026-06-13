@@ -14,9 +14,8 @@ void main() async {
   //تفعيل الفاير بيز
   await Firebase.initializeApp();
 
-  // 2. تشغيل كلاس الإشعارات
-  NotificationApi notificationApi = NotificationApi();
-  await notificationApi.init();
+  // 2. تشغيل كلاس الإشعارات (لا يوقف التطبيق إذا FCM غير متاح)
+  await NotificationApi().init();
   //  تهيئة SessionService
   await Get.putAsync(() => SessionService().init());
 

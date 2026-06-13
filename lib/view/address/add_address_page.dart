@@ -61,7 +61,7 @@ class _AddAddressPageState extends State<AddAddressPage> {
           padding: const EdgeInsets.all(16),
           child: ListView(
             children: [
-              const MapPickerWidget(),
+              const MapPickerWidget(openAtCurrentLocation: true),
               const SizedBox(height: 20),
               CustomTextFormFild(
                 hint: "أدخل اسم العنوان",
@@ -76,15 +76,21 @@ class _AddAddressPageState extends State<AddAddressPage> {
               const SizedBox(height: 20),
               Obx(
                 () => CustomTextFormFild(
-                  hint: "سيتم ملؤه تلقائياً",
+                  hint: controller.isLoadingAddress.value
+                      ? 'جارٍ التحميل...'
+                      : 'سيتم ملؤه تلقائياً أو أدخله يدوياً',
                   controller: cityController,
-                  valid: (val) => null,
-                  lable: "المدينة",
+                  valid: (val) {
+                    if (val == null || val.trim().isEmpty) {
+                      return 'المدينة مطلوبة';
+                    }
+                    return null;
+                  },
+                  lable: 'المدينة',
                   iconData: controller.isLoadingAddress.value
                       ? Icons.hourglass_empty
                       : Icons.location_city,
                   scure: false,
-                  readOnly: true,
                 ),
               ),
               const SizedBox(height: 20),
@@ -115,6 +121,14 @@ class _AddAddressPageState extends State<AddAddressPage> {
                     Get.snackbar(
                       'تنبيه',
                       'الرجاء إدخال اسم العنوان',
+                      snackPosition: SnackPosition.BOTTOM,
+                    );
+                    return;
+                  }
+                  if (cityController.text.trim().isEmpty) {
+                    Get.snackbar(
+                      'تنبيه',
+                      'الرجاء إدخال المدينة',
                       snackPosition: SnackPosition.BOTTOM,
                     );
                     return;

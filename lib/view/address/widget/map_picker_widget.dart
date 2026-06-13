@@ -1,4 +1,5 @@
 import 'package:app/core/constant/app_color.dart';
+import 'package:app/core/shared/map/labeled_map_layers.dart';
 import 'package:app/main.dart';
 import 'package:app/controller/address/address_controller.dart';
 import 'package:app/data/datasource/model/address_model.dart';
@@ -8,7 +9,10 @@ import 'package:get/get.dart';
 import 'package:latlong2/latlong.dart';
 
 class MapPickerWidget extends StatefulWidget {
-  const MapPickerWidget({super.key});
+  const MapPickerWidget({super.key, this.openAtCurrentLocation = false});
+
+  /// عند true: تُحمّل الخريطة على GPS عند فتح الصفحة (مثل إضافة عنوان).
+  final bool openAtCurrentLocation;
 
   @override
   State<MapPickerWidget> createState() => _MapPickerWidgetState();
@@ -34,6 +38,22 @@ class _MapPickerWidgetState extends State<MapPickerWidget> {
         _moveToLocation(addressController.selectedLat.value, lng);
       }
     });
+
+    if (widget.openAtCurrentLocation) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        addressController.centerOnCurrentLocationForMap();
+      });
+    } else if (addressController.selectedLat.value != 0.0 &&
+        addressController.selectedLng.value != 0.0) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _moveToLocation(
+          addressController.selectedLat.value,
+          addressController.selectedLng.value,
+        );
+      });
+    }
   }
 
   // تحريك الخريطة إلى موقع معين
@@ -43,7 +63,7 @@ class _MapPickerWidgetState extends State<MapPickerWidget> {
     try {
       mapController.move(
         LatLng(lat, lng),
-        15.0, // مستوى التكبير
+        16.0,
       );
     } catch (e) {
       // تجاهل الأخطاء إذا كان الـ controller تم dispose
@@ -108,9 +128,9 @@ class _MapPickerWidgetState extends State<MapPickerWidget> {
                 mapController: mapController,
                 options: MapOptions(
                   initialCenter: initialCenter,
-                  initialZoom: 13.0,
+                  initialZoom: 16.0,
                   minZoom: 5.0,
-                  maxZoom: 18.0,
+                  maxZoom: 19.0,
                   onTap: (tapPosition, point) async {
                     // عند النقر على الخريطة، تحديث الموقع والحصول على العنوان
                     await addressController.setLocation(
@@ -120,15 +140,7 @@ class _MapPickerWidgetState extends State<MapPickerWidget> {
                   },
                 ),
                 children: [
-                  // طبقة الخريطة من CartoDB (بديل مجاني لـ OpenStreetMap)
-                  TileLayer(
-                    urlTemplate:
-                        'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-                    userAgentPackageName: 'app',
-                    maxZoom: 19,
-                    subdomains: const ['a', 'b', 'c', 'd'],
-                    additionalOptions: const {'User-Agent': 'ShbeekLbeek/1.0'},
-                  ),
+                  ...LabeledMapLayers.all(),
                   // طبقة العلامة (Marker)
                   if (selectedLat != 0.0 && selectedLng != 0.0)
                     MarkerLayer(

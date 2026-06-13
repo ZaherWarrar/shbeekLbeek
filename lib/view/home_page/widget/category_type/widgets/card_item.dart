@@ -29,15 +29,25 @@ class CardItem extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        if (storeItem != null) {
-          Get.toNamed(AppRoutes.resturantDetails, arguments: storeItem.id);
-        } else {
+        final productId = sectionItem.id;
+        if (productId == null || productId <= 0) {
           Get.snackbar(
             'تنبيه',
-            'لم يتم العثور على معلومات المتجر',
+            'معرّف المنتج غير صحيح',
             snackPosition: SnackPosition.BOTTOM,
           );
+          return;
         }
+        Get.toNamed(
+          AppRoutes.productDetails,
+          arguments: {
+            'productId': productId,
+            'storeId': sectionItem.storeId ?? storeItem?.id,
+            'storeName': storeItem?.name,
+            'storeImageUrl': storeItem?.imageUrl,
+            'storeDeliveryFee': storeItem?.deliveryFee,
+          },
+        );
       },
       child: Container(
         width: 300,

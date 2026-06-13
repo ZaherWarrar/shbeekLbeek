@@ -1,7 +1,8 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 /// 🔴 HANDLER للخلفية (Android + iOS فقط)
@@ -30,28 +31,41 @@ class NotificationApi {
 
   /// 🔹 INIT (Android + iOS + Web)
   Future<void> init() async {
-    // 🔹 طلب الإذن (iOS + Web)
-    await _firebaseMessaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+    try {
+      // 🔹 طلب الإذن (iOS + Web)
+      await _firebaseMessaging.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
 
-    // 🔹 Background handler (غير Web)
-    if (!kIsWeb) {
-      FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+      // 🔹 Background handler (غير Web)
+      if (!kIsWeb) {
+        FirebaseMessaging.onBackgroundMessage(
+          firebaseMessagingBackgroundHandler,
+        );
+      }
+
+      // 🔹 تهيئة Local Notifications (Android + iOS فقط)
+      if (!kIsWeb) {
+        await _initLocalNotifications();
+      }
+
+      // 🔹 إعداد استقبال الإشعارات
+      await _initFirebaseListeners();
+
+      // 🔹 Token (قد يفشل على محاكي بدون Google Play Services)
+      await getToken();
+    } on FirebaseException catch (e, st) {
+      debugPrint(
+        '⚠️ FCM init skipped (${e.code}): ${e.message}\n'
+        'تأكد من Google Play Services والإنترنت على الجهاز/المحاكي.',
+      );
+      debugPrint('$st');
+    } catch (e, st) {
+      debugPrint('⚠️ Notification init failed: $e');
+      debugPrint('$st');
     }
-
-    // 🔹 تهيئة Local Notifications (Android + iOS فقط)
-    if (!kIsWeb) {
-      await _initLocalNotifications();
-    }
-
-    // 🔹 إعداد استقبال الإشعارات
-    await _initFirebaseListeners();
-
-    // 🔹 Token
-    await getToken();
   }
 
   /// 🔹 Firebase listeners
@@ -134,10 +148,28 @@ class NotificationApi {
     debugPrint('Data: ${message.data}');
   }
 
-  /// 🔹 FCM Token
-  Future<String?> getToken() async {
-    final token = await _firebaseMessaging.getToken();
-    debugPrint('📱 FCM TOKEN: $token');
-    return token;
+  /// 🔹 FCM Token (مع إعادة محاولة عند SERVICE_NOT_AVAILABLE)
+  Future<String?> getToken({int maxAttempts = 3}) async {
+    for (var attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        final token = await _firebaseMessaging.getToken();
+        if (token != null) {
+          debugPrint('📱 FCM TOKEN: $token');
+        }
+        return token;
+      } on FirebaseException catch (e) {
+        final isRetryable = e.code == 'unknown' &&
+            (e.message?.contains('SERVICE_NOT_AVAILABLE') ?? false);
+        if (!isRetryable || attempt == maxAttempts) {
+          debugPrint('⚠️ FCM getToken failed (${e.code}): ${e.message}');
+          return null;
+        }
+        await Future<void>.delayed(Duration(seconds: attempt * 2));
+      } catch (e) {
+        debugPrint('⚠️ FCM getToken failed: $e');
+        return null;
+      }
+    }
+    return null;
   }
 }

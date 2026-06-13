@@ -1,6 +1,7 @@
 import 'package:app/controller/bottomNavBar/main_controller.dart';
 import 'package:app/controller/home/home_controller.dart';
 import 'package:app/view/bottomNavBar/widget/custom_bottom_nav.dart';
+import 'package:app/view/external_delivery/external_delivery_view.dart';
 import 'package:app/view/favorites/favorites_view.dart';
 import 'package:app/view/home_page/home_page_view.dart';
 import 'package:app/view/orderHistoory/order_his_view.dart';
@@ -17,6 +18,7 @@ class MainView extends StatelessWidget {
 
   final pages = [
     HomePageView(),
+    const ExternalDeliveryView(),
     OrderHistoryPage(),
     FavoritesView(),
     ProfileView(),

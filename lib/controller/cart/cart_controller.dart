@@ -28,7 +28,7 @@ class CartController extends GetxController {
   bool get isCheckingCoupon => coupon.isCheckingCoupon;
 
   String? notes;
-  double deliveryFee = 10.0;
+  double deliveryFee = 0.0;
 
   @override
   void onInit() {
@@ -38,7 +38,7 @@ class CartController extends GetxController {
 
   void _loadCart() {
     cartItems = _prefs.getCart();
-    deliveryFee = deriveDeliveryFeeFromCart(cartItems) ?? deliveryFee;
+    deliveryFee = deriveDeliveryFeeFromCart(cartItems);
     coupon.restoreFromPrefs(_prefs.getDiscountCode());
     notes = _prefs.getNotes();
     if (notes != null) notesController.text = notes!;
@@ -224,7 +224,7 @@ class CartController extends GetxController {
   }
 
   void _afterCartMutation({String? snackTitle, String? snackBody}) {
-    deliveryFee = deriveDeliveryFeeFromCart(cartItems) ?? deliveryFee;
+    deliveryFee = deriveDeliveryFeeFromCart(cartItems);
     _saveCart();
     update();
     if (snackTitle != null && snackBody != null) {
@@ -251,7 +251,7 @@ class CartController extends GetxController {
     notes = null;
     notesController.clear();
     await _prefs.clearCart();
-    deliveryFee = 10.0;
+    deliveryFee = 0.0;
     update();
     Get.snackbar('تم المسح', 'تم مسح السلة بالكامل');
   }

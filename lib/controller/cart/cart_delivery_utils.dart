@@ -7,15 +7,22 @@ double? parseDeliveryFee(dynamic raw) {
   return double.tryParse(cleaned);
 }
 
-double? deriveDeliveryFeeFromCart(List<Map<String, dynamic>> cartItems) {
-  double? fee;
+/// يجمع أجرة التوصيل لكل متجر مرة واحدة فقط.
+/// إذا كان المتجر أجرته 0 → 0، ولا توجد قيمة افتراضية.
+double deriveDeliveryFeeFromCart(List<Map<String, dynamic>> cartItems) {
+  final feeByShop = <dynamic, double>{};
+
   for (final item in cartItems) {
+    final shopId = item['shopId'];
+    if (shopId == null) continue;
+    if (feeByShop.containsKey(shopId)) continue;
+
     final raw = item['deliveryFee'] ?? item['shopDeliveryFee'];
     final parsed = parseDeliveryFee(raw);
-    if (parsed == null) continue;
-    fee = fee == null ? parsed : (parsed > fee ? parsed : fee);
+    feeByShop[shopId] = parsed ?? 0.0;
   }
-  return fee;
+
+  return feeByShop.values.fold(0.0, (sum, fee) => sum + fee);
 }
 
 double calculateSubtotal(List<Map<String, dynamic>> cartItems) {

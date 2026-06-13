@@ -12,6 +12,7 @@ class CustomBottomNav extends StatelessWidget {
 
   static const _items = [
     _NavItem(Icons.home_outlined, 'الرئيسية'),
+    _NavItem(Icons.local_shipping_outlined, 'توصيل خارجي', compactLabel: true),
     _NavItem(Icons.receipt_long, 'الطلبات'),
     _NavItem(Icons.favorite_border, 'المفضلة'),
     _NavItem(Icons.person_outline, 'الحساب'),
@@ -98,7 +99,7 @@ class _NavButton extends StatelessWidget {
         AnimatedDefaultTextStyle(
           duration: const Duration(milliseconds: 250),
           style: TextStyle(
-            fontSize: 11,
+            fontSize: item.compactLabel ? 10 : 11,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
             color: isSelected ? Colors.orange : Colors.grey,
           ),
@@ -114,6 +115,7 @@ class _NavButton extends StatelessWidget {
 class _NavItem {
   final IconData icon;
   final String label;
+  final bool compactLabel;
 
-  const _NavItem(this.icon, this.label);
+  const _NavItem(this.icon, this.label, {this.compactLabel = false});
 }

@@ -1,11 +1,13 @@
 import 'package:app/core/services/address_preferences.dart';
+import 'package:app/data/datasource/remot/reverse_geocoding_data.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:geocoding/geocoding.dart';
 import 'package:get/get.dart';
 import '../../data/datasource/model/address_model.dart';
 
 class AddressController extends GetxController {
   final addresses = <AddressModel>[].obs;
+  final ReverseGeocodingData _reverseGeocoding = ReverseGeocodingData();
+  int _geocodeSeq = 0;
 
   late AddressPreferences _prefs;
 
@@ -30,24 +32,57 @@ class AddressController extends GetxController {
     _initializeLocation();
   }
 
-  // تهيئة الموقع عند فتح الصفحة
+  // تهيئة الموقع عند بدء التطبيق (بدون طلب إذن تلقائي)
   Future<void> _initializeLocation() async {
-    // محاولة الحصول على الموقع الحالي
+    if (selectedLat.value != 0.0 && selectedLng.value != 0.0) return;
+    _setDefaultLocation();
+  }
+
+  /// فتح الخريطة على الموقع الحالي (يُستدعى عند فتح صفحة إضافة عنوان).
+  Future<bool> centerOnCurrentLocationForMap({
+    bool showSuccessSnackbar = false,
+  }) async {
     try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (serviceEnabled) {
-        LocationPermission permission = await Geolocator.checkPermission();
-        if (permission == LocationPermission.whileInUse ||
-            permission == LocationPermission.always) {
-          await getCurrentLocation();
-          return;
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        Get.snackbar('تنبيه', 'يرجى تفعيل خدمة الموقع');
+        _setDefaultLocation();
+        return false;
+      }
+
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          Get.snackbar('تنبيه', 'تم رفض إذن الموقع');
+          _setDefaultLocation();
+          return false;
         }
       }
+
+      if (permission == LocationPermission.deniedForever) {
+        Get.snackbar('تنبيه', 'إذن الموقع مرفوض بشكل دائم');
+        _setDefaultLocation();
+        return false;
+      }
+
+      final pos = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
+      );
+
+      await setLocation(pos.latitude, pos.longitude);
+
+      if (showSuccessSnackbar) {
+        Get.snackbar('نجاح', 'تم تحديد الموقع بنجاح');
+      }
+      return true;
     } catch (e) {
-      // في حالة الفشل، نستخدم العنوان الافتراضي أو دمشق
+      Get.snackbar('خطأ', 'تعذر الحصول على الموقع الحالي');
+      _setDefaultLocation();
+      return false;
     }
-    // في حالة عدم توفر الموقع الحالي، نستخدم العنوان الافتراضي أو دمشق
-    _setDefaultLocation();
   }
 
   // تعيين الموقع الافتراضي
@@ -98,53 +133,27 @@ class AddressController extends GetxController {
     await _getAddressFromCoordinates(lat, lng);
   }
 
-  // الحصول على العنوان من الإحداثيات (Reverse Geocoding)
+  // الحصول على العنوان من الإحداثيات (جهاز + OSM احتياطاً)
   Future<void> _getAddressFromCoordinates(double lat, double lng) async {
+    final seq = ++_geocodeSeq;
     isLoadingAddress.value = true;
     try {
-      List<Placemark> placemarks = await placemarkFromCoordinates(lat, lng);
+      final resolved = await _reverseGeocoding.resolve(lat, lng);
+      if (seq != _geocodeSeq) return;
 
-      if (placemarks.isNotEmpty) {
-        Placemark place = placemarks[0];
+      cityName.value = resolved.city;
+      fullAddress.value = resolved.fullAddress;
 
-        // استخراج المدينة
-        String city =
-            place.locality ??
-            place.administrativeArea ??
-            place.subAdministrativeArea ??
-            '';
-
-        // بناء العنوان الكامل
-        List<String> addressParts = [];
-        if (place.street != null && place.street!.isNotEmpty) {
-          addressParts.add(place.street!);
-        }
-        if (place.subThoroughfare != null &&
-            place.subThoroughfare!.isNotEmpty) {
-          addressParts.add(place.subThoroughfare!);
-        }
-        if (place.thoroughfare != null && place.thoroughfare!.isNotEmpty) {
-          addressParts.add(place.thoroughfare!);
-        }
-        if (place.subLocality != null && place.subLocality!.isNotEmpty) {
-          addressParts.add(place.subLocality!);
-        }
-        if (city.isNotEmpty) {
-          addressParts.add(city);
-        }
-        if (place.country != null && place.country!.isNotEmpty) {
-          addressParts.add(place.country!);
-        }
-
-        cityName.value = city;
-        fullAddress.value = addressParts.isNotEmpty
-            ? addressParts.join(', ')
-            : 'عنوان غير محدد';
-      } else {
-        cityName.value = '';
-        fullAddress.value = 'عنوان غير محدد';
+      if (resolved.city.isEmpty) {
+        Get.snackbar(
+          'تنبيه',
+          'لم يتم التعرف على المدينة — يمكنك تعديل الحقل يدوياً',
+          snackPosition: SnackPosition.BOTTOM,
+          duration: const Duration(seconds: 2),
+        );
       }
     } catch (e) {
+      if (seq != _geocodeSeq) return;
       cityName.value = '';
       fullAddress.value = 'فشل في الحصول على العنوان';
       Get.snackbar(
@@ -154,44 +163,15 @@ class AddressController extends GetxController {
         duration: const Duration(seconds: 2),
       );
     } finally {
-      isLoadingAddress.value = false;
+      if (seq == _geocodeSeq) {
+        isLoadingAddress.value = false;
+      }
     }
   }
 
-  // الحصول على الموقع
+  // الحصول على الموقع (زر الخريطة)
   Future<void> getCurrentLocation() async {
-    try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        Get.snackbar('تنبيه', 'يرجى تفعيل خدمة الموقع');
-        return;
-      }
-
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          Get.snackbar('تنبيه', 'تم رفض إذن الموقع');
-          return;
-        }
-      }
-
-      if (permission == LocationPermission.deniedForever) {
-        Get.snackbar('تنبيه', 'تم رفض إذن الموقع بشكل دائم');
-        return;
-      }
-
-      Position pos = await Geolocator.getCurrentPosition(
-        // ignore: deprecated_member_use
-        desiredAccuracy: LocationAccuracy.high,
-      );
-
-      setLocation(pos.latitude, pos.longitude);
-
-      Get.snackbar('نجاح', 'تم تحديد الموقع بنجاح');
-    } catch (e) {
-      Get.snackbar('خطأ', 'حدث خطأ: ${e.toString()}');
-    }
+    await centerOnCurrentLocationForMap(showSuccessSnackbar: true);
   }
 
   // إضافة عنوان

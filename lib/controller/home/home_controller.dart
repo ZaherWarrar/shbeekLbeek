@@ -107,11 +107,7 @@ class HomeControllerImp extends HomeController {
     finalSection = {};
     update();
 
-    await Future.wait([
-      fetchSliders(),
-      fetchAllItem(),
-      fetchHomeSection(),
-    ]);
+    await Future.wait([fetchSliders(), fetchAllItem(), fetchHomeSection()]);
   }
 
   @override
@@ -130,11 +126,7 @@ class HomeControllerImp extends HomeController {
     if (selectedCategoryId == null && mainCat.isNotEmpty) {
       selectedCategoryId = mainCat.first.id;
     }
-    await Future.wait([
-      fetchSliders(),
-      fetchAllItem(),
-      fetchHomeSection(),
-    ]);
+    await Future.wait([fetchSliders(), fetchAllItem(), fetchHomeSection()]);
     setupSliderAfterLoad();
     update();
   }

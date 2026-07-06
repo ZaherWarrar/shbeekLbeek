@@ -22,7 +22,7 @@ class CategorySlider extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 15),
                 child: Text(
-                  "الأصناف",
+                  "الأقسام",
                   style: TextStyle(
                     fontSize: getResponsiveFontSize(context, fontSize: 35),
                     fontWeight: FontWeight.bold,

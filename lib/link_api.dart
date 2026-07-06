@@ -8,6 +8,7 @@ class ApiLinks {
   static const String createAccount = '$baseUrl/register';
   static const String verifyCode = '$baseUrl/verify';
   // home page Endpoints
+  static const String cities = '$baseUrl/cities';
   static const String home = '$baseUrl/home/';
   // Order Endpoints
   static const String createOrder = '$baseUrl/order';
@@ -23,4 +24,6 @@ class ApiLinks {
   static const String productReviews = '$baseUrl/product-reviews';
   static const String storeReviews = '$baseUrl/reviews';
   static const String userBalance = '$baseUrl/user/balance';
+  static const String notifications = '$baseUrl/notifications';
+  static const String externalOrders = '$baseUrl/external-orders';
 }

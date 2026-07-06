@@ -8,9 +8,16 @@ class HomeSectionModel {
   HomeSectionModel({this.id, this.name, this.type});
 
   HomeSectionModel.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    name = json['name'];
-    type = json['type'];
+    id = _toInt(json['id']);
+    name = json['name']?.toString();
+    type = json['type']?.toString();
+  }
+
+  static int? _toInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value.toString());
   }
 
   Map<String, dynamic> toJson() {

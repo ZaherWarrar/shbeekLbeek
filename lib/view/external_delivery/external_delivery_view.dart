@@ -73,13 +73,24 @@ class ExternalDeliveryView extends StatelessWidget {
                           const SizedBox(height: 16),
                           const ExternalDeliveryForm(),
                           const SizedBox(height: 20),
-                          CustomButton(
-                            hi: 48,
-                            we: double.infinity,
-                            fontsize: 16,
-                            padding: 12,
-                            title: 'تأكيد الطلب',
-                            onTap: controller.validateAndSubmit,
+                          Obx(
+                            () => controller.isSubmitting.value
+                                ? SizedBox(
+                                    height: 48,
+                                    child: Center(
+                                      child: CircularProgressIndicator(
+                                        color: AppColor().primaryColor,
+                                      ),
+                                    ),
+                                  )
+                                : CustomButton(
+                                    hi: 48,
+                                    we: double.infinity,
+                                    fontsize: 16,
+                                    padding: 12,
+                                    title: 'تأكيد الطلب',
+                                    onTap: controller.validateAndSubmit,
+                                  ),
                           ),
                         ],
                       ),

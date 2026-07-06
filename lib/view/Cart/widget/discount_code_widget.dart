@@ -116,8 +116,8 @@ class DiscountCodeWidget extends StatelessWidget {
                     const SizedBox(width: 4),
                     Text(
                       controller.discountPercentage > 0
-                          ? "خصم ${controller.discountPercentage.toStringAsFixed(0)}%"
-                          : "خصم ${controller.discountAmount.toStringAsFixed(0)} ليرة",
+                          ? 'خصم ${controller.discountPercentage.toStringAsFixed(0)}% على المنتجات المؤهلة'
+                          : 'خصم ${controller.calculatedDiscount.toStringAsFixed(0)} ليرة',
                       style: TextStyle(color: Colors.green, fontSize: 12),
                     ),
                   ],

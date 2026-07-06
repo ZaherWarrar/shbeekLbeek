@@ -16,7 +16,6 @@ class AllShopsController extends GetxController {
   // ========================= search and filter var ===================
   TextEditingController searchController = TextEditingController();
   String searchQuery = '';
-  int selectedFilterIndex = 0;
 
   @override
   void onInit() {
@@ -43,44 +42,13 @@ class AllShopsController extends GetxController {
     _applyFilters();
   }
 
-  void changeFilter(int index) {
-    selectedFilterIndex = index;
-    _applyFilters();
-  }
-
   void _applyFilters() {
     filteredShops = List.from(allShops);
 
-    switch (selectedFilterIndex) {
-      case 0: 
-        break;
-      case 1: 
-        // فلتر حسب اسم التصنيف (بديل عن type بعد تغيير الـ API)
-        filteredShops = filteredShops
-            .where((shop) => (shop.categoryName ?? '').isNotEmpty)
-            .toList();
-        break;
-      case 2: 
-        break;
-      case 3: 
-        // عروض/خصومات: لم يعد لدينا products ضمن قائمة المتاجر
-        // يمكن لاحقاً استخدام endpoint خاص أو products_count/flags إن توفرت.
-        break;
-      case 4: // الأعلى (حسب التقييم)
-        filteredShops.sort((a, b) => (b.rating ?? 0).compareTo(a.rating ?? 0));
-        break;
-    }
-
-    // تطبيق البحث
     if (searchQuery.isNotEmpty) {
       final query = searchQuery.toLowerCase();
       filteredShops = filteredShops.where((shop) {
-        // البحث في اسم المتجر
-        final nameMatch = (shop.name ?? '').toLowerCase().contains(query);
-        // البحث في اسم التصنيف
-        final categoryMatch =
-            (shop.categoryName ?? '').toLowerCase().contains(query);
-        return nameMatch || categoryMatch;
+        return (shop.name ?? '').toLowerCase().contains(query);
       }).toList();
     }
 

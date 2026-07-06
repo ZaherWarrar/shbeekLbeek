@@ -69,9 +69,16 @@ class InnerCategory {
   InnerCategory({this.id, this.name, this.description});
 
   InnerCategory.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
+    id = _toInt(json['id']);
     name = json['name']?.toString();
     description = json['description']?.toString();
+  }
+
+  static int? _toInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value.toString());
   }
 
   Map<String, dynamic> toJson() {
@@ -108,11 +115,11 @@ class Products {
   });
 
   Products.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    name = json['name'];
-    regularPrice = json['regular_price'];
-    salePrice = json['sale_price'];
-    imageUrl = json['image_url'];
+    id = _toInt(json['id']);
+    name = json['name']?.toString();
+    regularPrice = _parsePriceToInt(json['regular_price']);
+    salePrice = _parsePriceToInt(json['sale_price']);
+    imageUrl = json['image_url']?.toString();
     price = json['price'];
 
     final ic = json['inner_category'];
@@ -122,8 +129,14 @@ class Products {
       innerCategory = null;
     }
 
-    // إذا API الجديد يعطي price فقط، نخزنه كـ regularPrice ليتوافق مع السلة الحالية
     regularPrice ??= _parsePriceToInt(price);
+  }
+
+  static int? _toInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value.toString());
   }
 
   static int? _parsePriceToInt(dynamic value) {

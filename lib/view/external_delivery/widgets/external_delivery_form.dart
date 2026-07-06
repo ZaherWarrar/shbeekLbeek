@@ -1,6 +1,7 @@
 import 'package:app/controller/external_delivery/external_delivery_controller.dart';
 import 'package:app/core/constant/app_color.dart';
 import 'package:app/view/external_delivery/widgets/external_delivery_text_field.dart';
+import 'package:app/view/external_delivery/widgets/external_delivery_wallet_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -72,6 +73,8 @@ class ExternalDeliveryForm extends StatelessWidget {
                 return null;
               },
             ),
+            const SizedBox(height: 16),
+            const ExternalDeliveryWalletWidget(),
           ],
         ),
       ),

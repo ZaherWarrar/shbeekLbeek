@@ -41,6 +41,11 @@ class ProfileView extends StatelessWidget {
                 //   route: AppRoutes.ordhis,
                 // ),
                 ProfileItemData(
+                  title: 'الإشعارات',
+                  icon: Icons.notifications_outlined,
+                  route: AppRoutes.notifications,
+                ),
+                ProfileItemData(
                   title: 'العناوين المحفوظة',
                   icon: Icons.location_on_outlined,
                   route: AppRoutes.addrslis,

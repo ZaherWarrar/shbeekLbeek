@@ -1,7 +1,8 @@
-import 'package:app/controller/cart/cart_delivery_utils.dart';
+import 'package:app/controller/cart/cart_coupon_utils.dart';
 import 'package:app/core/class/crud.dart';
 import 'package:app/core/class/statusrequest.dart';
 import 'package:app/core/services/cart_preferences.dart';
+import 'package:app/data/datasource/model/coupon_check_model.dart';
 import 'package:app/data/datasource/remot/coupons_data.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -11,74 +12,68 @@ class CartCouponHandler {
     required this.discountCodeController,
     required this.prefs,
     required this.onStateChanged,
-    required this.getSubtotal,
+    required this.getCartItems,
   });
 
   final TextEditingController discountCodeController;
   final CartPreferences prefs;
   final VoidCallback onStateChanged;
-  final double Function() getSubtotal;
+  final List<Map<String, dynamic>> Function() getCartItems;
 
   String? discountCode;
-  double discountAmount = 0.0;
-  double discountPercentage = 0.0;
+  CouponDetails couponDetails = const CouponDetails(type: '', value: 0);
+  CouponRestrictions couponRestrictions = const CouponRestrictions();
   String? couponMessage;
   bool isCheckingCoupon = false;
 
-  double get calculatedDiscount => calculateDiscount(
-        subtotal: getSubtotal(),
+  double get discountAmount =>
+      couponDetails.isFixed ? couponDetails.value : 0.0;
+
+  double get discountPercentage =>
+      couponDetails.isPercent ? couponDetails.value : 0.0;
+
+  double get calculatedDiscount => calculateCouponDiscount(
+        cartItems: getCartItems(),
         discountCode: discountCode,
-        discountPercentage: discountPercentage,
-        discountAmount: discountAmount,
+        details: couponDetails,
+        restrictions: couponRestrictions,
       );
 
-  Future<void> apply() async {
+  Future<void> apply({bool silent = false}) async {
     final code = discountCodeController.text.trim();
     if (code.isEmpty) {
-      Get.snackbar('تنبيه', 'الرجاء إدخال كود الخصم');
+      if (!silent) Get.snackbar('تنبيه', 'الرجاء إدخال كود الخصم');
       return;
     }
 
     isCheckingCoupon = true;
-    couponMessage = null;
+    if (!silent) couponMessage = null;
     onStateChanged();
 
     try {
-      final response = await CouponsData(Get.find<Crud>()).couponsCheckData(code);
+      final response =
+          await CouponsData(Get.find<Crud>()).couponsCheckData(code);
 
       if (response is StatusRequest) {
         _resetDiscount();
-        _showError(response);
+        if (!silent) _showError(response);
         isCheckingCoupon = false;
         onStateChanged();
         return;
       }
 
       if (response is Map<String, dynamic>) {
-        final valid = response['valid'] == true;
-        final message = response['message']?.toString();
-
-        if (valid && message != null && message.isNotEmpty) {
-          couponMessage = message;
-          discountCode = code;
-          discountPercentage = 0.0;
-          discountAmount = 0.0;
-          _applyDetails(response['details']);
-          await prefs.saveDiscountCode(code);
-          Get.snackbar('نجاح', message);
-        } else {
-          couponMessage = message ?? 'كود الخصم غير صالح';
-          _resetDiscount();
-          Get.snackbar('خطأ', couponMessage!);
-        }
+        _applyCouponResult(CouponCheckModel.fromJson(response), code, silent);
       } else {
         couponMessage = 'كود الخصم غير صالح';
         _resetDiscount();
-        Get.snackbar('خطأ', couponMessage!);
+        if (!silent) Get.snackbar('خطأ', couponMessage!);
       }
     } catch (_) {
       _resetDiscount();
-      Get.snackbar('خطأ', 'حدث خطأ أثناء التحقق من الكوبون');
+      if (!silent) {
+        Get.snackbar('خطأ', 'حدث خطأ أثناء التحقق من الكوبون');
+      }
       isCheckingCoupon = false;
       onStateChanged();
       return;
@@ -88,21 +83,51 @@ class CartCouponHandler {
     onStateChanged();
   }
 
-  void _applyDetails(dynamic details) {
-    if (details is! Map<String, dynamic>) return;
-    final type = details['type']?.toString().toLowerCase();
-    final value = double.tryParse(details['value']?.toString() ?? '') ?? 0.0;
-    if (type == 'fixed') {
-      discountAmount = value;
-    } else if (type == 'percent' || type == 'percentage') {
-      discountPercentage = value.clamp(0.0, 100.0);
+  void _applyCouponResult(
+    CouponCheckModel result,
+    String code, [
+    bool silent = false,
+  ]) {
+    final message = result.message;
+
+    if (!result.valid) {
+      couponMessage = message ?? 'كود الخصم غير صالح';
+      _resetDiscount();
+      if (!silent) Get.snackbar('خطأ', couponMessage!);
+      return;
     }
+
+    if (!result.details.isPercent && !result.details.isFixed) {
+      couponMessage = message ?? 'كود الخصم غير صالح';
+      _resetDiscount();
+      if (!silent) Get.snackbar('خطأ', couponMessage!);
+      return;
+    }
+
+    discountCode = code;
+    couponDetails = result.details;
+    couponRestrictions = result.restrictions;
+    couponMessage = message;
+
+    final discount = calculatedDiscount;
+    if (discount <= 0) {
+      couponMessage = result.restrictions.appliesToWholeCart
+          ? (message ?? 'الكوبون لا ينطبق على السلة الحالية')
+          : 'الكوبون لا ينطبق على منتجات السلة الحالية';
+      if (!silent) {
+        Get.snackbar('تنبيه', couponMessage!);
+      }
+    } else if (!silent) {
+      Get.snackbar('نجاح', message ?? 'تم تطبيق كود الخصم');
+    }
+
+    prefs.saveDiscountCode(code);
   }
 
   void _resetDiscount() {
     discountCode = null;
-    discountPercentage = 0.0;
-    discountAmount = 0.0;
+    couponDetails = const CouponDetails(type: '', value: 0);
+    couponRestrictions = const CouponRestrictions();
   }
 
   void _showError(StatusRequest status) {
@@ -125,8 +150,8 @@ class CartCouponHandler {
   Future<void> remove() async {
     discountCode = null;
     discountCodeController.clear();
-    discountPercentage = 0.0;
-    discountAmount = 0.0;
+    couponDetails = const CouponDetails(type: '', value: 0);
+    couponRestrictions = const CouponRestrictions();
     couponMessage = null;
     await prefs.removeDiscountCode();
     onStateChanged();
@@ -137,5 +162,12 @@ class CartCouponHandler {
     if (savedCode != null) {
       discountCodeController.text = savedCode;
     }
+  }
+
+  Future<void> revalidateSavedCode() async {
+    final code = discountCode ?? prefs.getDiscountCode();
+    if (code == null || code.isEmpty) return;
+    discountCodeController.text = code;
+    await apply(silent: true);
   }
 }

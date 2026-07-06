@@ -3,8 +3,6 @@ import 'package:app/core/constant/app_color.dart';
 import 'package:app/core/constant/routes/app_routes.dart';
 import 'package:app/core/shared/custom_app_bar.dart';
 import 'package:app/core/shared/custom_refresh.dart';
-import 'package:app/controller/all_shops/shop_filter_controller.dart';
-import 'package:app/view/allShops/shop_filters.dart';
 import 'package:app/view/allShops/widget/empty_state_widget.dart';
 import 'package:app/view/allShops/widget/search_bar_widget.dart';
 import 'package:app/view/allShops/widget/store_card_widget.dart';
@@ -16,8 +14,6 @@ class StoresPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final filterController = Get.put(FilterController());
-
     return SafeArea(
       child: Scaffold(
         backgroundColor: AppColor().backgroundColor,
@@ -34,12 +30,6 @@ class StoresPage extends StatelessWidget {
             return Column(
               children: [
                 const SearchBarWidget(),
-                Obx(
-                  () => FiltersRowWidget(
-                    selectedIndex: filterController.selectedIndex.value,
-                    onSelect: filterController.changeFilter,
-                  ),
-                ),
                 Expanded(
                   child: CustomRefresh(
                     statusRequest: controller.allShopsState,
@@ -82,7 +72,6 @@ class StoresPage extends StatelessWidget {
                                   final store = controller.filteredShops[index];
                                   return StoreCardWidget(
                                     name: store.name ?? "متجر",
-                                    category: store.categoryName ?? "عام",
                                     rating: store.rating ?? 0,
                                     image: store.imageUrl ?? "",
                                     deliveryTime: store.deliveryFee ?? "مجاني",

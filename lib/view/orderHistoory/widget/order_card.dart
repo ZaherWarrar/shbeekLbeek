@@ -11,7 +11,6 @@ class OrderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isActive = order.status == OrderHisModel.statusActive;
     final total = order.total ?? 0;
 
     return Container(
@@ -56,7 +55,7 @@ class OrderCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                StatusChip(isActive: isActive),
+                StatusChip(status: order.status),
               ],
             ),
 

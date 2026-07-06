@@ -1,5 +1,6 @@
 import 'package:app/controller/address/address_controller.dart';
 import 'package:app/controller/cart/cart_controller.dart';
+import 'package:app/core/constant/payment_method.dart';
 import 'package:get/get.dart';
 
 Map<String, dynamic> buildOrderPayload({
@@ -37,6 +38,7 @@ Map<String, dynamic> buildOrderPayload({
     'cart': {'items': items},
     'latitude': latitude,
     'longitude': longitude,
+    'payment_method': PaymentMethod.fromUseWallet(cart.useWallet),
   };
 
   if (notes != null && notes.trim().isNotEmpty) {

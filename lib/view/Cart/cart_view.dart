@@ -2,7 +2,9 @@ import 'package:app/controller/cart/cart_controller.dart';
 import 'package:app/controller/order/order_controller.dart';
 import 'package:app/core/constant/app_color.dart';
 import 'package:app/view/Cart/widget/active_order_widget.dart';
+import 'package:app/view/Cart/widget/cart_shop_section.dart';
 import 'package:app/view/Cart/widget/cart_item_widget.dart';
+import 'package:app/view/Cart/widget/cart_wallet_widget.dart';
 import 'package:app/view/Cart/widget/discount_code_widget.dart';
 import 'package:app/view/Cart/widget/empty_cart_widget.dart';
 import 'package:app/view/Cart/widget/cart_checkout_section.dart';
@@ -61,45 +63,81 @@ class CartView extends StatelessWidget {
                             ),
                           ),
 
-                          // عناصر السلة
-                          ...controller.cartItems
-                              .where((item) => item['productId'] != null)
-                              .map((item) {
+                          // عناصر السلة مجمّعة حسب المتجر
+                          ...controller.groupedCartItems.map((group) {
+                            return CartShopSection(
+                              group: group,
+                              itemBuilder: (item) {
                                 final productId = item['productId'] as int?;
                                 final price = item['price'] is int
                                     ? item['price'] as int
                                     : (item['price'] as double?)?.toInt() ?? 0;
-
                                 final quantity = item['quantity'] is int
                                     ? item['quantity'] as int
                                     : (item['quantity'] as double?)?.toInt() ??
                                           1;
+                                final variationName =
+                                    item['variationName']?.toString();
+                                final itemNotes =
+                                    item['itemNotes']?.toString();
 
                                 if (productId == null) {
                                   return const SizedBox.shrink();
                                 }
 
+                                final subtitleParts = <String>[];
+                                if (variationName != null &&
+                                    variationName.isNotEmpty) {
+                                  subtitleParts.add(variationName);
+                                }
+                                if (itemNotes != null && itemNotes.isNotEmpty) {
+                                  subtitleParts.add(itemNotes);
+                                }
+
                                 return CartItemWidget(
                                   title:
-                                      item['productName']?.toString() ?? "منتج",
-                                  subtitle:
-                                      item['productDescription']?.toString() ??
-                                      "",
+                                      item['productName']?.toString() ??
+                                      'منتج',
+                                  subtitle: subtitleParts.join(' • '),
                                   price: price,
                                   quantity: quantity,
-                                  image: item['productImage']?.toString() ?? "",
+                                  image:
+                                      item['productImage']?.toString() ?? '',
                                   productId: productId,
                                   onIncrease: () {
-                                    controller.increaseQuantity(productId);
+                                    if (variationName != null) {
+                                      controller.increaseQuantityByVariation(
+                                        productId,
+                                        variationName,
+                                      );
+                                    } else {
+                                      controller.increaseQuantity(productId);
+                                    }
                                   },
                                   onDecrease: () {
-                                    controller.decreaseQuantity(productId);
+                                    if (variationName != null) {
+                                      controller.decreaseQuantityByVariation(
+                                        productId,
+                                        variationName,
+                                      );
+                                    } else {
+                                      controller.decreaseQuantity(productId);
+                                    }
                                   },
                                   onDelete: () {
-                                    controller.removeItem(productId);
+                                    if (variationName != null) {
+                                      controller.removeItemByVariation(
+                                        productId,
+                                        variationName,
+                                      );
+                                    } else {
+                                      controller.removeItem(productId);
+                                    }
                                   },
                                 );
-                              }),
+                              },
+                            );
+                          }),
 
                           const SizedBox(height: 10),
 
@@ -149,6 +187,10 @@ class CartView extends StatelessWidget {
 
                           const DiscountCodeWidget(),
 
+                          const SizedBox(height: 10),
+
+                          const CartWalletWidget(),
+
                           const SizedBox(height: 20),
 
                           SummaryRowWidget(
@@ -163,6 +205,18 @@ class CartView extends StatelessWidget {
                             "الخصم",
                             _formatPrice(controller.calculatedDiscount),
                           ),
+                          if (controller.walletDeduction > 0)
+                            SummaryRowWidget(
+                              'خصم المحفظة',
+                              '- ${_formatPrice(controller.walletDeduction)}',
+                            ),
+                          if (controller.useWallet &&
+                              controller.walletDeduction > 0 &&
+                              controller.total > 0)
+                            SummaryRowWidget(
+                              'المتبقي عند التوصيل',
+                              _formatPrice(controller.total),
+                            ),
 
                           const Divider(),
 

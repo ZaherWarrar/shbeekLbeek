@@ -1,32 +1,28 @@
-import 'package:app/core/constant/app_color.dart';
+import 'package:app/data/datasource/model/order_status.dart';
 import 'package:flutter/material.dart';
 
 class StatusChip extends StatelessWidget {
-  final bool isActive;
+  const StatusChip({super.key, required this.status});
 
-  const StatusChip({super.key, required this.isActive});
+  final OrderStatusType status;
 
   @override
   Widget build(BuildContext context) {
-    final color = isActive ? AppColor().primaryColor : Colors.green;
+    final color = status.color;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        // ignore: deprecated_member_use
-        color: color.withOpacity(.15),
+        color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            isActive ? Icons.access_time : Icons.check_circle,
-            size: 14,
-            color: color,
-          ),
+          Icon(status.icon, size: 14, color: color),
           const SizedBox(width: 6),
           Text(
-            isActive ? "قيد التنفيذ" : "مكتمل",
+            status.label,
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,

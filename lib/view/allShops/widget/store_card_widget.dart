@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 
 class StoreCardWidget extends StatelessWidget {
   final String name;
-  final String category;
   final double rating;
   final String image;
   final String deliveryTime;
@@ -13,7 +12,6 @@ class StoreCardWidget extends StatelessWidget {
   const StoreCardWidget({
     super.key,
     required this.name,
-    required this.category,
     required this.rating,
     required this.image,
     required this.deliveryTime,
@@ -90,17 +88,7 @@ class StoreCardWidget extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        category,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
+                      const Spacer(),
                       Row(
                         children: [
                           Container(

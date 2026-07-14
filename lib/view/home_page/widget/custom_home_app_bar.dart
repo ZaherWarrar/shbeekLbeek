@@ -1,6 +1,7 @@
 import 'package:app/core/constant/app_color.dart';
 import 'package:app/core/constant/routes/app_routes.dart';
 import 'package:app/controller/address/address_controller.dart';
+import 'package:app/controller/notifications/notifications_controller.dart';
 import 'package:app/data/datasource/model/address_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -42,6 +43,23 @@ class CustomDeliveryAppBar extends StatelessWidget
             // ====== الجهة اليسار (الأيقونات) ======
             Row(
               children: [
+                GetBuilder<NotificationsController>(
+                  builder: (notificationsController) {
+                    final unread = notificationsController.unreadCount;
+                    return IconButton(
+                      onPressed: () {
+                        Get.toNamed(AppRoutes.notifications);
+                      },
+                      icon: Badge(
+                        isLabelVisible: unread > 0,
+                        label: Text('$unread'),
+                        backgroundColor: AppColor().primaryColor,
+                        child: const Icon(Icons.notifications_outlined),
+                      ),
+                      color: Colors.black87,
+                    );
+                  },
+                ),
                 IconButton(
                   onPressed: () {
                     Get.toNamed(AppRoutes.allShops);

@@ -1,3 +1,5 @@
+import 'package:app/data/datasource/model/order_status.dart';
+
 class OrderHisModel {
   int? id;
   int? userId;
@@ -14,7 +16,7 @@ class OrderHisModel {
   List<OrderItemModel>? items;
   
   String? restaurantName;
-  String? status;
+  OrderStatusType status = OrderStatusType.unknown;
   DateTime? date;
   double? total;
 
@@ -33,18 +35,10 @@ class OrderHisModel {
     this.longitude,
     this.items,
     this.restaurantName,
-    this.status,
+    this.status = OrderStatusType.unknown,
     this.date,
     this.total,
   });
-
-  static const String statusActive = '\u0646\u0634\u0637';
-  static const String statusCompleted = '\u0645\u0643\u062a\u0645\u0644';
-  static const String _orderConfirmedMarker =
-      '\u0637\u0644\u0628 \u0645\u0624\u0643\u062f';
-  static const String _orderCancelledMarker =
-      '\u0637\u0644\u0628 \u0645\u0644\u063a\u064a';
-  static const String _orderFallback = '\u0637\u0644\u0628';
 
   OrderHisModel.fromJson(Map<String, dynamic> json) {
     id = _toInt(json['id']);
@@ -67,7 +61,7 @@ class OrderHisModel {
     }
     total = _calculateTotal(items);
     restaurantName = _firstProductName(items) ?? _buildFallbackName(id);
-    status = _deriveStatus(address, delvierdDatetime);
+    status = OrderStatusType.fromApi(json['status']?.toString());
     date = _parseDate(createdAt) ?? _parseDate(updatedAt);
   }
 
@@ -89,22 +83,6 @@ class OrderHisModel {
       data['items'] = items!.map((v) => v.toJson()).toList();
     }
     return data;
-  }
-
-  static String _deriveStatus(String? address, String? deliveredAt) {
-    final addressValue = address ?? '';
-    if (addressValue.contains(_orderCancelledMarker)) {
-      return statusCompleted;
-    }
-    if (addressValue.contains(_orderConfirmedMarker)) {
-      return statusActive;
-    }
-    if (deliveredAt != null &&
-        deliveredAt.isNotEmpty &&
-        deliveredAt.toLowerCase() != 'null') {
-      return statusCompleted;
-    }
-    return statusActive;
   }
 
   static double _calculateTotal(List<OrderItemModel>? items) {
@@ -131,9 +109,9 @@ class OrderHisModel {
 
   static String _buildFallbackName(int? id) {
     if (id == null || id == 0) {
-      return _orderFallback;
+      return 'طلب';
     }
-    return '$_orderFallback #$id';
+    return 'طلب #$id';
   }
 
   static DateTime? _parseDate(String? value) {

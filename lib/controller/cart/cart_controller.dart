@@ -1,12 +1,15 @@
 import 'package:app/controller/cart/cart_coupon_handler.dart';
 import 'package:app/controller/cart/cart_delivery_utils.dart';
+import 'package:app/controller/cart/cart_group_utils.dart';
+import 'package:app/controller/cart/cart_wallet_utils.dart';
+import 'package:app/controller/wallet/wallet_payment_mixin.dart';
 import 'package:app/core/services/cart_preferences.dart';
 import 'package:app/data/datasource/model/item_model.dart';
 import 'package:app/data/datasource/model/store_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class CartController extends GetxController {
+class CartController extends GetxController with WalletPaymentMixin {
   List<Map<String, dynamic>> cartItems = [];
   final TextEditingController discountCodeController = TextEditingController();
   final TextEditingController notesController = TextEditingController();
@@ -16,7 +19,7 @@ class CartController extends GetxController {
     discountCodeController: discountCodeController,
     prefs: _prefs,
     onStateChanged: update,
-    getSubtotal: () => subtotal,
+    getCartItems: () => cartItems,
   );
 
   String? get discountCode => coupon.discountCode;
@@ -34,6 +37,7 @@ class CartController extends GetxController {
   void onInit() {
     super.onInit();
     _prefs.init().then((_) => _loadCart());
+    fetchWalletBalance();
   }
 
   void _loadCart() {
@@ -43,6 +47,7 @@ class CartController extends GetxController {
     notes = _prefs.getNotes();
     if (notes != null) notesController.text = notes!;
     update();
+    coupon.revalidateSavedCode();
   }
 
   Future<void> _saveCart() async {
@@ -120,6 +125,7 @@ class CartController extends GetxController {
       cartItems.add({
         'productId': product.id!,
         'shopId': shop.id!,
+        'categoryId': shop.categoryId,
         'shopName': shop.name ?? '',
         'deliveryFee': shop.deliveryFee,
         'variationName': variationName,
@@ -238,9 +244,20 @@ class CartController extends GetxController {
   }
 
   double get subtotal => calculateSubtotal(cartItems);
+  List<CartShopGroup> get groupedCartItems => groupCartItemsByShop(cartItems);
   double get calculatedDeliveryFee => deliveryFee;
   double get calculatedDiscount => coupon.calculatedDiscount;
-  double get total => subtotal + calculatedDeliveryFee - calculatedDiscount;
+
+  double get amountBeforeWallet =>
+      subtotal + calculatedDeliveryFee - calculatedDiscount;
+
+  double get walletDeduction => calculateWalletDeduction(
+        useWallet: useWallet,
+        walletBalance: walletBalance,
+        amountBeforeWallet: amountBeforeWallet,
+      );
+
+  double get total => amountBeforeWallet - walletDeduction;
 
   void applyDiscount() => coupon.apply();
   void removeDiscount() => coupon.remove();
@@ -248,6 +265,7 @@ class CartController extends GetxController {
   void clearCart() async {
     cartItems.clear();
     await coupon.remove();
+    resetWalletPayment();
     notes = null;
     notesController.clear();
     await _prefs.clearCart();

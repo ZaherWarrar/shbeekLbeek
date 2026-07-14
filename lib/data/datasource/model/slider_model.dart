@@ -16,12 +16,19 @@ class SliderModel {
   });
 
   SliderModel.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    title = json['title'];
-    targetType = json['target_type'];
-    targetId = json['target_id'];
-    imageFilePath = json['image_file_path'];
-    imageUrl = json['image_url'];
+    id = _toInt(json['id']);
+    title = json['title']?.toString();
+    targetType = json['target_type']?.toString();
+    targetId = _toInt(json['target_id']);
+    imageFilePath = json['image_file_path']?.toString();
+    imageUrl = json['image_url']?.toString();
+  }
+
+  static int? _toInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value.toString());
   }
 
   Map<String, dynamic> toJson() {

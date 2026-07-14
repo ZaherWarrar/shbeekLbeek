@@ -1,7 +1,7 @@
+import 'package:app/controller/orderHistoory/order_history_sort_utils.dart';
 import 'package:app/core/shared/custom_refresh.dart';
 import 'package:app/view/orderDetails/order_details_view.dart';
 import 'package:app/controller/orderHistoory/order_his_controller.dart';
-import 'package:app/data/datasource/model/order_his_model.dart';
 import 'package:app/view/orderHistoory/widget/order_card.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -13,16 +13,11 @@ class OrderList extends GetView<OrderHisController> {
   Widget build(BuildContext context) {
     return GetBuilder<OrderHisController>(
       builder: (controller) {
-        final activeOrders = controller.orders
-            .where((o) => o.status == OrderHisModel.statusActive)
-            .toList();
-
-        final completedOrders = controller.orders
-            .where((o) => o.status != OrderHisModel.statusActive)
-            .toList();
-
-        final orders = [...activeOrders, ...completedOrders];
-
+        final orders = sortOrdersByStatus(
+          orders: controller.orders,
+          statusOf: (order) => order.status,
+          dateOf: (order) => order.date,
+        );
         return CustomRefresh(
           statusRequest: controller.orderState,
           fun: () => controller.fetchOrders(),
@@ -35,7 +30,7 @@ class OrderList extends GetView<OrderHisController> {
                   ),
                 )
               : ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 90),
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 90),
                   itemCount: orders.length,
                   itemBuilder: (context, index) {
                     return GestureDetector(

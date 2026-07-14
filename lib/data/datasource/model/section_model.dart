@@ -31,19 +31,35 @@ class SectionModel {
       this.imageUrl});
 
   SectionModel.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    categoryId = json['category_id'];
-    storeId = json['store_id'];
-    name = json['name'];
-    description = json['description'];
-    imageFilePath = json['image_file_path'];
-    regularPrice = json['regular_price'];
-    salePrice = json['sale_price'];
-    saleStart = json['sale_start'];
-    saleEnd = json['sale_end'];
-    createdAt = json['created_at'];
-    updatedAt = json['updated_at'];
-    imageUrl = json['image_url'];
+    id = _toInt(json['id']);
+    categoryId = _toInt(json['category_id']);
+    storeId = _toInt(json['store_id']);
+    name = json['name']?.toString();
+    description = json['description']?.toString();
+    imageFilePath = json['image_file_path']?.toString();
+    regularPrice = _toPriceInt(json['regular_price']);
+    salePrice = _toPriceInt(json['sale_price']);
+    saleStart = _toInt(json['sale_start']);
+    saleEnd = _toInt(json['sale_end']);
+    createdAt = json['created_at']?.toString();
+    updatedAt = json['updated_at']?.toString();
+    imageUrl = json['image_url']?.toString();
+  }
+
+  static int? _toInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value.toString());
+  }
+
+  static int? _toPriceInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    final d = double.tryParse(value.toString());
+    if (d != null) return d.toInt();
+    return int.tryParse(value.toString());
   }
 
   Map<String, dynamic> toJson() {

@@ -8,9 +8,16 @@ class MainCategoriesModel {
   MainCategoriesModel({this.id, this.name, this.imageUrl});
 
   MainCategoriesModel.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    name = json['name'];
-    imageUrl = json['image_url'];
+    id = _toInt(json['id']);
+    name = json['name']?.toString();
+    imageUrl = json['image_url']?.toString();
+  }
+
+  static int? _toInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value.toString());
   }
 
   Map<String, dynamic> toJson() {

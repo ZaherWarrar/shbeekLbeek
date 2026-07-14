@@ -1,4 +1,12 @@
+import 'package:app/controller/wallet/wallet_payment_mixin.dart';
+import 'package:app/core/class/crud.dart';
+import 'package:app/core/class/statusrequest.dart';
+import 'package:app/core/constant/routes/app_routes.dart';
+import 'package:app/core/function/handling_data.dart';
+import 'package:app/core/services/session_service.dart';
+import 'package:app/data/datasource/remot/external_orders_data.dart';
 import 'package:app/data/datasource/remot/routing_data.dart';
+import 'package:app/view/external_delivery/widgets/external_delivery_success_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
@@ -6,8 +14,12 @@ import 'package:latlong2/latlong.dart';
 
 enum PickMode { from, to }
 
-class ExternalDeliveryController extends GetxController {
+class ExternalDeliveryController extends GetxController
+    with WalletPaymentMixin {
   final RoutingData _routingData = RoutingData();
+  final ExternalOrdersData _externalOrdersData =
+      ExternalOrdersData(Get.find<Crud>());
+  final SessionService _session = Get.find<SessionService>();
 
   final pickMode = PickMode.from.obs;
 
@@ -17,6 +29,7 @@ class ExternalDeliveryController extends GetxController {
   final toLng = 0.0.obs;
 
   final isLoadingLocation = false.obs;
+  final isSubmitting = false.obs;
 
   final mapCenterLat = defaultLat.obs;
   final mapCenterLng = defaultLng.obs;
@@ -44,9 +57,9 @@ class ExternalDeliveryController extends GetxController {
   void onInit() {
     super.onInit();
     centerMapOnUserLocation();
+    fetchWalletBalance();
   }
 
-  /// يمرّر الخريطة على موقع المستخدم عند فتح الصفحة (بدون تعيين من/إلى).
   Future<void> centerMapOnUserLocation() async {
     if (_mapCenterInitialized) return;
     isLoadingLocation.value = true;
@@ -117,7 +130,6 @@ class ExternalDeliveryController extends GetxController {
         routeDistanceKm.value = result.distanceKm;
         routeDurationMin.value = result.durationMinutes;
       } else {
-        // تعذّر جلب المسار → خط مستقيم كحل بديل
         routePoints.assignAll([
           LatLng(fromLat.value, fromLng.value),
           LatLng(toLat.value, toLng.value),
@@ -146,10 +158,11 @@ class ExternalDeliveryController extends GetxController {
     }
   }
 
-  void validateAndSubmit() {
-    if (!(formKey.currentState?.validate() ?? false)) {
-      return;
-    }
+  Future<void> validateAndSubmit() async {
+    if (isSubmitting.value) return;
+
+    if (!(formKey.currentState?.validate() ?? false)) return;
+
     if (!hasFromPoint) {
       Get.snackbar('تنبيه', 'الرجاء تحديد موقع الانطلاق على الخريطة');
       return;
@@ -171,12 +184,75 @@ class ExternalDeliveryController extends GetxController {
       return;
     }
 
-    Get.snackbar(
-      'نجاح',
-      'تم تجهيز طلب التوصيل',
-      snackPosition: SnackPosition.BOTTOM,
-      duration: const Duration(seconds: 2),
-    );
+    final token = _session.token;
+    if (token == null || token.isEmpty || _session.isGuest) {
+      Get.snackbar('تنبيه', 'يجب تسجيل الدخول لإنشاء طلب توصيل خارجي');
+      Get.toNamed(AppRoutes.login);
+      return;
+    }
+
+    isSubmitting.value = true;
+    try {
+      final payload = {
+        'from_lat': fromLat.value,
+        'from_lng': fromLng.value,
+        'from_address_details': fromDetailsController.text.trim(),
+        'to_lat': toLat.value,
+        'to_lng': toLng.value,
+        'to_address_details': toDetailsController.text.trim(),
+        'order_details': orderDetailsController.text.trim(),
+        'payment_method': paymentMethod,
+      };
+
+      final response = await _externalOrdersData.createExternalOrder(payload);
+      final status = handlingData(response);
+
+      if (status != StatusRequest.success || response is! Map) {
+        _showSubmitError(response is StatusRequest ? response : status);
+        return;
+      }
+
+      _resetForm();
+      await ExternalDeliverySuccessDialog.show();
+    } catch (_) {
+      Get.snackbar('خطأ', 'حدث خطأ أثناء إنشاء الطلب');
+    } finally {
+      isSubmitting.value = false;
+    }
+  }
+
+  void _showSubmitError(StatusRequest status) {
+    switch (status) {
+      case StatusRequest.unauthorized:
+        Get.snackbar('تنبيه', 'يجب تسجيل الدخول لإنشاء طلب توصيل خارجي');
+        Get.toNamed(AppRoutes.login);
+        break;
+      case StatusRequest.offlinefailure:
+        Get.snackbar('خطأ', 'لا يوجد اتصال بالإنترنت');
+        break;
+      case StatusRequest.serverfailure:
+      case StatusRequest.serverException:
+        Get.snackbar('خطأ', 'خطأ في الخادم، حاول لاحقاً');
+        break;
+      default:
+        Get.snackbar('خطأ', 'فشل في إنشاء الطلب');
+    }
+  }
+
+  void _resetForm() {
+    fromLat.value = 0.0;
+    fromLng.value = 0.0;
+    toLat.value = 0.0;
+    toLng.value = 0.0;
+    routePoints.clear();
+    routeDistanceKm.value = 0.0;
+    routeDurationMin.value = 0.0;
+    pickMode.value = PickMode.from;
+    resetWalletPayment();
+    fromDetailsController.clear();
+    toDetailsController.clear();
+    orderDetailsController.clear();
+    formKey.currentState?.reset();
   }
 
   @override

@@ -1,6 +1,7 @@
 import 'package:app/core/class/statusrequest.dart';
 import 'package:app/core/constant/routes/app_routes.dart';
 import 'package:app/core/function/handling_data.dart';
+import 'package:app/controller/notifications/notifications_controller.dart';
 import 'package:app/core/services/session_service.dart';
 import 'package:app/data/datasource/remot/otp_data.dart';
 import 'package:get/get.dart';
@@ -68,6 +69,10 @@ class OtpController extends GetxController {
 
         // المستخدم لم يعد ضيف
         await session.setGuest(false);
+
+        if (Get.isRegistered<NotificationsController>()) {
+          await Get.find<NotificationsController>().loadNotifications();
+        }
 
         Get.snackbar('نجاح', 'تم التحقق بنجاح');
         Get.offAllNamed(AppRoutes.start);

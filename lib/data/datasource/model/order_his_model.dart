@@ -12,7 +12,7 @@ class OrderHisModel {
   double? latitude;
   double? longitude;
   List<OrderItemModel>? items;
-
+  
   String? restaurantName;
   String? status;
   DateTime? date;

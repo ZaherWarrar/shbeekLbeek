@@ -26,6 +26,7 @@ class MainView extends StatelessWidget {
 
   DateTime? lastBackPressed;
 
+  // دالة معالجة الرجوع (يمكنك الاحتفاظ بها أو دمجها مباشرة)
   Future<bool> _onWillPop() async {
     // إذا مو على أول تاب → رجعه للأول
     if (controller.currentIndex.value != 0) {
@@ -64,10 +65,19 @@ class MainView extends StatelessWidget {
     if (!Get.isRegistered<HomeControllerImp>()) {
       Get.put(HomeControllerImp(), permanent: true);
     }
+    // الـ Widget المعدل
     return Obx(
-      // ignore: deprecated_member_use
-      () => WillPopScope(
-        onWillPop: _onWillPop,
+      () => PopScope(
+        canPop: false, // نمنع الرجوع التلقائي
+        onPopInvoked: (bool didPop) async {
+          if (!didPop) {
+            // استدعاء نفس منطق _onWillPop
+            final shouldPop = await _onWillPop();
+
+            // إذا كان shouldPop = true، SystemNavigator.pop() تم استدعاؤها بالفعل في _onWillPop
+            // لذا لا نحتاج لفعل شيء إضافي
+          }
+        },
         child: SafeArea(
           child: Scaffold(
             body: pages[controller.currentIndex.value],

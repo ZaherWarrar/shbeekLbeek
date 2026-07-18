@@ -12,7 +12,7 @@ class MainCategory extends StatelessWidget {
       statusRequest: controller.finalSectionState,
       fun: () => controller.fetchHomeSection(),
       body: SizedBox(
-        height: 40,
+        height: 35,
         child: ListView.builder(
           itemCount: controller.homeSection.length,
           scrollDirection: Axis.horizontal,
@@ -25,10 +25,10 @@ class MainCategory extends StatelessWidget {
                 );
               },
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                padding: const EdgeInsets.symmetric(horizontal: 5.0),
                 child: Container(
                   height: 30,
-                  width: 120,
+                  width: 100,
                   decoration: BoxDecoration(
                     color: controller.selectedType == index
                         ? AppColor().primaryColor

@@ -17,7 +17,7 @@ class OrderConfirmationView extends StatefulWidget {
 
 class _OrderConfirmationViewState extends State<OrderConfirmationView> {
   Timer? _timer;
-  int _remainingSeconds = 600;
+  int _remainingSeconds = 200;
 
   @override
   void initState() {

@@ -6,29 +6,41 @@ class CustomTextFormFild extends StatelessWidget {
     super.key,
     required this.hint,
     required this.controller,
-    required this.valid,
     required this.lable,
     required this.iconData,
-    this.scure,
+    this.valid,
+    this.scure = false,
     this.onTap,
     this.readOnly = false,
+    this.onChanged,
+    this.errorText,
+    this.keyboardType,
+    this.maxLength,
   });
+
   final TextEditingController controller;
   final String hint, lable;
   final IconData iconData;
-  final String? Function(String?) valid;
-  final bool? scure;
+  final String? Function(String?)? valid;
+  final bool scure;
   final Function()? onTap;
   final bool readOnly;
+  final void Function(String?)? onChanged;
+  final String? errorText;
+  final TextInputType? keyboardType;
+  final int? maxLength;
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
-      obscureText: scure == null || scure == false ? false : true,
+      obscureText: scure,
       validator: valid,
       controller: controller,
       readOnly: readOnly,
-      style: TextStyle(color: Colors.black),
+      onChanged: onChanged,
+      keyboardType: keyboardType ?? TextInputType.text,
+      maxLength: maxLength,
+      style: const TextStyle(color: Colors.black),
       decoration: InputDecoration(
         hoverColor: Colors.white,
         contentPadding: const EdgeInsets.symmetric(
@@ -45,7 +57,11 @@ class CustomTextFormFild extends StatelessWidget {
           fontSize: 22,
         ),
         label: Text(lable),
-        suffixIcon: IconButton(icon: Icon(iconData), onPressed: onTap),
+        errorText: errorText,
+        suffixIcon: IconButton(
+          icon: Icon(iconData, color: AppColor().titleColor),
+          onPressed: onTap,
+        ),
         border: OutlineInputBorder(
           borderRadius: const BorderRadius.all(Radius.circular(50)),
           borderSide: BorderSide(color: AppColor().titleColor),
@@ -58,6 +74,15 @@ class CustomTextFormFild extends StatelessWidget {
           borderRadius: const BorderRadius.all(Radius.circular(50)),
           borderSide: BorderSide(color: AppColor().primaryColor),
         ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: const BorderRadius.all(Radius.circular(50)),
+          borderSide: BorderSide(color: Colors.red.shade400, width: 2),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: const BorderRadius.all(Radius.circular(50)),
+          borderSide: BorderSide(color: Colors.red.shade700, width: 2),
+        ),
+        counterText: '',
       ),
     );
   }

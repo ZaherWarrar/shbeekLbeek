@@ -15,7 +15,7 @@ class OrderHisModel {
   double? latitude;
   double? longitude;
   List<OrderItemModel>? items;
-
+  
   String? restaurantName;
   OrderStatusType status = OrderStatusType.unknown;
   DateTime? date;

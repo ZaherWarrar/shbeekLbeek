@@ -24,7 +24,7 @@ class CategorySlider extends StatelessWidget {
                 child: Text(
                   "الأقسام",
                   style: TextStyle(
-                    fontSize: getResponsiveFontSize(context, fontSize: 35),
+                    fontSize: getResponsiveFontSize(context, fontSize: 30),
                     fontWeight: FontWeight.bold,
                   ),
                 ),

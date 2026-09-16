@@ -22,9 +22,9 @@ class CategoryItems extends StatelessWidget {
                   : controller.finalSection[controller.sectionName]!.length,
               itemBuilder: (context, index) {
                 return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   child: FittedBox(
-                    fit: BoxFit.scaleDown,
+                    fit: BoxFit.cover,
                     child: CardItem(controller: controller, index: index),
                   ),
                 );

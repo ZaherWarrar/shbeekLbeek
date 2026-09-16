@@ -26,7 +26,7 @@ class ListAllShopsWidget extends StatelessWidget {
                 child: Text(
                   "تصفح كل المحلات ",
                   style: TextStyle(
-                    fontSize: getResponsiveFontSize(context, fontSize: 35),
+                    fontSize: getResponsiveFontSize(context, fontSize: 30),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -95,7 +95,7 @@ class ListAllShopsWidget extends StatelessWidget {
                                     style: TextStyle(
                                       fontSize: getResponsiveFontSize(
                                         context,
-                                        fontSize: 25,
+                                        fontSize: 26,
                                       ),
                                     ),
                                     overflow: TextOverflow.ellipsis,

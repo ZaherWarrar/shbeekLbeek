@@ -69,8 +69,13 @@ class SliderWidget extends StatelessWidget {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(borderRadius),
                         child: Image.network(
-                          slide.imageUrl!,
+                          slide.imageUrl ?? '',
                           fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            color: Colors.grey.shade300,
+                            alignment: Alignment.center,
+                            child: const Icon(Icons.image_not_supported),
+                          ),
                         ),
                       ),
                     );

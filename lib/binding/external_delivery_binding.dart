@@ -4,9 +4,9 @@ import 'package:get/get.dart';
 class ExternalDeliveryBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut<ExternalDeliveryController>(
-      () => ExternalDeliveryController(),
-      fenix: true,
+    Get.put<ExternalDeliveryController>(
+      ExternalDeliveryController(),
+      permanent: true,
     );
   }
 }

@@ -66,10 +66,17 @@ class CardItem extends StatelessWidget {
                   topRight: Radius.circular(25),
                 ),
                 child: Image.network(
-                  items[index].imageUrl!,
+                  items[index].imageUrl ?? '',
                   height: 130,
                   width: 300,
                   fit: BoxFit.fill,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    height: 130,
+                    width: 300,
+                    color: Colors.grey.shade300,
+                    alignment: Alignment.center,
+                    child: const Icon(Icons.image_not_supported),
+                  ),
                 ),
               ),
               SizedBox(height: 5),

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:app/core/function/resolve_media_url.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CartPreferences {
@@ -25,7 +26,11 @@ class CartPreferences {
     final jsonString = _prefs.getString(_keyCart);
     if (jsonString == null) return [];
     final List decoded = jsonDecode(jsonString);
-    return decoded.map((e) => Map<String, dynamic>.from(e)).toList();
+    return decoded.map((e) {
+      final item = Map<String, dynamic>.from(e);
+      item['productImage'] = resolveMediaUrl(item['productImage']?.toString());
+      return item;
+    }).toList();
   }
 
   Future<void> clearCart() async {

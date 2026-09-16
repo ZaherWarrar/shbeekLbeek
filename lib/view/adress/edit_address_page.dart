@@ -3,7 +3,7 @@ import 'package:app/core/constant/app_color.dart';
 import 'package:app/core/function/valid_function.dart';
 import 'package:app/core/shared/custom_text_form_fild.dart';
 import 'package:app/data/datasource/model/address_model.dart';
-import 'package:app/view/address/widget/map_picker_widget.dart';
+import 'package:app/view/address/widget/address_location_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -79,7 +79,7 @@ class _EditAddressPageState extends State<EditAddressPage> {
           padding: const EdgeInsets.all(16),
           child: ListView(
             children: [
-              const MapPickerWidget(),
+              const AddressLocationSelector(),
               const SizedBox(height: 20),
               CustomTextFormFild(
                 hint: "أدخل اسم العنوان",

@@ -10,7 +10,7 @@ import 'package:app/view/external_delivery/widgets/external_delivery_success_dia
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 enum PickMode { from, to }
 
@@ -40,6 +40,9 @@ class ExternalDeliveryController extends GetxController
   final routeDurationMin = 0.0.obs;
   final isLoadingRoute = false.obs;
 
+  final fromPlaceLabel = ''.obs;
+  final toPlaceLabel = ''.obs;
+
   final fromDetailsController = TextEditingController();
   final toDetailsController = TextEditingController();
   final orderDetailsController = TextEditingController();
@@ -52,6 +55,34 @@ class ExternalDeliveryController extends GetxController
   bool get hasFromPoint => fromLat.value != 0.0 && fromLng.value != 0.0;
   bool get hasToPoint => toLat.value != 0.0 && toLng.value != 0.0;
   bool get hasRoute => routePoints.isNotEmpty;
+
+  double? get searchOriginLat {
+    if (pickMode.value == PickMode.to && hasFromPoint) return fromLat.value;
+    if (pickMode.value == PickMode.from && hasToPoint) return toLat.value;
+    if (mapCenterLat.value != 0.0) return mapCenterLat.value;
+    return null;
+  }
+
+  double? get searchOriginLng {
+    if (pickMode.value == PickMode.to && hasFromPoint) return fromLng.value;
+    if (pickMode.value == PickMode.from && hasToPoint) return toLng.value;
+    if (mapCenterLng.value != 0.0) return mapCenterLng.value;
+    return null;
+  }
+
+  double? get activeInitialLat {
+    if (pickMode.value == PickMode.from) {
+      return hasFromPoint ? fromLat.value : mapCenterLat.value;
+    }
+    return hasToPoint ? toLat.value : mapCenterLat.value;
+  }
+
+  double? get activeInitialLng {
+    if (pickMode.value == PickMode.from) {
+      return hasFromPoint ? fromLng.value : mapCenterLng.value;
+    }
+    return hasToPoint ? toLng.value : mapCenterLng.value;
+  }
 
   @override
   void onInit() {
@@ -97,13 +128,19 @@ class ExternalDeliveryController extends GetxController
     pickMode.value = mode;
   }
 
-  void setPoint(double lat, double lng) {
+  void setPoint(double lat, double lng, {String? placeLabel}) {
     if (pickMode.value == PickMode.from) {
       fromLat.value = lat;
       fromLng.value = lng;
+      if (placeLabel != null) {
+        fromPlaceLabel.value = placeLabel;
+      }
     } else {
       toLat.value = lat;
       toLng.value = lng;
+      if (placeLabel != null) {
+        toPlaceLabel.value = placeLabel;
+      }
     }
     _refreshRoute();
   }
@@ -126,7 +163,11 @@ class ExternalDeliveryController extends GetxController
       );
 
       if (result != null && result.points.isNotEmpty) {
-        routePoints.assignAll(result.points);
+        routePoints.assignAll(
+          result.points.map(
+            (point) => LatLng(point.latitude, point.longitude),
+          ),
+        );
         routeDistanceKm.value = result.distanceKm;
         routeDurationMin.value = result.durationMinutes;
       } else {
@@ -247,6 +288,8 @@ class ExternalDeliveryController extends GetxController
     routePoints.clear();
     routeDistanceKm.value = 0.0;
     routeDurationMin.value = 0.0;
+    fromPlaceLabel.value = '';
+    toPlaceLabel.value = '';
     pickMode.value = PickMode.from;
     resetWalletPayment();
     fromDetailsController.clear();

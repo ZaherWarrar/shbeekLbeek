@@ -1,3 +1,4 @@
+import 'package:app/core/function/resolve_media_url.dart';
 import 'package:app/data/datasource/model/order_status.dart';
 
 class OrderHisModel {
@@ -227,7 +228,7 @@ class OrderProductModel {
     saleEnd = json['sale_end']?.toString();
     createdAt = json['created_at'];
     updatedAt = json['updated_at'];
-    imageUrl = json['image_url'];
+    imageUrl = resolveMediaUrl(json['image_url']?.toString());
   }
 
   Map<String, dynamic> toJson() {

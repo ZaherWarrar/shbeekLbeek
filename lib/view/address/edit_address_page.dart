@@ -5,7 +5,7 @@ import 'package:app/data/datasource/model/address_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controller/address/address_controller.dart';
-import 'widget/map_picker_widget.dart';
+import 'widget/address_location_selector.dart';
 
 class EditAddressPage extends StatefulWidget {
   final AddressModel address;
@@ -78,7 +78,7 @@ class _EditAddressPageState extends State<EditAddressPage> {
           padding: const EdgeInsets.all(16),
           child: ListView(
             children: [
-              const MapPickerWidget(),
+              const AddressLocationSelector(),
               const SizedBox(height: 20),
               CustomTextFormFild(
                 hint: "أدخل اسم العنوان",

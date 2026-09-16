@@ -18,8 +18,10 @@ extension HomeSectionsLogic on HomeControllerImp {
         homeSection.add(HomeSectionModel.fromJson(item));
       }
       for (var section in homeSection) {
-        final sections = await runFetchSection(section.type!);
-        finalSection[section.type!] = sections;
+        final sectionType = section.type;
+        if (sectionType == null || sectionType.isEmpty) continue;
+        final sections = await runFetchSection(sectionType);
+        finalSection[sectionType] = sections;
       }
       if (homeSection.isNotEmpty) {
         selectedType = 0;

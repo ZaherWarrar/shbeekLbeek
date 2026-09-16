@@ -1,3 +1,4 @@
+import 'package:app/core/function/resolve_media_url.dart';
 import 'package:get/get.dart';
 
 class RestaurantModel {
@@ -33,7 +34,7 @@ class RestaurantModel {
     final id = idValue is int ? idValue : int.tryParse('$idValue') ?? 0;
 
     final name = favoritableMap['name']?.toString() ?? '';
-    final image = favoritableMap['image_url']?.toString() ?? '';
+    final image = resolveMediaUrl(favoritableMap['image_url']?.toString()) ?? '';
     final category = type == 'product'
         ? favoritableMap['price']?.toString() ?? ''
         : favoritableMap['type']?.toString() ?? '';
@@ -87,7 +88,7 @@ class RestaurantModel {
     return RestaurantModel(
       id: parsedId,
       name: json['name']?.toString() ?? '',
-      image: json['image']?.toString() ?? '',
+      image: resolveMediaUrl(json['image']?.toString()) ?? '',
       rating: parsedRating,
       category: json['category']?.toString() ?? '',
       favoriteType: json['favoriteType']?.toString() ?? 'product',

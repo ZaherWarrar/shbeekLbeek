@@ -1,3 +1,5 @@
+import 'package:app/core/function/resolve_media_url.dart';
+
 class SliderModel {
   int? id;
   String? title;
@@ -21,7 +23,7 @@ class SliderModel {
     targetType = json['target_type']?.toString();
     targetId = _toInt(json['target_id']);
     imageFilePath = json['image_file_path']?.toString();
-    imageUrl = json['image_url']?.toString();
+    imageUrl = resolveMediaUrl(json['image_url']?.toString());
   }
 
   static int? _toInt(dynamic value) {

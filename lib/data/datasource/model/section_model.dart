@@ -1,5 +1,7 @@
 // ignore_for_file: prefer_collection_literals
 
+import 'package:app/core/function/resolve_media_url.dart';
+
 class SectionModel {
   int? id;
   int? categoryId;
@@ -43,7 +45,7 @@ class SectionModel {
     saleEnd = _toInt(json['sale_end']);
     createdAt = json['created_at']?.toString();
     updatedAt = json['updated_at']?.toString();
-    imageUrl = json['image_url']?.toString();
+    imageUrl = resolveMediaUrl(json['image_url']?.toString());
   }
 
   static int? _toInt(dynamic value) {

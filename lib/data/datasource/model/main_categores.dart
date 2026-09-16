@@ -1,5 +1,7 @@
 // ignore_for_file: prefer_collection_literals
 
+import 'package:app/core/function/resolve_media_url.dart';
+
 class MainCategoriesModel {
   int? id;
   String? name;
@@ -10,7 +12,7 @@ class MainCategoriesModel {
   MainCategoriesModel.fromJson(Map<String, dynamic> json) {
     id = _toInt(json['id']);
     name = json['name']?.toString();
-    imageUrl = json['image_url']?.toString();
+    imageUrl = resolveMediaUrl(json['image_url']?.toString());
   }
 
   static int? _toInt(dynamic value) {

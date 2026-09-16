@@ -1,3 +1,5 @@
+import 'package:app/core/function/resolve_media_url.dart';
+
 class CityModel {
   final int id;
   final String name;
@@ -13,7 +15,7 @@ class CityModel {
     return CityModel(
       id: _toInt(json['id']) ?? 0,
       name: json['name']?.toString() ?? '',
-      imageUrl: json['image_url']?.toString(),
+      imageUrl: resolveMediaUrl(json['image_url']?.toString()),
     );
   }
 

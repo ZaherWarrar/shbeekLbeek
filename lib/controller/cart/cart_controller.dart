@@ -3,6 +3,7 @@ import 'package:app/controller/cart/cart_delivery_utils.dart';
 import 'package:app/controller/cart/cart_group_utils.dart';
 import 'package:app/controller/cart/cart_wallet_utils.dart';
 import 'package:app/controller/wallet/wallet_payment_mixin.dart';
+import 'package:app/core/function/resolve_media_url.dart';
 import 'package:app/core/services/cart_preferences.dart';
 import 'package:app/data/datasource/model/item_model.dart';
 import 'package:app/data/datasource/model/store_model.dart';
@@ -132,7 +133,7 @@ class CartController extends GetxController with WalletPaymentMixin {
         'itemNotes': itemNotes,
         'productName': product.name ?? '',
         'productDescription': '',
-        'productImage': product.imageUrl ?? '',
+        'productImage': resolveMediaUrl(product.imageUrl) ?? '',
         'price': price,
         'quantity': quantity,
         'subtotal': price * quantity,

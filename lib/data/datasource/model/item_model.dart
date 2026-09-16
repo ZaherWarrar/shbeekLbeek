@@ -1,3 +1,5 @@
+import 'package:app/core/function/resolve_media_url.dart';
+
 class ItemModel {
   int? id;
   String? name;
@@ -37,8 +39,8 @@ class ItemModel {
   ItemModel.fromJson(Map<String, dynamic> json) {
     id = _toInt(json['id']);
     name = json['name']?.toString();
-    logoUrl = json['logo_url']?.toString();
-    imageUrl = json['image_url']?.toString();
+    logoUrl = resolveMediaUrl(json['logo_url']?.toString());
+    imageUrl = resolveMediaUrl(json['image_url']?.toString());
     deliveryFee = json['delivery_fee']?.toString();
     minOrder = json['min_order']?.toString();
     categoryName = json['category_name']?.toString();
@@ -119,7 +121,7 @@ class Products {
     name = json['name']?.toString();
     regularPrice = _parsePriceToInt(json['regular_price']);
     salePrice = _parsePriceToInt(json['sale_price']);
-    imageUrl = json['image_url']?.toString();
+    imageUrl = resolveMediaUrl(json['image_url']?.toString());
     price = json['price'];
 
     final ic = json['inner_category'];

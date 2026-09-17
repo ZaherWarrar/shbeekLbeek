@@ -6,6 +6,7 @@ import 'package:app/core/function/handling_data.dart';
 import 'package:app/data/datasource/model/notification_model.dart';
 import 'package:app/data/datasource/remot/notifications_data.dart';
 import 'package:get/get.dart';
+import 'package:app/core/function/app_snackbar.dart';
 
 class NotificationsController extends GetxController {
   final NotificationsData _data = NotificationsData(Get.find<Crud>());
@@ -32,7 +33,7 @@ class NotificationsController extends GetxController {
       notifications = [];
       update();
       if (requireAuth) {
-        Get.snackbar('تنبيه', 'يجب تسجيل الدخول لعرض الإشعارات');
+        AppSnackbar.show('تنبيه', 'يجب تسجيل الدخول لعرض الإشعارات');
         Get.toNamed(AppRoutes.login);
       }
       return;
@@ -49,7 +50,7 @@ class NotificationsController extends GetxController {
       update();
 
       if (requireAuth && statusRequest == StatusRequest.unauthorized) {
-        Get.snackbar('تنبيه', 'انتهت الجلسة — الرجاء تسجيل الدخول');
+        AppSnackbar.show('تنبيه', 'انتهت الجلسة — الرجاء تسجيل الدخول');
         Get.toNamed(AppRoutes.login);
       }
       return;
@@ -115,18 +116,18 @@ class NotificationsController extends GetxController {
     final status = result is StatusRequest ? result : StatusRequest.failure;
     switch (status) {
       case StatusRequest.unauthorized:
-        Get.snackbar('تنبيه', 'انتهت الجلسة — الرجاء تسجيل الدخول');
+        AppSnackbar.show('تنبيه', 'انتهت الجلسة — الرجاء تسجيل الدخول');
         Get.toNamed(AppRoutes.login);
         break;
       case StatusRequest.offlinefailure:
-        Get.snackbar('خطأ', 'لا يوجد اتصال بالإنترنت');
+        AppSnackbar.show('خطأ', 'لا يوجد اتصال بالإنترنت');
         break;
       case StatusRequest.serverfailure:
       case StatusRequest.serverException:
-        Get.snackbar('خطأ', 'خطأ في الخادم، حاول لاحقاً');
+        AppSnackbar.show('خطأ', 'خطأ في الخادم، حاول لاحقاً');
         break;
       default:
-        Get.snackbar('خطأ', 'تعذّر تنفيذ العملية');
+        AppSnackbar.show('خطأ', 'تعذّر تنفيذ العملية');
     }
   }
 }

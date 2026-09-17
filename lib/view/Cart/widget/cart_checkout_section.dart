@@ -5,6 +5,7 @@ import 'package:app/controller/address/address_controller.dart';
 import 'package:app/view/address/add_address_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:app/core/function/app_snackbar.dart';
 
 class CartCheckoutSection extends StatelessWidget {
   final CartController controller;
@@ -44,7 +45,7 @@ class CartCheckoutSection extends StatelessWidget {
 
   Future<void> _onCheckoutPressed() async {
     if (controller.isEmpty) {
-      Get.snackbar("تنبيه", "السلة فارغة", snackPosition: SnackPosition.BOTTOM);
+      AppSnackbar.show("تنبيه", "السلة فارغة", snackPosition: SnackPosition.BOTTOM);
       return;
     }
 

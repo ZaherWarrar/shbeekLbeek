@@ -8,6 +8,7 @@ import 'package:app/core/function/handling_data.dart';
 import 'package:app/core/services/session_service.dart';
 import 'package:app/data/datasource/remot/order_data.dart';
 import 'package:get/get.dart';
+import 'package:app/core/function/app_snackbar.dart';
 
 class OrderController extends GetxController {
   final OrderData orderData = OrderData(Get.find());
@@ -25,14 +26,14 @@ class OrderController extends GetxController {
   Future<void> createOrder(String? notes) async {
     final token = session.token;
     if (token == null || token.isEmpty) {
-      Get.snackbar('تنبيه', 'يجب تسجيل الدخول أولاً');
+      AppSnackbar.show('تنبيه', 'يجب تسجيل الدخول أولاً');
       Get.toNamed(AppRoutes.login);
       return;
     }
 
     final cartController = Get.find<CartController>();
     if (cartController.isEmpty) {
-      Get.snackbar('تنبيه', 'السلة فارغة');
+      AppSnackbar.show('تنبيه', 'السلة فارغة');
       return;
     }
 
@@ -56,16 +57,16 @@ class OrderController extends GetxController {
           await _active.persist(orderId, DateTime.now());
           Get.toNamed(AppRoutes.orderConfirmation, arguments: orderId);
         } else {
-          Get.snackbar('خطأ', 'فشل في الحصول على رقم الطلب');
+          AppSnackbar.show('خطأ', 'فشل في الحصول على رقم الطلب');
           orderState = StatusRequest.failure;
         }
       } else {
         orderState = StatusRequest.failure;
-        Get.snackbar('خطأ', 'فشل في إنشاء الطلب');
+        AppSnackbar.show('خطأ', 'فشل في إنشاء الطلب');
       }
     } catch (e) {
       orderState = StatusRequest.failure;
-      Get.snackbar('خطأ', 'حدث خطأ: ${e.toString()}');
+      AppSnackbar.show('خطأ', 'حدث خطأ: ${e.toString()}');
     }
 
     update();
@@ -85,12 +86,12 @@ class OrderController extends GetxController {
         orderState = StatusRequest.success;
         await _active.clear();
         Get.find<CartController>().clearCart();
-        Get.snackbar('نجاح', 'تم تأكيد الطلب بنجاح');
+        AppSnackbar.show('نجاح', 'تم تأكيد الطلب بنجاح');
         Get.offAllNamed(AppRoutes.home);
       }
     } catch (e) {
       orderState = StatusRequest.failure;
-      Get.snackbar('خطأ', 'حدث خطأ: ${e.toString()}');
+      AppSnackbar.show('خطأ', 'حدث خطأ: ${e.toString()}');
     }
 
     update();
@@ -109,12 +110,12 @@ class OrderController extends GetxController {
       } else {
         orderState = StatusRequest.success;
         await _active.clear();
-        Get.snackbar('تم الإلغاء', 'تم إلغاء الطلب بنجاح');
+        AppSnackbar.show('تم الإلغاء', 'تم إلغاء الطلب بنجاح');
         Get.offAllNamed(AppRoutes.home);
       }
     } catch (e) {
       orderState = StatusRequest.failure;
-      Get.snackbar('خطأ', 'حدث خطأ: ${e.toString()}');
+      AppSnackbar.show('خطأ', 'حدث خطأ: ${e.toString()}');
     }
 
     update();

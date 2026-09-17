@@ -5,6 +5,7 @@ import 'package:app/data/datasource/model/product_review_model.dart';
 import 'package:app/view/product_details/widgets/product_review_form_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:app/core/function/app_snackbar.dart';
 
 String formatProductPrice(int price) => '$price ل.س';
 
@@ -16,7 +17,7 @@ void openRecommendedProduct({
   required String? storeDeliveryFee,
 }) {
   if (recId == null || recId <= 0) {
-    Get.snackbar('تنبيه', 'معرّف المنتج غير متوفر');
+    AppSnackbar.show('تنبيه', 'معرّف المنتج غير متوفر');
     return;
   }
 

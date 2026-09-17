@@ -3,6 +3,7 @@ import 'package:app/data/datasource/model/item_model.dart';
 import 'package:app/data/datasource/model/store_model.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+import 'package:app/core/function/app_snackbar.dart';
 
 int shopCartQuantity(int productId) {
   if (!Get.isRegistered<CartController>()) return 0;
@@ -23,7 +24,7 @@ void shopCartIncrease({
   required VoidCallback onUpdated,
 }) {
   if (!Get.isRegistered<CartController>()) {
-    Get.snackbar('خطأ', 'السلة غير متاحة');
+    AppSnackbar.show('خطأ', 'السلة غير متاحة');
     return;
   }
 
@@ -32,13 +33,13 @@ void shopCartIncrease({
     orElse: () => Products(),
   );
   if (product.id == null) {
-    Get.snackbar('خطأ', 'المنتج غير موجود');
+    AppSnackbar.show('خطأ', 'المنتج غير موجود');
     return;
   }
 
   final cart = Get.find<CartController>();
   if (cart.hasActiveOrder()) {
-    Get.snackbar(
+    AppSnackbar.show(
       'تنبيه',
       'يوجد طلب قيد المعالجة. لا يمكن إضافة منتجات جديدة',
       snackPosition: SnackPosition.BOTTOM,

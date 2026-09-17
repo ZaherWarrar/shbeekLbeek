@@ -1,8 +1,10 @@
 import 'package:app/controller/address/address_controller.dart';
 import 'package:app/core/constant/app_color.dart';
+import 'package:app/core/constant/google_maps_config.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
+import 'package:app/core/function/app_snackbar.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 typedef MapPickerConfirmCallback = Future<void> Function(double lat, double lng);
@@ -31,7 +33,10 @@ class FullScreenMapPickerPage extends StatefulWidget {
 }
 
 class _FullScreenMapPickerPageState extends State<FullScreenMapPickerPage> {
-  static const LatLng _defaultCenter = LatLng(33.5138, 36.2765);
+  static const LatLng _defaultCenter = LatLng(
+    GoogleMapsConfig.defaultLat,
+    GoogleMapsConfig.defaultLng,
+  );
 
   GoogleMapController? _mapController;
   LatLng _mapCenter = _defaultCenter;
@@ -99,7 +104,7 @@ class _FullScreenMapPickerPageState extends State<FullScreenMapPickerPage> {
   Future<LatLng?> _resolveCurrentLocationLatLng() async {
     final serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      Get.snackbar('تنبيه', 'يرجى تفعيل خدمة الموقع');
+      AppSnackbar.show('تنبيه', 'يرجى تفعيل خدمة الموقع');
       return null;
     }
 
@@ -107,12 +112,12 @@ class _FullScreenMapPickerPageState extends State<FullScreenMapPickerPage> {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        Get.snackbar('تنبيه', 'تم رفض إذن الموقع');
+        AppSnackbar.show('تنبيه', 'تم رفض إذن الموقع');
         return null;
       }
     }
     if (permission == LocationPermission.deniedForever) {
-      Get.snackbar('تنبيه', 'إذن الموقع مرفوض بشكل دائم');
+      AppSnackbar.show('تنبيه', 'إذن الموقع مرفوض بشكل دائم');
       return null;
     }
 
@@ -120,7 +125,7 @@ class _FullScreenMapPickerPageState extends State<FullScreenMapPickerPage> {
       final position = await Geolocator.getCurrentPosition();
       return LatLng(position.latitude, position.longitude);
     } catch (_) {
-      Get.snackbar('تنبيه', 'تعذر الحصول على الموقع الحالي');
+      AppSnackbar.show('تنبيه', 'تعذر الحصول على الموقع الحالي');
       return null;
     }
   }

@@ -2,6 +2,7 @@ import 'package:app/core/constant/routes/app_routes.dart';
 import 'package:app/core/services/session_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:app/core/function/app_snackbar.dart';
 
 class ProfileController extends GetxController {
   final userName = ''.obs;
@@ -91,14 +92,14 @@ class ProfileController extends GetxController {
 
         Get.offAllNamed(AppRoutes.login);
 
-        Get.snackbar(
+        AppSnackbar.show(
           'تسجيل الخروج',
           'تم تسجيل الخروج بنجاح',
           snackPosition: SnackPosition.BOTTOM,
         );
       }
     } catch (e) {
-      Get.snackbar(
+      AppSnackbar.show(
         'خطأ',
         'حدث خطأ أثناء تسجيل الخروج: ${e.toString()}',
         snackPosition: SnackPosition.BOTTOM,

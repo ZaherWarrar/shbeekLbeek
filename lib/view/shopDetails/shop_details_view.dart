@@ -22,9 +22,7 @@ class ShopDetailsView extends StatelessWidget {
             floatingActionButton: const CartFloatingButton(),
             backgroundColor: AppColor().backgroundColor,
             appBar: CustomAppBar(
-              title: controller.store?.name ??
-                  controller.shopItemSummary?.name ??
-                  'المطعم',
+              title: controller.appBarTitle,
             ),
             body: CustomRefresh(
               statusRequest: controller.statusRequest,

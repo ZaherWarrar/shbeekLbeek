@@ -6,6 +6,7 @@ import 'package:app/data/datasource/model/place_prediction.dart';
 import 'package:app/data/datasource/remot/places_data.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:app/core/function/app_snackbar.dart';
 
 typedef PlaceSelectedCallback = Future<void> Function(
   double lat,
@@ -110,7 +111,7 @@ class _PlaceSearchFieldState extends State<PlaceSearchField> {
       if (!mounted) return;
 
       if (result.errorMessage != null && result.predictions.isEmpty) {
-        Get.snackbar('تنبيه', result.errorMessage!);
+        AppSnackbar.show('تنبيه', result.errorMessage!);
       }
 
       setState(() {
@@ -133,7 +134,7 @@ class _PlaceSearchFieldState extends State<PlaceSearchField> {
     try {
       final details = await _placesData.resolvePlace(prediction);
       if (details == null) {
-        Get.snackbar('تنبيه', 'تعذر الحصول على موقع المكان');
+        AppSnackbar.show('تنبيه', 'تعذر الحصول على موقع المكان');
         return;
       }
 

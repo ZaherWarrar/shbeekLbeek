@@ -9,6 +9,7 @@ import 'package:app/view/product_details/product_details_actions.dart';
 import 'package:app/view/product_details/widgets/product_recommended_card.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:app/core/function/app_snackbar.dart';
 
 class ProductRecommendedSection extends StatelessWidget {
   const ProductRecommendedSection({
@@ -80,7 +81,7 @@ class ProductRecommendedSection extends StatelessWidget {
     final cart = Get.find<CartController>();
     final storeId = rec.storeId ?? effectiveStoreId;
     if (storeId == null || storeId <= 0) {
-      Get.snackbar('تنبيه', 'لا يمكن إضافة المنتج بدون معرّف المتجر');
+      AppSnackbar.show('تنبيه', 'لا يمكن إضافة المنتج بدون معرّف المتجر');
       return;
     }
     final shop = StoreModel(

@@ -4,6 +4,7 @@ import 'package:app/core/constant/routes/app_routes.dart';
 import 'package:app/core/function/handling_data.dart';
 import 'package:app/data/datasource/remot/wallet_data.dart';
 import 'package:get/get.dart';
+import 'package:app/core/function/app_snackbar.dart';
 
 class WalletController extends GetxController {
   final WalletData _data = WalletData(Get.find<Crud>());
@@ -22,7 +23,7 @@ class WalletController extends GetxController {
       statusRequest = s;
       update();
       if (s == StatusRequest.unauthorized) {
-        Get.snackbar("تنبيه", "يجب تسجيل الدخول أولاً");
+        AppSnackbar.show("تنبيه", "يجب تسجيل الدخول أولاً");
         Get.toNamed(AppRoutes.login);
       }
       return;

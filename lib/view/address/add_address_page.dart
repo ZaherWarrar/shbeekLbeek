@@ -4,6 +4,7 @@ import 'package:app/core/shared/custom_text_form_fild.dart';
 import 'package:app/data/datasource/model/address_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:app/core/function/app_snackbar.dart';
 import '../../controller/address/address_controller.dart';
 import 'widget/address_location_selector.dart';
 
@@ -123,7 +124,7 @@ class _AddAddressPageState extends State<AddAddressPage> {
                 ),
                 onPressed: () async {
                   if (titleController.text.trim().isEmpty) {
-                    Get.snackbar(
+                    AppSnackbar.show(
                       'تنبيه',
                       'الرجاء إدخال اسم العنوان',
                       snackPosition: SnackPosition.BOTTOM,
@@ -131,7 +132,7 @@ class _AddAddressPageState extends State<AddAddressPage> {
                     return;
                   }
                   if (cityController.text.trim().isEmpty) {
-                    Get.snackbar(
+                    AppSnackbar.show(
                       'تنبيه',
                       'الرجاء إدخال المدينة',
                       snackPosition: SnackPosition.BOTTOM,
@@ -141,7 +142,7 @@ class _AddAddressPageState extends State<AddAddressPage> {
 
                   if (controller.selectedLat.value == 0.0 ||
                       controller.selectedLng.value == 0.0) {
-                    Get.snackbar(
+                    AppSnackbar.show(
                       'تنبيه',
                       'الرجاء تحديد الموقع على الخريطة',
                       snackPosition: SnackPosition.BOTTOM,
@@ -160,7 +161,7 @@ class _AddAddressPageState extends State<AddAddressPage> {
                     ),
                   );
                   Get.back();
-                  Get.snackbar(
+                  AppSnackbar.show(
                     'نجاح',
                     'تم حفظ العنوان بنجاح',
                     snackPosition: SnackPosition.BOTTOM,

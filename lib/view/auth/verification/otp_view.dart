@@ -2,6 +2,7 @@ import 'package:app/controller/auth/otp/otp_controller.dart';
 import 'package:app/core/constant/app_color.dart';
 import 'package:app/core/function/fontsize.dart';
 import 'package:app/core/shared/custom_app_bar.dart';
+import 'package:app/view/auth/verification/widgets/otp_resend_button.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pinput/pinput.dart';
@@ -33,20 +34,29 @@ class OtpView extends GetView<OtpController> {
             //========= حقل إدخال OTP =========
             Directionality(
               textDirection: TextDirection.ltr,
-              child: Pinput(
-                length: 6,
-                onChanged: (value) => controller.otpCode.value = value,
-                onCompleted: (value) => controller.otpCode.value = value,
-                defaultPinTheme: PinTheme(
-                  width: 50,
-                  height: 60,
-                  textStyle: TextStyle(
-                    fontSize: getResponsiveFontSize(context, fontSize: 20),
-                    color: Colors.black,
-                  ),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey.shade400),
-                    borderRadius: BorderRadius.circular(8),
+              child: AutofillGroup(
+                child: Pinput(
+                  length: 6,
+                  controller: controller.pinController,
+                  smsRetriever: controller.smsRetriever,
+                  autofocus: true,
+                  autofillHints: const [AutofillHints.oneTimeCode],
+                  onChanged: (value) => controller.otpCode.value = value,
+                  onCompleted: (value) {
+                    controller.otpCode.value = value;
+                    controller.verifyOtp();
+                  },
+                  defaultPinTheme: PinTheme(
+                    width: 50,
+                    height: 60,
+                    textStyle: TextStyle(
+                      fontSize: getResponsiveFontSize(context, fontSize: 20),
+                      color: Colors.black,
+                    ),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey.shade400),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
                 ),
               ),
@@ -73,19 +83,7 @@ class OtpView extends GetView<OtpController> {
 
             const SizedBox(height: 20),
 
-            //========= إعادة إرسال OTP =========
-            TextButton(
-              onPressed: () {
-                Get.snackbar("21".tr, "22".tr);
-              },
-              child: Text(
-                "23".tr,
-                style: TextStyle(
-                  fontSize: getResponsiveFontSize(context, fontSize: 20),
-                  color: AppColor().descriptionColor,
-                ),
-              ),
-            ),
+            const OtpResendButton(),
           ],
         ),
       ),

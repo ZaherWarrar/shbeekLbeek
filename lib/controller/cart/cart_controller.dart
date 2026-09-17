@@ -5,10 +5,12 @@ import 'package:app/controller/cart/cart_wallet_utils.dart';
 import 'package:app/controller/wallet/wallet_payment_mixin.dart';
 import 'package:app/core/function/resolve_media_url.dart';
 import 'package:app/core/services/cart_preferences.dart';
+import 'package:app/data/datasource/model/coupon_check_model.dart';
 import 'package:app/data/datasource/model/item_model.dart';
 import 'package:app/data/datasource/model/store_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:app/core/function/app_snackbar.dart';
 
 class CartController extends GetxController with WalletPaymentMixin {
   List<Map<String, dynamic>> cartItems = [];
@@ -30,6 +32,7 @@ class CartController extends GetxController with WalletPaymentMixin {
   double get discountPercentage => coupon.discountPercentage;
   String? get couponMessage => coupon.couponMessage;
   bool get isCheckingCoupon => coupon.isCheckingCoupon;
+  CouponApplyRange get couponApplyRange => coupon.couponDetails.applyRange;
 
   String? notes;
   double deliveryFee = 0.0;
@@ -97,7 +100,7 @@ class CartController extends GetxController with WalletPaymentMixin {
     String? itemNotes,
   }) {
     if (hasActiveOrder()) {
-      Get.snackbar(
+      AppSnackbar.show(
         'تنبيه',
         'يوجد طلب قيد المعالجة. لا يمكن إضافة منتجات جديدة',
         snackPosition: SnackPosition.BOTTOM,
@@ -105,11 +108,11 @@ class CartController extends GetxController with WalletPaymentMixin {
       return;
     }
     if (product.id == null) {
-      Get.snackbar('خطأ', 'معرّف المنتج غير صحيح');
+      AppSnackbar.show('خطأ', 'معرّف المنتج غير صحيح');
       return;
     }
     if (shop.id == null) {
-      Get.snackbar('خطأ', 'معرّف المتجر غير صحيح');
+      AppSnackbar.show('خطأ', 'معرّف المتجر غير صحيح');
       return;
     }
 
@@ -140,18 +143,12 @@ class CartController extends GetxController with WalletPaymentMixin {
       });
     }
 
-    _afterCartMutation(
-      snackTitle: 'تم الإضافة',
-      snackBody: 'تم إضافة ${product.name ?? 'المنتج'} للسلة',
-    );
+    _afterCartMutation();
   }
 
   void removeItem(int productId) {
     cartItems.removeWhere((item) => item['productId'] == productId);
-    _afterCartMutation(
-      snackTitle: 'تم الحذف',
-      snackBody: 'تم حذف المنتج من السلة',
-    );
+    _afterCartMutation();
   }
 
   void removeItemByVariation(int productId, String? variationName) {
@@ -230,18 +227,10 @@ class CartController extends GetxController with WalletPaymentMixin {
         (cartItems[index]['quantity'] as int);
   }
 
-  void _afterCartMutation({String? snackTitle, String? snackBody}) {
+  void _afterCartMutation() {
     deliveryFee = deriveDeliveryFeeFromCart(cartItems);
     _saveCart();
     update();
-    if (snackTitle != null && snackBody != null) {
-      Get.snackbar(
-        snackTitle,
-        snackBody,
-        snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(seconds: 2),
-      );
-    }
   }
 
   double get subtotal => calculateSubtotal(cartItems);
@@ -253,10 +242,10 @@ class CartController extends GetxController with WalletPaymentMixin {
       subtotal + calculatedDeliveryFee - calculatedDiscount;
 
   double get walletDeduction => calculateWalletDeduction(
-        useWallet: useWallet,
-        walletBalance: walletBalance,
-        amountBeforeWallet: amountBeforeWallet,
-      );
+    useWallet: useWallet,
+    walletBalance: walletBalance,
+    amountBeforeWallet: amountBeforeWallet,
+  );
 
   double get total => amountBeforeWallet - walletDeduction;
 
@@ -272,7 +261,7 @@ class CartController extends GetxController with WalletPaymentMixin {
     await _prefs.clearCart();
     deliveryFee = 0.0;
     update();
-    Get.snackbar('تم المسح', 'تم مسح السلة بالكامل');
+    AppSnackbar.show('تم المسح', 'تم مسح السلة بالكامل');
   }
 
   int get itemCount => totalItemCount(cartItems);

@@ -4,6 +4,7 @@ import 'package:app/data/datasource/model/address_model.dart';
 import 'package:app/view/address/edit_address_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:app/core/function/app_snackbar.dart';
 
 class AddressCard extends StatelessWidget {
   final AddressModel address;
@@ -89,7 +90,7 @@ class AddressCard extends StatelessWidget {
                 TextButton.icon(
                   onPressed: () async {
                     await controller.setDefaultAddress(address.id);
-                    Get.snackbar(
+                    AppSnackbar.show(
                       'نجاح',
                       'تم تعيين العنوان كافتراضي',
                       snackPosition: SnackPosition.BOTTOM,
@@ -146,7 +147,7 @@ class AddressCard extends StatelessWidget {
 
                   if (confirmed == true) {
                     await controller.deleteAddress(address.id);
-                    Get.snackbar(
+                    AppSnackbar.show(
                       'نجاح',
                       'تم حذف العنوان بنجاح',
                       snackPosition: SnackPosition.BOTTOM,

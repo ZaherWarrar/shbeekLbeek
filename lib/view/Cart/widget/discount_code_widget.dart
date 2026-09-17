@@ -1,4 +1,5 @@
 import 'package:app/controller/cart/cart_controller.dart';
+import 'package:app/data/datasource/model/coupon_check_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -115,9 +116,7 @@ class DiscountCodeWidget extends StatelessWidget {
                     Icon(Icons.discount, color: Colors.green, size: 16),
                     const SizedBox(width: 4),
                     Text(
-                      controller.discountPercentage > 0
-                          ? 'خصم ${controller.discountPercentage.toStringAsFixed(0)}% على المنتجات المؤهلة'
-                          : 'خصم ${controller.calculatedDiscount.toStringAsFixed(0)} ليرة',
+                      _discountLabel(controller),
                       style: TextStyle(color: Colors.green, fontSize: 12),
                     ),
                   ],
@@ -127,5 +126,19 @@ class DiscountCodeWidget extends StatelessWidget {
         );
       },
     );
+  }
+
+  String _discountLabel(CartController controller) {
+    final amount = controller.calculatedDiscount.toStringAsFixed(0);
+    final isDelivery = controller.couponApplyRange == CouponApplyRange.delivery;
+
+    if (controller.discountPercentage > 0) {
+      final percent = controller.discountPercentage.toStringAsFixed(0);
+      return isDelivery
+          ? 'خصم $percent% على أجور التوصيل'
+          : 'خصم $percent% على المنتجات المؤهلة';
+    }
+
+    return isDelivery ? 'خصم $amount ليرة على التوصيل' : 'خصم $amount ليرة';
   }
 }

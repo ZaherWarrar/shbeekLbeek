@@ -1,3 +1,4 @@
+import 'package:app/controller/home/home_controller.dart';
 import 'package:app/controller/shop_details/shop_details_cart_ops.dart';
 import 'package:app/controller/shop_details/shop_details_product_loader.dart';
 import 'package:app/controller/shop_details/shop_details_reviews_mixin.dart';
@@ -12,11 +13,13 @@ import 'package:app/data/datasource/model/store_model.dart';
 import 'package:app/data/datasource/remot/store_details_data.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:app/core/function/app_snackbar.dart';
 
 class ShopDetailsController extends GetxController
     with ReviewsFormMixin, ShopDetailsReviewsMixin {
   ItemModel? shopItemSummary;
   StoreModel? store;
+  String? shopCategoryName;
   @override
   late final int storeId;
   @override
@@ -34,18 +37,10 @@ class ShopDetailsController extends GetxController
   void onInit() {
     super.onInit();
     _productLoader = ShopDetailsProductLoader(Get.find<Crud>());
-    final args = Get.arguments;
-    if (args is ItemModel) {
-      shopItemSummary = args;
-      storeId = args.id ?? -1;
-    } else if (args is int) {
-      storeId = args;
-    } else {
-      storeId = -1;
-    }
+    _resolveRouteArgs();
     if (storeId <= 0) {
       Get.back();
-      Get.snackbar('خطأ', 'معرّف المتجر غير صحيح');
+      AppSnackbar.show('خطأ', 'معرّف المتجر غير صحيح');
       return;
     }
 
@@ -53,6 +48,60 @@ class ShopDetailsController extends GetxController
     filteredProducts = [];
     searchController.addListener(_onSearchChanged);
     fetchStoreDetails();
+  }
+
+  String get appBarTitle {
+    final category = shopCategoryName?.trim();
+    if (category != null && category.isNotEmpty) return category;
+    return store?.name ?? shopItemSummary?.name ?? 'المتجر';
+  }
+
+  void _resolveRouteArgs() {
+    final args = Get.arguments;
+    if (args is ItemModel) {
+      shopItemSummary = args;
+      storeId = args.id ?? -1;
+      shopCategoryName = _cleanCategory(args.categoryName);
+      return;
+    }
+
+    if (args is Map) {
+      storeId = _toInt(args['id'] ?? args['storeId']) ?? -1;
+      shopCategoryName = _cleanCategory(args['categoryName']?.toString());
+      if (storeId > 0) _fillSummaryFromCache(storeId);
+      return;
+    }
+
+    if (args is int) {
+      storeId = args;
+      _fillSummaryFromCache(args);
+      return;
+    }
+
+    storeId = -1;
+  }
+
+  void _fillSummaryFromCache(int id) {
+    if (!Get.isRegistered<HomeControllerImp>()) return;
+    try {
+      final item = Get.find<HomeControllerImp>().items.firstWhere(
+        (e) => e.id == id,
+      );
+      shopItemSummary = item;
+      shopCategoryName ??= _cleanCategory(item.categoryName);
+    } catch (_) {}
+  }
+
+  String? _cleanCategory(String? value) {
+    final text = value?.trim();
+    if (text == null || text.isEmpty) return null;
+    return text;
+  }
+
+  int? _toInt(dynamic value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value?.toString() ?? '');
   }
 
   Future<void> fetchStoreDetails() async {
@@ -66,6 +115,8 @@ class ShopDetailsController extends GetxController
     if (statusRequest == StatusRequest.success &&
         response is Map<String, dynamic>) {
       store = StoreModel.fromJson(response);
+      shopCategoryName =
+          _cleanCategory(store?.categoryName) ?? shopCategoryName;
       final loaded = await _productLoader.loadForStore(
         storeId: storeId,
         innerCategories: store?.innerCategories ?? [],

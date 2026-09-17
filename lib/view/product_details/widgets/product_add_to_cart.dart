@@ -4,6 +4,7 @@ import 'package:app/data/datasource/model/item_model.dart';
 import 'package:app/data/datasource/model/product_details_model.dart';
 import 'package:app/data/datasource/model/store_model.dart';
 import 'package:get/get.dart';
+import 'package:app/core/function/app_snackbar.dart';
 
 void addProductToCart({
   required CartController cart,
@@ -19,12 +20,12 @@ void addProductToCart({
 }) {
   if (product == null) return;
   if (isVariable && !controller.hasSelectedVariations) {
-    Get.snackbar('تنبيه', 'الرجاء اختيار خيار المنتج أولاً');
+    AppSnackbar.show('تنبيه', 'الرجاء اختيار خيار المنتج أولاً');
     return;
   }
   final storeId = effectiveStoreId;
   if (storeId == null || storeId <= 0) {
-    Get.snackbar('خطأ', 'لا يمكن إضافة المنتج بدون معرّف المتجر');
+    AppSnackbar.show('خطأ', 'لا يمكن إضافة المنتج بدون معرّف المتجر');
     return;
   }
 

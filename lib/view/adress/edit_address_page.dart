@@ -6,6 +6,7 @@ import 'package:app/data/datasource/model/address_model.dart';
 import 'package:app/view/address/widget/address_location_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:app/core/function/app_snackbar.dart';
 
 
 class EditAddressPage extends StatefulWidget {
@@ -130,7 +131,7 @@ class _EditAddressPageState extends State<EditAddressPage> {
                 ),
                 onPressed: () async {
                   if (titleController.text.trim().isEmpty) {
-                    Get.snackbar(
+                    AppSnackbar.show(
                       'تنبيه',
                       'الرجاء إدخال اسم العنوان',
                       snackPosition: SnackPosition.BOTTOM,
@@ -140,7 +141,7 @@ class _EditAddressPageState extends State<EditAddressPage> {
 
                   if (controller.selectedLat.value == 0.0 ||
                       controller.selectedLng.value == 0.0) {
-                    Get.snackbar(
+                    AppSnackbar.show(
                       'تنبيه',
                       'الرجاء تحديد الموقع على الخريطة',
                       snackPosition: SnackPosition.BOTTOM,
@@ -160,7 +161,7 @@ class _EditAddressPageState extends State<EditAddressPage> {
 
                   await controller.updateAddress(updatedAddress);
                   Get.back();
-                  Get.snackbar(
+                  AppSnackbar.show(
                     'نجاح',
                     'تم تحديث العنوان بنجاح',
                     snackPosition: SnackPosition.BOTTOM,

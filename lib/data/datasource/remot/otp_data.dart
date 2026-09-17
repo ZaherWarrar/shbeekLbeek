@@ -12,4 +12,13 @@ class OtpData {
         .postData(ApiLinks.verifyCode, {"otp": otpCode, "phone_number": phoneNumber, });
     return response.fold((l) => l, (r) => r);
   }
+
+  /// Reuses login to send a new OTP — there is no dedicated resend endpoint.
+  Future<Object> resendOtp(String phoneNumber, {String name = ''}) async {
+    var response = await crud.postData(ApiLinks.login, {
+      "name": name,
+      "phone_number": phoneNumber,
+    });
+    return response.fold((l) => l, (r) => r);
+  }
 }

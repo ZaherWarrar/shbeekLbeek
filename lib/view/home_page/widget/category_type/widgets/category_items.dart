@@ -6,28 +6,24 @@ import 'package:get/get.dart';
 
 class CategoryItems extends StatelessWidget {
   const CategoryItems({super.key});
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 158,
+      height: CardItem.listHeight,
       child: GetBuilder<HomeControllerImp>(
         builder: (controller) {
+          final items = controller.finalSection[controller.sectionName];
           return CustomRefresh(
             statusRequest: controller.finalSectionState,
             fun: () => controller.fetchHomeSection(),
-            body: ListView.builder(
+            body: ListView.separated(
               scrollDirection: Axis.horizontal,
-              itemCount: controller.finalSection[controller.sectionName] == null
-                  ? 0
-                  : controller.finalSection[controller.sectionName]!.length,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              itemCount: items?.length ?? 0,
+              separatorBuilder: (_, __) => const SizedBox(width: 10),
               itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: FittedBox(
-                    fit: BoxFit.cover,
-                    child: CardItem(controller: controller, index: index),
-                  ),
-                );
+                return CardItem(controller: controller, index: index);
               },
             ),
           );

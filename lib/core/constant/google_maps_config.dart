@@ -4,4 +4,8 @@ class GoogleMapsConfig {
   static const String apiKey = 'AIzaSyBxHECqPmxmEwPIOf3n0-ARnR0Ev6-SguU';
   static const String countryCode = 'sy';
   static const String language = 'ar';
+
+  /// مركز حماة الافتراضي عند فتح الخريطة.
+  static const double defaultLat = 35.1318;
+  static const double defaultLng = 36.7578;
 }

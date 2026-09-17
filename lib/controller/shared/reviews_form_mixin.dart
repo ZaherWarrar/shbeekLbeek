@@ -4,6 +4,7 @@ import 'package:app/core/function/handling_data.dart';
 import 'package:app/core/services/session_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:app/core/function/app_snackbar.dart';
 
 mixin ReviewsFormMixin on GetxController {
   SessionService get session;
@@ -41,7 +42,7 @@ mixin ReviewsFormMixin on GetxController {
 
   Future<bool> _ensureLoggedIn() async {
     if (session.isLoggedIn) return true;
-    Get.snackbar('تنبيه', 'يجب تسجيل الدخول أولاً');
+    AppSnackbar.show('تنبيه', 'يجب تسجيل الدخول أولاً');
     Get.toNamed(AppRoutes.login);
     return false;
   }
@@ -59,9 +60,9 @@ mixin ReviewsFormMixin on GetxController {
       reviewRating = 5;
       await reloadReviews();
       Get.back();
-      Get.snackbar('تم', 'تم إرسال تقييمك بنجاح');
+      AppSnackbar.show('تم', 'تم إرسال تقييمك بنجاح');
     } else {
-      Get.snackbar('خطأ', 'فشل إرسال التقييم');
+      AppSnackbar.show('خطأ', 'فشل إرسال التقييم');
     }
 
     isSubmittingReview = false;
@@ -82,9 +83,9 @@ mixin ReviewsFormMixin on GetxController {
       await reloadReviews();
       resetReviewForm();
       Get.back();
-      Get.snackbar('تم', 'تم تعديل التقييم بنجاح');
+      AppSnackbar.show('تم', 'تم تعديل التقييم بنجاح');
     } else {
-      Get.snackbar('خطأ', 'فشل تعديل التقييم');
+      AppSnackbar.show('خطأ', 'فشل تعديل التقييم');
     }
 
     isSubmittingReview = false;
@@ -105,9 +106,9 @@ mixin ReviewsFormMixin on GetxController {
     final stat = handlingData(await apiCall());
     if (stat == StatusRequest.success) {
       await reloadReviews();
-      Get.snackbar('تم', 'تم حذف التقييم');
+      AppSnackbar.show('تم', 'تم حذف التقييم');
     } else {
-      Get.snackbar('خطأ', 'فشل حذف التقييم');
+      AppSnackbar.show('خطأ', 'فشل حذف التقييم');
     }
 
     isSubmittingReview = false;

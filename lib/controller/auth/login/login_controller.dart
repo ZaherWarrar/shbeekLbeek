@@ -37,7 +37,10 @@ class LoginControllerImb extends LoginController {
       if (StatusRequest.success == statusRequest) {
         Get.offAllNamed(
           AppRoutes.otp,
-          arguments: {"phone_number": phoneNumber.text},
+          arguments: {
+            "phone_number": phoneNumber.text,
+            "name": email.text,
+          },
         );
       } else {
         statusRequest = StatusRequest.failure;

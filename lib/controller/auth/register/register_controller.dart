@@ -4,6 +4,7 @@ import 'package:app/core/function/handling_data.dart';
 import 'package:app/data/datasource/remot/register_data.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:app/core/function/app_snackbar.dart';
 
 abstract class RegisterController extends GetxController {
   Future<void> register();
@@ -140,7 +141,7 @@ class RegisterControllerImb extends RegisterController {
   Future<void> register() async {
     // ✅ التحقق من الفورم
     if (!formStat.currentState!.validate()) {
-      Get.snackbar(
+      AppSnackbar.show(
         "تنبيه",
         "يرجى تصحيح الأخطاء في الحقول",
         snackPosition: SnackPosition.BOTTOM,
@@ -155,7 +156,7 @@ class RegisterControllerImb extends RegisterController {
     if (!isAgree) {
       showAgreeError.value = true;
       update();
-      Get.snackbar(
+      AppSnackbar.show(
         "تنبيه",
         "يجب الموافقة على سياسة الخصوصية أولاً",
         snackPosition: SnackPosition.BOTTOM,
@@ -185,6 +186,8 @@ class RegisterControllerImb extends RegisterController {
       statusRequest = handlingData(response);
 
       if (statusRequest == StatusRequest.success) {
+        final registeredName = name.text;
+
         // ✅ تنظيف الحقول بعد النجاح
         name.clear();
         phoneNumber.clear();
@@ -196,7 +199,10 @@ class RegisterControllerImb extends RegisterController {
 
         Get.offAllNamed(
           AppRoutes.otp,
-          arguments: {"phone_number": formattedPhone},
+          arguments: {
+            "phone_number": formattedPhone,
+            "name": registeredName,
+          },
         );
       } else {
         String errorMessage = "حدث خطأ أثناء إنشاء الحساب، حاول مرة أخرى";

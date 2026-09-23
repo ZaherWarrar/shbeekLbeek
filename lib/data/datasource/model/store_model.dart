@@ -1,3 +1,4 @@
+import 'package:app/core/function/resolve_media_url.dart';
 import 'package:app/data/datasource/model/item_model.dart';
 
 class StoreModel {
@@ -49,8 +50,8 @@ class StoreModel {
   StoreModel.fromJson(Map<String, dynamic> json) {
     id = _toInt(json['id']);
     name = json['name']?.toString();
-    logoUrl = json['logo_url']?.toString();
-    imageUrl = json['image_url']?.toString();
+    logoUrl = resolveMediaUrl(json['logo_url']?.toString());
+    imageUrl = resolveMediaUrl(json['image_url']?.toString());
     deliveryFee = json['delivery_fee']?.toString();
     minOrder = json['min_order']?.toString();
     categoryId = _toInt(json['category_id']);

@@ -1,6 +1,6 @@
 import 'package:app/view/favorites/widget/favorites_tabs/favorites_tabs_model.dart';
+import 'package:app/view/favorites/widget/restaurant_card.dart';
 import 'package:flutter/material.dart';
-import 'restaurant_card.dart';
 
 class FavoritesGrid extends StatelessWidget {
   final List<RestaurantModel> items;
@@ -21,13 +21,10 @@ class FavoritesGrid extends StatelessWidget {
         crossAxisCount: crossAxisCount,
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
-        childAspectRatio: 0.75,
+        mainAxisExtent: RestaurantCard.cardExtent,
       ),
       itemBuilder: (context, index) {
-        return RestaurantCard(
-          item: items[index],
-          index: index,
-        );
+        return RestaurantCard(item: items[index]);
       },
     );
   }

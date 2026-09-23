@@ -1,3 +1,5 @@
+import 'package:app/core/function/resolve_media_url.dart';
+
 class ReviewUserModel {
   int? id;
   String? name;
@@ -15,6 +17,8 @@ class ReviewUserModel {
   ReviewUserModel.fromJson(Map<String, dynamic> json) {
     id = _toInt(json['id']);
     name = json['name']?.toString();
-    avatarUrl = (json['avatar_url'] ?? json['avatarUrl'])?.toString();
+    avatarUrl = resolveMediaUrl(
+      (json['avatar_url'] ?? json['avatarUrl'])?.toString(),
+    );
   }
 }

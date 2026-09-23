@@ -3,6 +3,7 @@ import 'package:app/view/auth/register/widgets/go_to_login.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:app/core/function/app_snackbar.dart';
 import 'package:lottie/lottie.dart';
 import 'package:app/core/class/statusrequest.dart';
 import 'package:app/core/constant/app_color.dart';
@@ -187,7 +188,7 @@ class RegisterView extends StatelessWidget {
                     onTap: () {
                       // ✅ التحقق من صحة النموذج
                       if (!controller.formStat.currentState!.validate()) {
-                        Get.snackbar(
+                        AppSnackbar.show(
                           "تنبيه",
                           "يرجى تصحيح الأخطاء في الحقول",
                           snackPosition: SnackPosition.BOTTOM,
@@ -202,7 +203,7 @@ class RegisterView extends StatelessWidget {
                       if (!controller.isAgree) {
                         controller.showAgreeError.value = true;
                         controller.update();
-                        Get.snackbar(
+                        AppSnackbar.show(
                           "تنبيه",
                           "يجب الموافقة على سياسة الخصوصية أولاً",
                           snackPosition: SnackPosition.BOTTOM,

@@ -1,3 +1,5 @@
+import 'package:app/core/function/resolve_media_url.dart';
+
 class ProductDetailsModel {
   int? id;
   String? name;
@@ -66,18 +68,18 @@ class ProductDetailsModel {
     name = json['name']?.toString();
     description = json['description']?.toString();
     type = json['type']?.toString();
-    imageUrl = json['image_url']?.toString();
+    imageUrl = resolveMediaUrl(json['image_url']?.toString());
     price = json['price'];
     ratingValue = _toDouble(json['rating_value'] ?? json['rating']);
     ratingCount = _toInt(json['rating_count']);
     storeId = _toInt(json['store_id'] ?? json['storeId']);
     storeName = (json['store_name'] ?? json['storeName'])?.toString();
-    storeImageUrl = (json['store_image_url'] ??
+    storeImageUrl = resolveMediaUrl((json['store_image_url'] ??
             json['storeImageUrl'] ??
             json['store_image'] ??
             json['store_logo_url'] ??
             json['storeLogoUrl'])
-        ?.toString();
+        ?.toString());
     storeDeliveryFee =
         (json['store_delivery_fee'] ?? json['delivery_fee'] ?? json['storeDeliveryFee'])
             ?.toString();
@@ -169,13 +171,16 @@ class RecommendedProductModel {
           nestedMap['productId'],
     );
     name = (json['name'] ?? nestedMap['name'])?.toString();
-    imageUrl = (json['image_url'] ?? nestedMap['image_url'])?.toString();
+    imageUrl = resolveMediaUrl(
+      (json['image_url'] ?? nestedMap['image_url'])?.toString(),
+    );
     price = json['price'] ?? nestedMap['price'];
 
     storeId = _toInt(json['store_id'] ?? nestedMap['store_id']);
     storeName = (json['store_name'] ?? nestedMap['store_name'])?.toString();
-    storeImageUrl =
-        (json['store_image_url'] ?? nestedMap['store_image_url'])?.toString();
+    storeImageUrl = resolveMediaUrl(
+      (json['store_image_url'] ?? nestedMap['store_image_url'])?.toString(),
+    );
     storeDeliveryFee =
         (json['store_delivery_fee'] ??
                 json['delivery_fee'] ??

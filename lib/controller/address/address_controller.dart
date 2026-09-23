@@ -1,7 +1,9 @@
+import 'package:app/core/constant/google_maps_config.dart';
 import 'package:app/core/services/address_preferences.dart';
 import 'package:app/data/datasource/remot/reverse_geocoding_data.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
+import 'package:app/core/function/app_snackbar.dart';
 import '../../data/datasource/model/address_model.dart';
 
 class AddressController extends GetxController {
@@ -39,13 +41,11 @@ class AddressController extends GetxController {
   }
 
   /// فتح الخريطة على الموقع الحالي (يُستدعى عند فتح صفحة إضافة عنوان).
-  Future<bool> centerOnCurrentLocationForMap({
-    bool showSuccessSnackbar = false,
-  }) async {
+  Future<bool> centerOnCurrentLocationForMap() async {
     try {
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        Get.snackbar('تنبيه', 'يرجى تفعيل خدمة الموقع');
+        AppSnackbar.show('تنبيه', 'يرجى تفعيل خدمة الموقع');
         _setDefaultLocation();
         return false;
       }
@@ -54,14 +54,14 @@ class AddressController extends GetxController {
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
-          Get.snackbar('تنبيه', 'تم رفض إذن الموقع');
+          AppSnackbar.show('تنبيه', 'تم رفض إذن الموقع');
           _setDefaultLocation();
           return false;
         }
       }
 
       if (permission == LocationPermission.deniedForever) {
-        Get.snackbar('تنبيه', 'إذن الموقع مرفوض بشكل دائم');
+        AppSnackbar.show('تنبيه', 'إذن الموقع مرفوض بشكل دائم');
         _setDefaultLocation();
         return false;
       }
@@ -73,13 +73,9 @@ class AddressController extends GetxController {
       );
 
       await setLocation(pos.latitude, pos.longitude);
-
-      if (showSuccessSnackbar) {
-        Get.snackbar('نجاح', 'تم تحديد الموقع بنجاح');
-      }
       return true;
     } catch (e) {
-      Get.snackbar('خطأ', 'تعذر الحصول على الموقع الحالي');
+      AppSnackbar.show('خطأ', 'تعذر الحصول على الموقع الحالي');
       _setDefaultLocation();
       return false;
     }
@@ -101,14 +97,18 @@ class AddressController extends GetxController {
         }
         fullAddress.value = defaultAddress.description;
       } else {
-        // استخدام دمشق كبديل افتراضي
-        setLocation(33.5138, 36.2765);
-        _getAddressFromCoordinates(33.5138, 36.2765);
+        setLocation(GoogleMapsConfig.defaultLat, GoogleMapsConfig.defaultLng);
+        _getAddressFromCoordinates(
+          GoogleMapsConfig.defaultLat,
+          GoogleMapsConfig.defaultLng,
+        );
       }
     } catch (e) {
-      // في حالة عدم وجود عناوين، نستخدم دمشق
-      setLocation(33.5138, 36.2765);
-      _getAddressFromCoordinates(33.5138, 36.2765);
+      setLocation(GoogleMapsConfig.defaultLat, GoogleMapsConfig.defaultLng);
+      _getAddressFromCoordinates(
+        GoogleMapsConfig.defaultLat,
+        GoogleMapsConfig.defaultLng,
+      );
     }
   }
 
@@ -145,7 +145,7 @@ class AddressController extends GetxController {
       fullAddress.value = resolved.fullAddress;
 
       if (resolved.city.isEmpty) {
-        Get.snackbar(
+        AppSnackbar.show(
           'تنبيه',
           'لم يتم التعرف على المدينة — يمكنك تعديل الحقل يدوياً',
           snackPosition: SnackPosition.BOTTOM,
@@ -156,7 +156,7 @@ class AddressController extends GetxController {
       if (seq != _geocodeSeq) return;
       cityName.value = '';
       fullAddress.value = 'فشل في الحصول على العنوان';
-      Get.snackbar(
+      AppSnackbar.show(
         'تنبيه',
         'فشل في الحصول على العنوان من الموقع',
         snackPosition: SnackPosition.BOTTOM,
@@ -171,7 +171,7 @@ class AddressController extends GetxController {
 
   // الحصول على الموقع (زر الخريطة)
   Future<void> getCurrentLocation() async {
-    await centerOnCurrentLocationForMap(showSuccessSnackbar: true);
+    await centerOnCurrentLocationForMap();
   }
 
   // إضافة عنوان

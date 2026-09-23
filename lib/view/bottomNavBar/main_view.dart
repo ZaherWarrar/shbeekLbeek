@@ -9,6 +9,7 @@ import 'package:app/view/profile/profile_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:app/core/function/app_snackbar.dart';
 
 // ignore: must_be_immutable
 class MainView extends StatelessWidget {
@@ -41,14 +42,10 @@ class MainView extends StatelessWidget {
         now.difference(lastBackPressed!) > const Duration(seconds: 2)) {
       lastBackPressed = now;
 
-      Get.snackbar(
+      AppSnackbar.show(
         "تنبيه",
         "اضغط مرة أخرى للخروج",
         snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(12),
-        borderRadius: 12,
-        backgroundColor: const Color.fromARGB(37, 0, 0, 0),
-        colorText: const Color.fromARGB(255, 0, 0, 0),
         duration: const Duration(seconds: 2),
       );
 
@@ -69,6 +66,7 @@ class MainView extends StatelessWidget {
     return Obx(
       () => PopScope(
         canPop: false, // نمنع الرجوع التلقائي
+        // ignore: deprecated_member_use
         onPopInvoked: (bool didPop) async {
           if (!didPop) {
             // استدعاء نفس منطق _onWillPop

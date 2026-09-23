@@ -5,6 +5,7 @@ import 'package:app/core/function/handling_data.dart';
 import 'package:app/data/datasource/model/external_order_model.dart';
 import 'package:app/data/datasource/remot/external_orders_data.dart';
 import 'package:get/get.dart';
+import 'package:app/core/function/app_snackbar.dart';
 
 class ExternalOrdersController extends GetxController {
   final ExternalOrdersData _data = ExternalOrdersData(Get.find<Crud>());
@@ -25,7 +26,7 @@ class ExternalOrdersController extends GetxController {
       update();
 
       if (requireAuth && orderState == StatusRequest.unauthorized) {
-        Get.snackbar('تنبيه', 'يجب تسجيل الدخول لعرض الطلبات الخارجية');
+        AppSnackbar.show('تنبيه', 'يجب تسجيل الدخول لعرض الطلبات الخارجية');
         Get.toNamed(AppRoutes.login);
       }
       return;

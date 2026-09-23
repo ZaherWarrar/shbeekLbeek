@@ -5,6 +5,7 @@ import 'package:app/core/function/handling_data.dart';
 import 'package:app/core/services/session_service.dart';
 import 'package:app/data/datasource/remot/wallet_data.dart';
 import 'package:get/get.dart';
+import 'package:app/core/function/app_snackbar.dart';
 
 mixin WalletPaymentMixin on GetxController {
   bool useWallet = false;
@@ -71,7 +72,7 @@ mixin WalletPaymentMixin on GetxController {
 
   void toggleUseWallet(bool value) {
     if (!canUseWallet) {
-      Get.snackbar(
+      AppSnackbar.show(
         'تنبيه',
         walletStatusMessage.isNotEmpty
             ? walletStatusMessage

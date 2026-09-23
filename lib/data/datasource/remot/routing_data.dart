@@ -1,7 +1,14 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
-import 'package:latlong2/latlong.dart';
+
+/// نقطة على المسار (إحداثيات فقط، بلا اعتماد على مكتبة خرائط).
+class RoutePoint {
+  const RoutePoint(this.latitude, this.longitude);
+
+  final double latitude;
+  final double longitude;
+}
 
 /// نتيجة حساب المسار الأقصر/الأسرع على الطرق.
 class RouteResult {
@@ -11,7 +18,7 @@ class RouteResult {
     required this.durationSeconds,
   });
 
-  final List<LatLng> points;
+  final List<RoutePoint> points;
   final double distanceMeters;
   final double durationSeconds;
 
@@ -20,7 +27,6 @@ class RouteResult {
 }
 
 /// خدمة توجيه تعتمد OSRM العام (مفتوح المصدر، بدون مفتاح API).
-/// ترجع نقاط المسار الفعلي على الشوارع لرسمها على flutter_map.
 class RoutingData {
   static const String _baseUrl =
       'https://router.project-osrm.org/route/v1/driving';
@@ -54,8 +60,8 @@ class RoutingData {
       final coordinates = geometry['coordinates'] as List<dynamic>;
 
       final points = coordinates
-          .map<LatLng>(
-            (c) => LatLng(
+          .map<RoutePoint>(
+            (c) => RoutePoint(
               (c[1] as num).toDouble(),
               (c[0] as num).toDouble(),
             ),

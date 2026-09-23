@@ -1,8 +1,9 @@
 class ApiLinks {
   // Base URL
   // static const String baseUrl = 'https://shbeeklbeek.com/new/index.php/api';
-  static const String baseUrl =
-      'https://shbeeklbeek.com/shbeeklbeek_back/public/api';
+  // static const String baseUrl =
+  //     'https://shbeeklbeek.com/shbeeklbeek_back/public/api';
+  static const String baseUrl = 'https://shbeeklbeek.com/api';
   // Authentication Endpoints
   static const String login = '$baseUrl/login';
   static const String createAccount = '$baseUrl/register';

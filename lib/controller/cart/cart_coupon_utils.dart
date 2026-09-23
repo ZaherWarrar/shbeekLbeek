@@ -1,3 +1,4 @@
+import 'package:app/controller/cart/cart_delivery_utils.dart';
 import 'package:app/data/datasource/model/coupon_check_model.dart';
 
 int? _parseItemInt(dynamic value) {
@@ -57,6 +58,40 @@ double calculateEligibleSubtotal(
       .fold(0.0, (sum, item) => sum + _parseItemSubtotal(item));
 }
 
+double calculateEligibleDeliveryFee(
+  List<Map<String, dynamic>> cartItems,
+  CouponRestrictions restrictions,
+) {
+  final feeByShop = <dynamic, double>{};
+
+  for (final item in cartItems) {
+    if (!isCartItemEligibleForCoupon(item, restrictions)) continue;
+    final shopId = item['shopId'];
+    if (shopId == null) continue;
+    if (feeByShop.containsKey(shopId)) continue;
+
+    feeByShop[shopId] =
+        parseDeliveryFee(item['deliveryFee'] ?? item['shopDeliveryFee']) ?? 0.0;
+  }
+
+  return feeByShop.values.fold(0.0, (sum, fee) => sum + fee);
+}
+
+double _applyCouponToBase(CouponDetails details, double base) {
+  if (base <= 0 || details.value <= 0) return 0.0;
+
+  if (details.isPercent) {
+    final percent = details.value.clamp(0.0, 100.0);
+    return base * (percent / 100);
+  }
+
+  if (details.isFixed) {
+    return details.value > base ? base : details.value;
+  }
+
+  return 0.0;
+}
+
 double calculateCouponDiscount({
   required List<Map<String, dynamic>> cartItems,
   required String? discountCode,
@@ -65,19 +100,9 @@ double calculateCouponDiscount({
 }) {
   if (discountCode == null || discountCode.isEmpty) return 0.0;
 
-  final eligibleSubtotal = calculateEligibleSubtotal(cartItems, restrictions);
-  if (eligibleSubtotal <= 0) return 0.0;
+  final base = details.appliesToDelivery
+      ? calculateEligibleDeliveryFee(cartItems, restrictions)
+      : calculateEligibleSubtotal(cartItems, restrictions);
 
-  if (details.isPercent && details.value > 0) {
-    final percent = details.value.clamp(0.0, 100.0);
-    return eligibleSubtotal * (percent / 100);
-  }
-
-  if (details.isFixed && details.value > 0) {
-    return details.value > eligibleSubtotal
-        ? eligibleSubtotal
-        : details.value;
-  }
-
-  return 0.0;
+  return _applyCouponToBase(details, base);
 }

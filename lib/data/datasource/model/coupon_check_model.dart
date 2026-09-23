@@ -1,8 +1,26 @@
+enum CouponApplyRange {
+  invoice,
+  delivery;
+
+  bool get isDelivery => this == CouponApplyRange.delivery;
+
+  static CouponApplyRange fromValue(dynamic raw) {
+    final value = raw?.toString().trim().toLowerCase();
+    if (value == 'delivery') return CouponApplyRange.delivery;
+    return CouponApplyRange.invoice;
+  }
+}
+
 class CouponDetails {
   final String type;
   final double value;
+  final CouponApplyRange applyRange;
 
-  const CouponDetails({required this.type, required this.value});
+  const CouponDetails({
+    required this.type,
+    required this.value,
+    this.applyRange = CouponApplyRange.invoice,
+  });
 
   bool get isPercent {
     final t = type.toLowerCase();
@@ -11,13 +29,21 @@ class CouponDetails {
 
   bool get isFixed => type.toLowerCase() == 'fixed';
 
-  factory CouponDetails.fromJson(Map<String, dynamic>? json) {
+  bool get appliesToDelivery => applyRange.isDelivery;
+
+  factory CouponDetails.fromJson(
+    Map<String, dynamic>? json, {
+    CouponApplyRange applyRange = CouponApplyRange.invoice,
+  }) {
     if (json == null) {
-      return const CouponDetails(type: '', value: 0);
+      return CouponDetails(type: '', value: 0, applyRange: applyRange);
     }
     return CouponDetails(
       type: json['type']?.toString() ?? '',
       value: double.tryParse(json['value']?.toString() ?? '') ?? 0.0,
+      applyRange: json['apply_range'] != null
+          ? CouponApplyRange.fromValue(json['apply_range'])
+          : applyRange,
     );
   }
 }
@@ -27,11 +53,7 @@ class CouponRestrictions {
   final List<int>? stores;
   final List<int>? products;
 
-  const CouponRestrictions({
-    this.categories,
-    this.stores,
-    this.products,
-  });
+  const CouponRestrictions({this.categories, this.stores, this.products});
 
   bool get appliesToWholeCart {
     final hasCategories = categories != null && categories!.isNotEmpty;
@@ -79,14 +101,17 @@ class CouponCheckModel {
   });
 
   factory CouponCheckModel.fromJson(Map<String, dynamic> json) {
+    final detailsJson = json['details'] is Map<String, dynamic>
+        ? json['details'] as Map<String, dynamic>
+        : null;
+    final applyRange = CouponApplyRange.fromValue(
+      json['apply_range'] ?? detailsJson?['apply_range'],
+    );
+
     return CouponCheckModel(
       valid: json['valid'] == true,
       message: json['message']?.toString(),
-      details: CouponDetails.fromJson(
-        json['details'] is Map<String, dynamic>
-            ? json['details'] as Map<String, dynamic>
-            : null,
-      ),
+      details: CouponDetails.fromJson(detailsJson, applyRange: applyRange),
       restrictions: CouponRestrictions.fromJson(
         json['restrictions'] is Map<String, dynamic>
             ? json['restrictions'] as Map<String, dynamic>

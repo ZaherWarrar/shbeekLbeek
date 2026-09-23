@@ -8,11 +8,6 @@ import 'package:get/get.dart';
 class ExternalDeliveryForm extends StatelessWidget {
   const ExternalDeliveryForm({super.key});
 
-  String _coordsLabel(double lat, double lng) {
-    if (lat == 0.0 && lng == 0.0) return 'لم يُحدد بعد على الخريطة';
-    return '${lat.toStringAsFixed(5)}, ${lng.toStringAsFixed(5)}';
-  }
-
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<ExternalDeliveryController>();
@@ -37,28 +32,12 @@ class ExternalDeliveryForm extends StatelessWidget {
               controller: controller.fromDetailsController,
               icon: Icons.trip_origin,
             ),
-            const SizedBox(height: 6),
-            Text(
-              _coordsLabel(controller.fromLat.value, controller.fromLng.value),
-              style: TextStyle(
-                fontSize: 12,
-                color: AppColor().descriptionColor,
-              ),
-            ),
             const SizedBox(height: 16),
             ExternalDeliveryTextField(
               label: 'تفاصيل موقع الوصول',
               hint: 'مثال: عند البوابة الرئيسية',
               controller: controller.toDetailsController,
               icon: Icons.location_on_outlined,
-            ),
-            const SizedBox(height: 6),
-            Text(
-              _coordsLabel(controller.toLat.value, controller.toLng.value),
-              style: TextStyle(
-                fontSize: 12,
-                color: AppColor().descriptionColor,
-              ),
             ),
             const SizedBox(height: 16),
             ExternalDeliveryTextField(

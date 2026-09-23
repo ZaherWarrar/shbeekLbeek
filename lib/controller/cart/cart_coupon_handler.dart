@@ -6,6 +6,7 @@ import 'package:app/data/datasource/model/coupon_check_model.dart';
 import 'package:app/data/datasource/remot/coupons_data.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:app/core/function/app_snackbar.dart';
 
 class CartCouponHandler {
   CartCouponHandler({
@@ -33,16 +34,16 @@ class CartCouponHandler {
       couponDetails.isPercent ? couponDetails.value : 0.0;
 
   double get calculatedDiscount => calculateCouponDiscount(
-        cartItems: getCartItems(),
-        discountCode: discountCode,
-        details: couponDetails,
-        restrictions: couponRestrictions,
-      );
+    cartItems: getCartItems(),
+    discountCode: discountCode,
+    details: couponDetails,
+    restrictions: couponRestrictions,
+  );
 
   Future<void> apply({bool silent = false}) async {
     final code = discountCodeController.text.trim();
     if (code.isEmpty) {
-      if (!silent) Get.snackbar('تنبيه', 'الرجاء إدخال كود الخصم');
+      if (!silent) AppSnackbar.show('تنبيه', 'الرجاء إدخال كود الخصم');
       return;
     }
 
@@ -51,8 +52,9 @@ class CartCouponHandler {
     onStateChanged();
 
     try {
-      final response =
-          await CouponsData(Get.find<Crud>()).couponsCheckData(code);
+      final response = await CouponsData(
+        Get.find<Crud>(),
+      ).couponsCheckData(code);
 
       if (response is StatusRequest) {
         _resetDiscount();
@@ -67,12 +69,12 @@ class CartCouponHandler {
       } else {
         couponMessage = 'كود الخصم غير صالح';
         _resetDiscount();
-        if (!silent) Get.snackbar('خطأ', couponMessage!);
+        if (!silent) AppSnackbar.show('خطأ', couponMessage!);
       }
     } catch (_) {
       _resetDiscount();
       if (!silent) {
-        Get.snackbar('خطأ', 'حدث خطأ أثناء التحقق من الكوبون');
+        AppSnackbar.show('خطأ', 'حدث خطأ أثناء التحقق من الكوبون');
       }
       isCheckingCoupon = false;
       onStateChanged();
@@ -93,14 +95,14 @@ class CartCouponHandler {
     if (!result.valid) {
       couponMessage = message ?? 'كود الخصم غير صالح';
       _resetDiscount();
-      if (!silent) Get.snackbar('خطأ', couponMessage!);
+      if (!silent) AppSnackbar.show('خطأ', couponMessage!);
       return;
     }
 
     if (!result.details.isPercent && !result.details.isFixed) {
       couponMessage = message ?? 'كود الخصم غير صالح';
       _resetDiscount();
-      if (!silent) Get.snackbar('خطأ', couponMessage!);
+      if (!silent) AppSnackbar.show('خطأ', couponMessage!);
       return;
     }
 
@@ -111,14 +113,16 @@ class CartCouponHandler {
 
     final discount = calculatedDiscount;
     if (discount <= 0) {
-      couponMessage = result.restrictions.appliesToWholeCart
+      couponMessage = result.details.appliesToDelivery
+          ? 'الكوبون لا ينطبق على أجور التوصيل الحالية'
+          : result.restrictions.appliesToWholeCart
           ? (message ?? 'الكوبون لا ينطبق على السلة الحالية')
           : 'الكوبون لا ينطبق على منتجات السلة الحالية';
       if (!silent) {
-        Get.snackbar('تنبيه', couponMessage!);
+        AppSnackbar.show('تنبيه', couponMessage!);
       }
     } else if (!silent) {
-      Get.snackbar('نجاح', message ?? 'تم تطبيق كود الخصم');
+      AppSnackbar.show('نجاح', message ?? 'تم تطبيق كود الخصم');
     }
 
     prefs.saveDiscountCode(code);
@@ -133,17 +137,17 @@ class CartCouponHandler {
   void _showError(StatusRequest status) {
     switch (status) {
       case StatusRequest.unauthorized:
-        Get.snackbar('تنبيه', 'يجب تسجيل الدخول لاستخدام كود الخصم');
+        AppSnackbar.show('تنبيه', 'يجب تسجيل الدخول لاستخدام كود الخصم');
         break;
       case StatusRequest.offlinefailure:
-        Get.snackbar('خطأ', 'لا يوجد اتصال بالإنترنت');
+        AppSnackbar.show('خطأ', 'لا يوجد اتصال بالإنترنت');
         break;
       case StatusRequest.serverfailure:
       case StatusRequest.serverException:
-        Get.snackbar('خطأ', 'خطأ في الخادم، حاول لاحقاً');
+        AppSnackbar.show('خطأ', 'خطأ في الخادم، حاول لاحقاً');
         break;
       default:
-        Get.snackbar('خطأ', 'كود الخصم غير صالح أو منتهي');
+        AppSnackbar.show('خطأ', 'كود الخصم غير صالح أو منتهي');
     }
   }
 

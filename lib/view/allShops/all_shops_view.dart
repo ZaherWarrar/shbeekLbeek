@@ -78,7 +78,7 @@ class StoresPage extends StatelessWidget {
                                     onTap: () {
                                       Get.toNamed(
                                         AppRoutes.resturantDetails,
-                                        arguments: store.id,
+                                        arguments: store,
                                       );
                                     },
                                   );

@@ -6,6 +6,7 @@ import 'package:app/core/services/session_service.dart';
 import 'package:app/data/datasource/remot/favorites_data.dart';
 import 'package:app/view/favorites/widget/favorites_tabs/favorites_tabs_model.dart';
 import 'package:get/get.dart';
+import 'package:app/core/function/app_snackbar.dart';
 
 class FavoritesController extends GetxController {
   final FavoritesData favoritesData = FavoritesData(Get.find());
@@ -89,7 +90,7 @@ class FavoritesController extends GetxController {
     RestaurantModel? item,
   }) async {
     if (id <= 0) {
-      Get.snackbar('تنبيه', 'لا يمكن إضافة هذا العنصر للمفضلة');
+      AppSnackbar.show('تنبيه', 'لا يمكن إضافة هذا العنصر للمفضلة');
       return;
     }
 
@@ -128,14 +129,14 @@ class FavoritesController extends GetxController {
         if (success) {
           await _local.removePending(userId, type, id);
         } else {
-          Get.snackbar('تنبيه', 'تمت الإزالة محلياً وسيتم المزامنة لاحقاً');
+          AppSnackbar.show('تنبيه', 'تمت الإزالة محلياً وسيتم المزامنة لاحقاً');
         }
       }
       return;
     }
 
     if (item == null) {
-      Get.snackbar('تنبيه', 'لا يمكن إضافة هذا العنصر للمفضلة');
+      AppSnackbar.show('تنبيه', 'لا يمكن إضافة هذا العنصر للمفضلة');
       return;
     }
 
@@ -150,7 +151,7 @@ class FavoritesController extends GetxController {
       if (success) {
         await _local.removePending(userId, type, id);
       } else {
-        Get.snackbar('تنبيه', 'تمت الإضافة محلياً وسيتم المزامنة لاحقاً');
+        AppSnackbar.show('تنبيه', 'تمت الإضافة محلياً وسيتم المزامنة لاحقاً');
       }
     }
   }

@@ -16,6 +16,7 @@ class OrderController extends GetxController {
   late final OrderActiveSession _active = OrderActiveSession(session);
 
   StatusRequest orderState = StatusRequest.none;
+  bool isCreatingOrder = false;
 
   int? get currentOrderId => _active.orderId;
   set currentOrderId(int? value) => _active.orderId = value;
@@ -24,6 +25,8 @@ class OrderController extends GetxController {
   set orderCreatedAt(DateTime? value) => _active.createdAt = value;
 
   Future<void> createOrder(String? notes) async {
+    if (isCreatingOrder) return;
+
     final token = session.token;
     if (token == null || token.isEmpty) {
       AppSnackbar.show('تنبيه', 'يجب تسجيل الدخول أولاً');
@@ -37,12 +40,12 @@ class OrderController extends GetxController {
       return;
     }
 
-    final orderDataMap = buildOrderPayload(cart: cartController, notes: notes);
-
+    isCreatingOrder = true;
     orderState = StatusRequest.loading;
     update();
 
     try {
+      final orderDataMap = buildOrderPayload(cart: cartController, notes: notes);
       final response = await orderData.createOrderData(orderDataMap);
       orderState = handlingData(response);
 
@@ -56,10 +59,11 @@ class OrderController extends GetxController {
         if (orderId != null) {
           await _active.persist(orderId, DateTime.now());
           Get.toNamed(AppRoutes.orderConfirmation, arguments: orderId);
-        } else {
-          AppSnackbar.show('خطأ', 'فشل في الحصول على رقم الطلب');
-          orderState = StatusRequest.failure;
+          return;
         }
+
+        AppSnackbar.show('خطأ', 'فشل في الحصول على رقم الطلب');
+        orderState = StatusRequest.failure;
       } else {
         orderState = StatusRequest.failure;
         AppSnackbar.show('خطأ', 'فشل في إنشاء الطلب');
@@ -67,12 +71,16 @@ class OrderController extends GetxController {
     } catch (e) {
       orderState = StatusRequest.failure;
       AppSnackbar.show('خطأ', 'حدث خطأ: ${e.toString()}');
+    } finally {
+      if (orderState != StatusRequest.success) {
+        isCreatingOrder = false;
+      }
+      update();
     }
-
-    update();
   }
 
   Future<void> confirmOrder(int orderId) async {
+    isCreatingOrder = false;
     orderState = StatusRequest.loading;
     update();
 
@@ -98,6 +106,7 @@ class OrderController extends GetxController {
   }
 
   Future<void> cancelOrder(int orderId) async {
+    isCreatingOrder = false;
     orderState = StatusRequest.loading;
     update();
 

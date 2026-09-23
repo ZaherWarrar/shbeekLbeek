@@ -2,6 +2,7 @@ import 'package:app/controller/auth/register/register_controller.dart';
 import 'package:app/view/auth/register/widgets/go_to_login.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:app/core/function/app_snackbar.dart';
 import 'package:lottie/lottie.dart';
@@ -82,7 +83,8 @@ class RegisterView extends StatelessWidget {
                     lable: "11".tr,
                     iconData: Icons.phone_outlined,
                     scure: false,
-                    keyboardType: TextInputType.phone,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     onChanged: (value) {
                       controller.validatePhoneOnChange(value ?? '');
                     },

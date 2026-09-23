@@ -17,6 +17,8 @@ class SliderModel {
     this.imageUrl,
   });
 
+  bool get isAssetImage => imageUrl?.startsWith('assets/') ?? false;
+
   SliderModel.fromJson(Map<String, dynamic> json) {
     id = _toInt(json['id']);
     title = json['title']?.toString();

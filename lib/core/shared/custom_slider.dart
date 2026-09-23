@@ -1,5 +1,6 @@
 // lib/app/shared/widgets/slider_widget.dart
 import 'package:app/controller/home/home_controller.dart';
+import 'package:app/data/datasource/model/slider_model.dart';
 import 'package:flutter/material.dart';
 
 class SliderWidget extends StatelessWidget {
@@ -68,15 +69,7 @@ class SliderWidget extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(borderRadius),
-                        child: Image.network(
-                          slide.imageUrl ?? '',
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Container(
-                            color: Colors.grey.shade300,
-                            alignment: Alignment.center,
-                            child: const Icon(Icons.image_not_supported),
-                          ),
-                        ),
+                        child: _SlideImage(slide: slide),
                       ),
                     );
                   },
@@ -85,6 +78,39 @@ class SliderWidget extends StatelessWidget {
         ),
         const SizedBox(height: 16),
       ],
+    );
+  }
+}
+
+class _SlideImage extends StatelessWidget {
+  const _SlideImage({required this.slide});
+
+  final SliderModel slide;
+
+  static Widget _errorPlaceholder(BuildContext context, Object error, StackTrace? stackTrace) {
+    return Container(
+      color: Colors.grey.shade300,
+      alignment: Alignment.center,
+      child: const Icon(Icons.image_not_supported),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final url = slide.imageUrl ?? '';
+    if (slide.isAssetImage) {
+      return Image.asset(
+        url,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        errorBuilder: _errorPlaceholder,
+      );
+    }
+    return Image.network(
+      url,
+      fit: BoxFit.cover,
+      width: double.infinity,
+      errorBuilder: _errorPlaceholder,
     );
   }
 }

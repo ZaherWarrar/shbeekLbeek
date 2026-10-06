@@ -324,7 +324,7 @@ class Crud {
 
   // دالة مساعدة لمعالجة الاستثناءات
   StatusRequest _handleException(dynamic exception) {
-    if (exception is SocketException) {
+    if (exception is SocketException || exception is http.ClientException) {
       return StatusRequest.offlinefailure;
     } else if (exception is HttpException) {
       return StatusRequest.serverfailure;

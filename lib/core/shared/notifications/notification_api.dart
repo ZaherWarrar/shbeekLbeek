@@ -155,11 +155,7 @@ class NotificationApi {
   Future<String?> getToken({int maxAttempts = 3}) async {
     for (var attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
-        final token = await _firebaseMessaging.getToken();
-        if (token != null) {
-          debugPrint('📱 FCM TOKEN: $token');
-        }
-        return token;
+        return await _firebaseMessaging.getToken();
       } on FirebaseException catch (e) {
         final isRetryable = e.code == 'unknown' &&
             (e.message?.contains('SERVICE_NOT_AVAILABLE') ?? false);

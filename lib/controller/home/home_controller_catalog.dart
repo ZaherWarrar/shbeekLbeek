@@ -25,8 +25,10 @@ extension HomeCatalogLogic on HomeControllerImp {
   }
 
   Future<void> runFetchAllItem() async {
-    allItemState = StatusRequest.loading;
-    update();
+    if (items.isEmpty) {
+      allItemState = StatusRequest.loading;
+      update();
+    }
     final response =
         await allItemData.allItemData(cityId, categoryId: selectedCategoryId);
     allItemState = handlingData(response);

@@ -174,8 +174,6 @@ class RegisterControllerImb extends RegisterController {
     // ✅ تنسيق رقم الهاتف قبل الإرسال
     String formattedPhone = formatPhoneNumber(phoneNumber.text);
 
-    print("📱 Sending: ${name.text}, $formattedPhone");
-
     // ✅ تغيير الحالة إلى تحميل
     statusRequest = StatusRequest.loading;
     update();
@@ -228,10 +226,6 @@ class RegisterControllerImb extends RegisterController {
           errorMessage = "لا يوجد اتصال بالإنترنت، تأكد من اتصالك";
         }
 
-        print("❌ Error: $errorMessage");
-        print("❌ Status: $statusRequest");
-        print("❌ Response: $response");
-
         Get.defaultDialog(
           title: "فشل التسجيل",
           middleText: errorMessage,
@@ -244,11 +238,9 @@ class RegisterControllerImb extends RegisterController {
           },
         );
       }
-    } catch (e) {
+    } catch (_) {
       statusRequest = StatusRequest.failure;
       update();
-
-      print("❌ Exception: $e");
 
       Get.defaultDialog(
         title: "خطأ غير متوقع",

@@ -6,56 +6,107 @@ import 'package:app/data/datasource/model/section_model.dart';
 
 extension HomeSectionsLogic on HomeControllerImp {
   Future<void> runFetchHomeSection() async {
-    homeSectionState = StatusRequest.loading;
-    homeSection = [];
-    update();
-    final response =
-        await homeSectionData.homeSectionData() as Map<String, dynamic>;
-    homeSectionState = handlingData(response);
-    if (homeSectionState == StatusRequest.success) {
-      final sectionList = response['sections'] as List<dynamic>;
-      for (var item in sectionList) {
-        homeSection.add(HomeSectionModel.fromJson(item));
-      }
-      for (var section in homeSection) {
-        final sectionType = section.type;
-        if (sectionType == null || sectionType.isEmpty) continue;
-        final sections = await runFetchSection(sectionType);
-        finalSection[sectionType] = sections;
-      }
-      if (homeSection.isNotEmpty) {
-        selectedType = 0;
-        sectionName =
-            homeSection.first.type ?? homeSection.first.name ?? '';
-        finalSectionState = finalSection[sectionName]?.isNotEmpty == true
-            ? StatusRequest.success
-            : StatusRequest.failure;
-      }
-      update();
-    } else {
-      homeSectionState = StatusRequest.failure;
+    final keepTabs = homeSection.isNotEmpty;
+    if (!keepTabs) {
+      homeSectionState = StatusRequest.loading;
+      finalSectionState = StatusRequest.loading;
       update();
     }
+
+    final response = await homeSectionData.homeSectionData();
+    final status = handlingData(response);
+    if (status != StatusRequest.success || response is! Map<String, dynamic>) {
+      if (homeSection.isEmpty) {
+        homeSectionState = status == StatusRequest.success
+            ? StatusRequest.failure
+            : status;
+        finalSectionState = StatusRequest.failure;
+        update();
+      }
+      return;
+    }
+    homeSectionState = StatusRequest.success;
+
+    final sectionList = response['sections'];
+    if (sectionList is! List) {
+      if (homeSection.isEmpty) {
+        homeSectionState = StatusRequest.failure;
+        finalSectionState = StatusRequest.failure;
+        update();
+      }
+      return;
+    }
+
+    homeSection = [
+      for (final item in sectionList) HomeSectionModel.fromJson(item),
+    ];
+
+    final selectedStillExists = homeSection.any(
+      (section) => (section.type ?? section.name) == sectionName,
+    );
+    if (homeSection.isNotEmpty &&
+        (sectionName.isEmpty || !selectedStillExists)) {
+      selectedType = 0;
+      sectionName = homeSection.first.type ?? homeSection.first.name ?? '';
+    }
+    if ((finalSection[sectionName] ?? const <SectionModel>[]).isEmpty) {
+      finalSectionState = StatusRequest.loading;
+    }
+    update();
+
+    final types = <String>[
+      for (final section in homeSection)
+        if (section.type != null && section.type!.isNotEmpty) section.type!,
+    ];
+    if (types.isEmpty) {
+      finalSectionState = StatusRequest.failure;
+      update();
+      return;
+    }
+
+    await Future.wait(
+      types.map((type) async {
+        final sections = await _loadSectionProducts(type);
+        finalSection[type] = sections;
+        if (type == sectionName) {
+          finalSectionState = sections.isNotEmpty
+              ? StatusRequest.success
+              : StatusRequest.failure;
+          update();
+        }
+      }),
+    );
+
+    final visible = finalSection[sectionName];
+    finalSectionState = visible != null && visible.isNotEmpty
+        ? StatusRequest.success
+        : StatusRequest.failure;
+    update();
+  }
+
+  Future<List<SectionModel>> _loadSectionProducts(String name) async {
+    final response = await homeSectionData.sectionData(
+      cityId,
+      name,
+      categoryId: selectedCategoryId,
+    );
+    if (handlingData(response) != StatusRequest.success || response is! List) {
+      return [];
+    }
+    return response
+        .map<SectionModel>((e) => SectionModel.fromJson(e))
+        .toList();
   }
 
   Future<List<SectionModel>> runFetchSection(String sectionName) async {
     sectionState = StatusRequest.loading;
     update();
 
-    final response = await homeSectionData.sectionData(
-      cityId,
-      sectionName,
-      categoryId: selectedCategoryId,
-    );
-    sectionState = handlingData(response);
-
-    if (sectionState == StatusRequest.success && response is List) {
-      return response
-          .map<SectionModel>((e) => SectionModel.fromJson(e))
-          .toList();
-    }
-
-    return [];
+    final sections = await _loadSectionProducts(sectionName);
+    sectionState = sections.isEmpty
+        ? StatusRequest.failure
+        : StatusRequest.success;
+    return sections;
   }
 
   void runUpdateSection(int id, String name) {

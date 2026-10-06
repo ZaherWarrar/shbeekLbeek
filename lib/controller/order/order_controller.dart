@@ -73,6 +73,13 @@ class OrderController extends GetxController {
   }
 
   Future<void> confirmOrder(int orderId) async {
+    final token = session.token;
+    if (token == null || token.isEmpty) {
+      AppSnackbar.show('تنبيه', 'يجب تسجيل الدخول أولاً');
+      Get.toNamed(AppRoutes.login);
+      return;
+    }
+
     orderState = StatusRequest.loading;
     update();
 
@@ -98,6 +105,13 @@ class OrderController extends GetxController {
   }
 
   Future<void> cancelOrder(int orderId) async {
+    final token = session.token;
+    if (token == null || token.isEmpty) {
+      AppSnackbar.show('تنبيه', 'يجب تسجيل الدخول أولاً');
+      Get.toNamed(AppRoutes.login);
+      return;
+    }
+
     orderState = StatusRequest.loading;
     update();
 

@@ -81,18 +81,19 @@ class HomeControllerImp extends HomeController {
 
   void onPageChanged(int index) => runOnPageChanged(index);
 
+  /// الهيكل يغطي الصفحة فقط قبل وصول أي بيانات.
+  /// بعد أول قائمة ناجحة تبقى الأقسام الظاهرة ويُحمَّل الباقي مكانه.
   bool get isInitialLoading {
-    final anyLoading =
-        sliderStat == StatusRequest.loading ||
-        mainCatStat == StatusRequest.loading ||
-        allItemState == StatusRequest.loading ||
-        homeSectionState == StatusRequest.loading;
     final hasNoData =
         slides.isEmpty &&
         mainCat.isEmpty &&
         items.isEmpty &&
         homeSection.isEmpty;
-    return hasNoData || anyLoading;
+    if (!hasNoData) return false;
+    return sliderStat == StatusRequest.loading ||
+        mainCatStat == StatusRequest.loading ||
+        allItemState == StatusRequest.loading ||
+        homeSectionState == StatusRequest.loading;
   }
 
   Future<void> selectCategory(int? categoryId) async {
@@ -100,6 +101,7 @@ class HomeControllerImp extends HomeController {
     sliderStat = StatusRequest.loading;
     allItemState = StatusRequest.loading;
     homeSectionState = StatusRequest.loading;
+    finalSectionState = StatusRequest.loading;
     slides = [];
     extendedSlides = [];
     items = [];
@@ -121,6 +123,16 @@ class HomeControllerImp extends HomeController {
       }
       update();
       return;
+    }
+    if (slides.isEmpty &&
+        mainCat.isEmpty &&
+        items.isEmpty &&
+        homeSection.isEmpty) {
+      mainCatStat = StatusRequest.loading;
+      sliderStat = StatusRequest.loading;
+      allItemState = StatusRequest.loading;
+      homeSectionState = StatusRequest.loading;
+      finalSectionState = StatusRequest.loading;
     }
     await fetchMainCategores();
     if (selectedCategoryId == null && mainCat.isNotEmpty) {

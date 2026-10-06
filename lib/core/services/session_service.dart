@@ -1,13 +1,20 @@
 import 'dart:convert';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SessionService extends GetxService {
   late final SharedPreferences prefs;
+  final FlutterSecureStorage _secure = const FlutterSecureStorage();
+
+  String? _token;
+  String? _userId;
 
   // ====== Keys ======
   static const tokenKey = "token";
   static const userIdKey = "user_id";
+  static const _secureTokenKey = "auth_token";
+  static const _secureUserIdKey = "auth_user_id";
   static const userNameKey = "user_name";
   static const userEmailKey = "user_email";
   static const userRoleKey = "user_role";
@@ -23,7 +30,40 @@ class SessionService extends GetxService {
   // ====== INIT ======
   Future<SessionService> init() async {
     prefs = await SharedPreferences.getInstance();
+    await _loadSecureSession();
     return this;
+  }
+
+  Future<void> _loadSecureSession() async {
+    try {
+      _token = await _secure.read(key: _secureTokenKey);
+      _userId = await _secure.read(key: _secureUserIdKey);
+    } catch (_) {
+      _token = null;
+      _userId = null;
+    }
+
+    final legacyToken = prefs.getString(tokenKey);
+    final legacyUserId = prefs.getString(userIdKey);
+    final hasLegacyToken = legacyToken != null && legacyToken.isNotEmpty;
+    if ((_token == null || _token!.isEmpty) && hasLegacyToken) {
+      try {
+        await _secure.write(key: _secureTokenKey, value: legacyToken);
+        if (legacyUserId != null && legacyUserId.isNotEmpty) {
+          await _secure.write(key: _secureUserIdKey, value: legacyUserId);
+          _userId = legacyUserId;
+        }
+        _token = legacyToken;
+        await prefs.remove(tokenKey);
+        await prefs.remove(userIdKey);
+      } catch (_) {}
+      return;
+    }
+
+    if (prefs.containsKey(tokenKey) || prefs.containsKey(userIdKey)) {
+      await prefs.remove(tokenKey);
+      await prefs.remove(userIdKey);
+    }
   }
 
   // ====== AUTH ======
@@ -31,9 +71,13 @@ class SessionService extends GetxService {
     required String token,
     required String userId,
   }) async {
-    await prefs.setString(tokenKey, token);
-    await prefs.setString(userIdKey, userId);
+    _token = token;
+    _userId = userId;
+    await _secure.write(key: _secureTokenKey, value: token);
+    await _secure.write(key: _secureUserIdKey, value: userId);
     await prefs.setBool(guestKey, false);
+    await prefs.remove(tokenKey);
+    await prefs.remove(userIdKey);
   }
 
   Future<void> setGuest(bool value) async {
@@ -41,6 +85,10 @@ class SessionService extends GetxService {
   }
 
   Future<void> logout() async {
+    _token = null;
+    _userId = null;
+    await _secure.delete(key: _secureTokenKey);
+    await _secure.delete(key: _secureUserIdKey);
     await prefs.remove(tokenKey);
     await prefs.remove(userIdKey);
     await prefs.remove(userNameKey);
@@ -49,8 +97,8 @@ class SessionService extends GetxService {
     await prefs.remove(userStatusKey);
   }
 
-  String? get token => prefs.getString(tokenKey);
-  String? get userId => prefs.getString(userIdKey);
+  String? get token => _token;
+  String? get userId => _userId;
   bool get isGuest => prefs.getBool(guestKey) ?? false;
   bool get isLoggedIn => token != null && token!.isNotEmpty;
 
@@ -199,5 +247,11 @@ class SessionService extends GetxService {
       await prefs.remove(_favoritesKey(userId));
 
   // ====== CLEAR ALL ======
-  Future<void> clearAll() async => await prefs.clear();
+  Future<void> clearAll() async {
+    _token = null;
+    _userId = null;
+    await _secure.delete(key: _secureTokenKey);
+    await _secure.delete(key: _secureUserIdKey);
+    await prefs.clear();
+  }
 }

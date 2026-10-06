@@ -142,6 +142,8 @@ class OrderItemModel {
   int? quantity;
   String? createdAt;
   String? updatedAt;
+  String? variationName;
+  String? notes;
   OrderProductModel? product;
 
   OrderItemModel({
@@ -152,6 +154,8 @@ class OrderItemModel {
     this.quantity,
     this.createdAt,
     this.updatedAt,
+    this.variationName,
+    this.notes,
     this.product,
   });
 
@@ -163,6 +167,8 @@ class OrderItemModel {
     quantity = OrderHisModel._toInt(json['quantity']);
     createdAt = json['created_at'];
     updatedAt = json['updated_at'];
+    variationName = json['variation_name']?.toString();
+    notes = json['notes']?.toString();
     product = json['product'] != null
         ? OrderProductModel.fromJson(json['product'])
         : null;
@@ -177,6 +183,8 @@ class OrderItemModel {
     data['quantity'] = quantity;
     data['created_at'] = createdAt;
     data['updated_at'] = updatedAt;
+    data['variation_name'] = variationName;
+    data['notes'] = notes;
     if (product != null) {
       data['product'] = product!.toJson();
     }
@@ -198,6 +206,8 @@ class OrderProductModel {
   String? createdAt;
   String? updatedAt;
   String? imageUrl;
+  String? storeName;
+  String? storeDeliveryFee;
 
   OrderProductModel({
     this.id,
@@ -213,6 +223,8 @@ class OrderProductModel {
     this.createdAt,
     this.updatedAt,
     this.imageUrl,
+    this.storeName,
+    this.storeDeliveryFee,
   });
 
   OrderProductModel.fromJson(Map<String, dynamic> json) {
@@ -229,6 +241,17 @@ class OrderProductModel {
     createdAt = json['created_at'];
     updatedAt = json['updated_at'];
     imageUrl = resolveMediaUrl(json['image_url']?.toString());
+    storeName = (json['store_name'] ?? json['storeName'])?.toString();
+    storeDeliveryFee = json['delivery_fee']?.toString();
+    final store = json['store'];
+    if (store is Map) {
+      storeId ??= OrderHisModel._toInt(store['id']);
+      final nestedName = store['name']?.toString();
+      if (nestedName != null && nestedName.trim().isNotEmpty) {
+        storeName = nestedName;
+      }
+      storeDeliveryFee ??= store['delivery_fee']?.toString();
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -246,6 +269,8 @@ class OrderProductModel {
     data['created_at'] = createdAt;
     data['updated_at'] = updatedAt;
     data['image_url'] = imageUrl;
+    data['store_name'] = storeName;
+    data['delivery_fee'] = storeDeliveryFee;
     return data;
   }
 }

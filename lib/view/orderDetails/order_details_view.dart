@@ -1,104 +1,71 @@
+import 'package:app/controller/orderHistoory/order_items_group_utils.dart';
 import 'package:app/core/constant/app_color.dart';
 import 'package:app/core/shared/custom_app_bar.dart';
-import 'package:app/controller/orderHistoory/order_his_controller.dart';
 import 'package:app/data/datasource/model/order_his_model.dart';
+import 'package:app/view/orderDetails/order_details_actions.dart';
+import 'package:app/view/orderDetails/order_details_shop_section.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 class OrderDetailsView extends StatelessWidget {
-  const OrderDetailsView({super.key, required this.orderId});
-  final int orderId;
+  const OrderDetailsView({super.key, required this.order});
+
+  final OrderHisModel order;
+
   @override
   Widget build(BuildContext context) {
-    OrderHisController controller = Get.find<OrderHisController>();
-
     final colors = AppColor();
+    final items = order.items ?? const <OrderItemModel>[];
+    final groups = groupOrderItemsByShop(items);
 
     return Scaffold(
       backgroundColor: colors.backgroundColor,
-      appBar: CustomAppBar(title: "تفاصيل الطلب"),
-      body: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: ListView.builder(
-          itemCount: controller.orders[orderId].items!.length,
-          itemBuilder: (context, index) {
-            return _buildProductCard(
-              colors,
-              controller.orders[orderId].items![index],
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProductCard(AppColor colors, OrderItemModel item) {
-    return Card(
-      color: colors.backgroundColorCard,
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Row(
-          children: [
-            // صورة المنتج
-            ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: Image.network(
-                "${item.product!.imageUrl}",
-                width: 90,
-                height: 90,
-                fit: BoxFit.cover,
+      appBar: const CustomAppBar(title: 'تفاصيل الطلب'),
+      body: items.isEmpty
+          ? Center(
+              child: Text(
+                'لا توجد أصناف في هذا الطلب',
+                style: TextStyle(color: colors.descriptionColor),
               ),
+            )
+          : Column(
+              children: [
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+                    itemCount: groups.length,
+                    itemBuilder: (context, index) {
+                      return OrderDetailsShopSection(group: groups[index]);
+                    },
+                  ),
+                ),
+                SafeArea(
+                  top: false,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () => reorderPreviousOrder(order),
+                        icon: const Icon(Icons.replay),
+                        label: const Text('إعادة طلب'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: colors.primaryColor,
+                          foregroundColor: colors.textButomColor,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          textStyle: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-
-            const SizedBox(width: 12),
-
-            // النصوص
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "${item.product!.name}",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: colors.titleColor,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    "${item.product!.description}",
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: colors.descriptionColor,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "السعر: ${item.product!.salePrice} \$",
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: colors.primaryColor,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "العدد: ${item.quantity}",
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: colors.primaryColor,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

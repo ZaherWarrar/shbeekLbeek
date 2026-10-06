@@ -1,12 +1,16 @@
+import 'package:app/controller/address/address_controller.dart';
 import 'package:app/controller/cart/cart_coupon_handler.dart';
 import 'package:app/controller/cart/cart_delivery_utils.dart';
 import 'package:app/controller/cart/cart_group_utils.dart';
 import 'package:app/controller/cart/cart_wallet_utils.dart';
+import 'package:app/controller/orderHistoory/order_items_group_utils.dart';
 import 'package:app/controller/wallet/wallet_payment_mixin.dart';
 import 'package:app/core/function/resolve_media_url.dart';
 import 'package:app/core/services/cart_preferences.dart';
+import 'package:app/data/datasource/model/address_model.dart';
 import 'package:app/data/datasource/model/coupon_check_model.dart';
 import 'package:app/data/datasource/model/item_model.dart';
+import 'package:app/data/datasource/model/order_his_model.dart';
 import 'package:app/data/datasource/model/store_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -36,6 +40,29 @@ class CartController extends GetxController with WalletPaymentMixin {
 
   String? notes;
   double deliveryFee = 0.0;
+  String? selectedAddressId;
+
+  AddressModel? get checkoutAddress {
+    if (!Get.isRegistered<AddressController>()) return null;
+    final list = Get.find<AddressController>().addresses;
+    if (list.isEmpty) return null;
+
+    if (selectedAddressId != null) {
+      for (final address in list) {
+        if (address.id == selectedAddressId) return address;
+      }
+    }
+
+    for (final address in list) {
+      if (address.isDefault) return address;
+    }
+    return list.first;
+  }
+
+  void selectCheckoutAddress(String id) {
+    selectedAddressId = id;
+    update();
+  }
 
   @override
   void onInit() {
@@ -251,6 +278,82 @@ class CartController extends GetxController with WalletPaymentMixin {
 
   void applyDiscount() => coupon.apply();
   void removeDiscount() => coupon.remove();
+
+  Future<bool> fillFromPreviousOrder(OrderHisModel order) async {
+    if (hasActiveOrder()) return false;
+
+    final built = <Map<String, dynamic>>[];
+    for (final item in order.items ?? const <OrderItemModel>[]) {
+      final mapped = _mapOrderItemToCart(item);
+      if (mapped == null) continue;
+
+      final index = built.indexWhere(
+        (existing) =>
+            existing['productId'] == mapped['productId'] &&
+            (existing['variationName']?.toString() ?? '') ==
+                (mapped['variationName']?.toString() ?? ''),
+      );
+      if (index == -1) {
+        built.add(mapped);
+      } else {
+        final quantity = (built[index]['quantity'] as int) +
+            (mapped['quantity'] as int);
+        built[index]['quantity'] = quantity;
+        built[index]['subtotal'] = (built[index]['price'] as int) * quantity;
+      }
+    }
+
+    if (built.isEmpty) return false;
+
+    cartItems = built;
+    await coupon.remove();
+    resetWalletPayment();
+    notes = null;
+    notesController.clear();
+    selectedAddressId = null;
+    _afterCartMutation();
+    return true;
+  }
+
+  Map<String, dynamic>? _mapOrderItemToCart(OrderItemModel item) {
+    final productId = item.productId ?? item.product?.id;
+    if (productId == null) return null;
+
+    final quantity = item.quantity ?? 0;
+    if (quantity <= 0) return null;
+
+    final shop = resolveOrderShop(item);
+    final price = _orderItemPrice(item);
+    final variation = item.variationName?.trim();
+    final notes = item.notes?.trim();
+
+    return {
+      'productId': productId,
+      'shopId': shop.shopId,
+      'categoryId': item.product?.categoryId,
+      'shopName': shop.shopName,
+      'deliveryFee': shop.deliveryFee,
+      'variationName': (variation != null && variation.isNotEmpty)
+          ? variation
+          : null,
+      'itemNotes': (notes != null && notes.isNotEmpty) ? notes : null,
+      'productName': item.product?.name ?? 'منتج',
+      'productDescription': item.product?.description ?? '',
+      'productImage': resolveMediaUrl(item.product?.imageUrl) ?? '',
+      'price': price,
+      'quantity': quantity,
+      'subtotal': price * quantity,
+    };
+  }
+
+  int _orderItemPrice(OrderItemModel item) {
+    final raw = item.singlePrice;
+    if (raw != null) {
+      final parsed = double.tryParse(raw);
+      if (parsed != null) return parsed.toInt();
+    }
+    return item.product?.salePrice ?? item.product?.regularPrice ?? 0;
+  }
 
   void clearCart() async {
     cartItems.clear();

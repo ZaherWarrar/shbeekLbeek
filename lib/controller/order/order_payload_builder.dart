@@ -20,19 +20,10 @@ Map<String, dynamic> buildOrderPayload({
       .toList();
 
   final addressController = Get.find<AddressController>();
-  final defaultAddressList =
-      addressController.addresses.where((a) => a.isDefault);
+  final checkoutAddress = cart.checkoutAddress;
 
-  double latitude;
-  double longitude;
-  if (defaultAddressList.isNotEmpty) {
-    final address = defaultAddressList.first;
-    latitude = address.lat;
-    longitude = address.lng;
-  } else {
-    latitude = addressController.selectedLat.value;
-    longitude = addressController.selectedLng.value;
-  }
+  final latitude = checkoutAddress?.lat ?? addressController.selectedLat.value;
+  final longitude = checkoutAddress?.lng ?? addressController.selectedLng.value;
 
   final payload = <String, dynamic>{
     'cart': {'items': items},

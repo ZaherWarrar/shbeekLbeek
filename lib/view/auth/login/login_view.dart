@@ -2,6 +2,7 @@ import 'package:app/controller/auth/login/login_controller.dart';
 import 'package:app/core/constant/routes/app_routes.dart';
 import 'package:app/view/auth/login/widgets/go_to_register.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 import 'package:app/core/class/statusrequest.dart';
@@ -72,6 +73,8 @@ class LoginView extends StatelessWidget {
                     lable: "11".tr,
                     iconData: Icons.email_outlined,
                     scure: false,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   ),
                   SizedBox(height: 15),
                   GoToRegister(onTap: () => controller.goRegister()),

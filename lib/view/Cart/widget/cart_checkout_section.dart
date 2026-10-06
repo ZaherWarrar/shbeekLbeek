@@ -20,26 +20,43 @@ class CartCheckoutSection extends StatelessWidget {
     final isSmallScreen = screenWidth < 400;
     final padding = isSmallScreen ? 12.0 : 16.0;
 
-    return Container(
-      padding: EdgeInsets.all(padding),
-      width: double.infinity,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.orange,
-          padding: EdgeInsets.symmetric(vertical: isSmallScreen ? 12 : 14),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
+    return GetBuilder<OrderController>(
+      builder: (orderController) {
+        final isCreating = orderController.isCreatingOrder;
+
+        return Container(
+          padding: EdgeInsets.all(padding),
+          width: double.infinity,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange,
+              disabledBackgroundColor: Colors.orange,
+              disabledForegroundColor: Colors.white,
+              padding: EdgeInsets.symmetric(vertical: isSmallScreen ? 12 : 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
+            ),
+            onPressed: isCreating ? null : () => _onCheckoutPressed(),
+            child: isCreating
+                ? const SizedBox(
+                    height: 22,
+                    width: 22,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.4,
+                      color: Colors.white,
+                    ),
+                  )
+                : Text(
+                    "إتمام الطلب | ${_formatPrice(controller.total)}",
+                    style: TextStyle(
+                      fontSize: isSmallScreen ? 14 : 16,
+                      color: Colors.white,
+                    ),
+                  ),
           ),
-        ),
-        onPressed: () => _onCheckoutPressed(),
-        child: Text(
-          "إتمام الطلب | ${_formatPrice(controller.total)}",
-          style: TextStyle(
-            fontSize: isSmallScreen ? 14 : 16,
-            color: Colors.white,
-          ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -52,142 +69,64 @@ class CartCheckoutSection extends StatelessWidget {
     final notes = controller.notesController.text.trim();
     final addressController = Get.find<AddressController>();
     final orderController = Get.find<OrderController>();
+    if (orderController.isCreatingOrder) return;
 
-    if (addressController.addresses.isEmpty) {
-      final add = await Get.dialog<bool>(
-        AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-          backgroundColor: AppColor().backgroundColorCard,
-          title: Text(
-            'لا يوجد عنوان',
-            style: TextStyle(
-              color: AppColor().titleColor,
-              fontWeight: FontWeight.w700,
+    if (controller.checkoutAddress == null) {
+      if (addressController.addresses.isEmpty) {
+        final add = await Get.dialog<bool>(
+          AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
             ),
-          ),
-          content: Text(
-            'يجب إضافة عنوان لتسليم الطلب. هل تريد إضافة عنوان الآن؟',
-            style: TextStyle(color: AppColor().descriptionColor),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Get.back(result: false),
-              child: Text(
-                'إلغاء',
-                style: TextStyle(color: AppColor().primaryColor),
+            backgroundColor: AppColor().backgroundColorCard,
+            title: Text(
+              'لا يوجد عنوان',
+              style: TextStyle(
+                color: AppColor().titleColor,
+                fontWeight: FontWeight.w700,
               ),
             ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColor().primaryColor,
-                foregroundColor: AppColor().textButomColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+            content: Text(
+              'يجب إضافة عنوان لتسليم الطلب. هل تريد إضافة عنوان الآن؟',
+              style: TextStyle(color: AppColor().descriptionColor),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Get.back(result: false),
+                child: Text(
+                  'إلغاء',
+                  style: TextStyle(color: AppColor().primaryColor),
                 ),
               ),
-              onPressed: () => Get.back(result: true),
-              child: const Text('أضف الآن'),
-            ),
-          ],
-        ),
-      );
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColor().primaryColor,
+                  foregroundColor: AppColor().textButomColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                onPressed: () => Get.back(result: true),
+                child: const Text('أضف الآن'),
+              ),
+            ],
+          ),
+        );
 
-      if (add == true) {
-        Get.to(() => const AddAddressPage());
+        if (add == true) {
+          Get.to(() => const AddAddressPage());
+        }
+        return;
       }
 
+      AppSnackbar.show(
+        'تنبيه',
+        'الرجاء اختيار موقع التوصيل',
+        snackPosition: SnackPosition.BOTTOM,
+      );
       return;
     }
 
-    final defaultAddresses = addressController.addresses.where(
-      (a) => a.isDefault,
-    );
-    if (defaultAddresses.isNotEmpty) {
-      orderController.createOrder(notes.isEmpty ? null : notes);
-      return;
-    }
-
-    final chosenId = await _showAddressSelectionDialog(addressController);
-    if (chosenId != null) {
-      await addressController.setDefaultAddress(chosenId);
-      orderController.createOrder(notes.isEmpty ? null : notes);
-      return;
-    }
-
-    Get.to(() => const AddAddressPage());
-  }
-
-  Future<String?> _showAddressSelectionDialog(
-    AddressController addressController,
-  ) {
-    return Get.dialog<String?>(
-      AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        backgroundColor: AppColor().backgroundColorCard,
-        title: Text(
-          'اختر عنواناً',
-          style: TextStyle(
-            color: AppColor().titleColor,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: Obx(() {
-            final list = addressController.addresses;
-            return list.isEmpty
-                ? Text(
-                    'لا يوجد عناوين',
-                    style: TextStyle(color: AppColor().descriptionColor),
-                  )
-                : ListView.separated(
-                    shrinkWrap: true,
-                    itemCount: list.length,
-                    separatorBuilder: (_, _) => const Divider(),
-                    itemBuilder: (context, index) {
-                      final address = list[index];
-                      return ListTile(
-                        title: Text(
-                          address.title,
-                          style: TextStyle(color: AppColor().titleColor),
-                        ),
-                        subtitle: Text(
-                          address.description,
-                          style: TextStyle(color: AppColor().descriptionColor),
-                        ),
-                        trailing: Icon(
-                          Icons.location_on_outlined,
-                          color: AppColor().primaryColor,
-                        ),
-                        onTap: () => Get.back(result: address.id),
-                      );
-                    },
-                  );
-          }),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(result: null),
-            child: Text(
-              'إلغاء',
-              style: TextStyle(color: AppColor().primaryColor),
-            ),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColor().primaryColor,
-              foregroundColor: AppColor().textButomColor,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            onPressed: () => Get.back(result: null),
-            child: const Text('إضافة عنوان جديد'),
-          ),
-        ],
-      ),
-    );
+    orderController.createOrder(notes.isEmpty ? null : notes);
   }
 }

@@ -117,6 +117,10 @@ class OtpController extends GetxController {
     isLoading.value = false;
   }
 
+  void goToLogin() {
+    Get.offAllNamed(AppRoutes.login);
+  }
+
   Future<void> resendOtp() async {
     if (!canResend) return;
 

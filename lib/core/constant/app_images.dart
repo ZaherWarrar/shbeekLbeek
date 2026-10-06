@@ -2,6 +2,14 @@
 class Assets {
   Assets._();
   
+  /// Assets for imagesAd1
+  /// assets/images/ad/1.jpeg
+  static const String imagesAd1 = "assets/images/ad/1.jpeg";
+
+  /// Assets for imagesAd2
+  /// assets/images/ad/2.jpeg
+  static const String imagesAd2 = "assets/images/ad/2.jpeg";
+
   /// Assets for images4e38e73208c8a9c2410e4f1d9cb90ee5
   /// assets/images/4e38e73208c8a9c2410e4f1d9cb90ee5.jpg
   static const String images4e38e73208c8a9c2410e4f1d9cb90ee5 = "assets/images/4e38e73208c8a9c2410e4f1d9cb90ee5.jpg";

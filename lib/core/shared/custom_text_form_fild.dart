@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:app/core/constant/app_color.dart';
 
 class CustomTextFormFild extends StatelessWidget {
@@ -15,6 +16,7 @@ class CustomTextFormFild extends StatelessWidget {
     this.onChanged,
     this.errorText,
     this.keyboardType,
+    this.inputFormatters,
     this.maxLength,
   });
 
@@ -28,6 +30,7 @@ class CustomTextFormFild extends StatelessWidget {
   final void Function(String?)? onChanged;
   final String? errorText;
   final TextInputType? keyboardType;
+  final List<TextInputFormatter>? inputFormatters;
   final int? maxLength;
 
   @override
@@ -39,6 +42,7 @@ class CustomTextFormFild extends StatelessWidget {
       readOnly: readOnly,
       onChanged: onChanged,
       keyboardType: keyboardType ?? TextInputType.text,
+      inputFormatters: inputFormatters,
       maxLength: maxLength,
       style: const TextStyle(color: Colors.black),
       decoration: InputDecoration(

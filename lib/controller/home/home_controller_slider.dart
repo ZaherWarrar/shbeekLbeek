@@ -1,10 +1,25 @@
 import 'package:app/controller/home/home_controller.dart';
 import 'package:app/core/class/statusrequest.dart';
+import 'package:app/core/constant/app_images.dart';
 import 'package:app/core/function/handling_data.dart';
 import 'package:app/data/datasource/model/slider_model.dart';
 import 'package:flutter/material.dart';
 
 extension HomeSliderLogic on HomeControllerImp {
+  List<SliderModel> get _defaultSlides => [
+        SliderModel(id: -1, title: 'default_ad', imageUrl: Assets.imagesAd1),
+        SliderModel(id: -2, title: 'default_ad', imageUrl: Assets.imagesAd2),
+      ];
+
+  void _prepareSliderPages() {
+    if (slides.isEmpty) {
+      slides = _defaultSlides;
+    }
+    extendedSlides = [slides.last, ...slides, slides.first];
+    pageController?.dispose();
+    pageController = null;
+  }
+
   Future<void> runFetchSliders() async {
     sliderStat = StatusRequest.loading;
     update();
@@ -12,23 +27,18 @@ extension HomeSliderLogic on HomeControllerImp {
         await sliderData.sliderData(cityId, categoryId: selectedCategoryId);
     sliderStat = handlingData(response);
     if (sliderStat == StatusRequest.success) {
+      slides = [];
       if (response is List) {
         slides = response
             .map<SliderModel>((item) => SliderModel.fromJson(item))
             .toList();
       }
-      if (slides.isEmpty) {
-        extendedSlides = [];
-        pageController?.dispose();
-        pageController = null;
-      } else {
-        extendedSlides = [slides.last, ...slides, slides.first];
-        pageController?.dispose();
-        pageController = null;
-      }
+      _prepareSliderPages();
       update();
     } else {
       sliderStat = StatusRequest.failure;
+      slides = [];
+      _prepareSliderPages();
       update();
     }
   }
@@ -78,12 +88,7 @@ extension HomeSliderLogic on HomeControllerImp {
   }
 
   void setupSliderAfterLoad() {
-    if (slides.isEmpty) {
-      pageController = PageController(initialPage: 0);
-      extendedSlides = [];
-      return;
-    }
-    extendedSlides = [slides.last, ...slides, slides.first];
+    _prepareSliderPages();
     pageController = PageController(initialPage: initialPage);
     runStartAutoPlay();
   }

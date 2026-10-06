@@ -8,6 +8,7 @@ import 'package:app/view/Cart/widget/cart_wallet_widget.dart';
 import 'package:app/view/Cart/widget/discount_code_widget.dart';
 import 'package:app/view/Cart/widget/empty_cart_widget.dart';
 import 'package:app/view/Cart/widget/cart_checkout_section.dart';
+import 'package:app/view/Cart/widget/cart_delivery_address_widget.dart';
 import 'package:app/view/Cart/widget/summary_row_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:app/core/shared/custom_app_bar.dart';
@@ -185,6 +186,10 @@ class CartView extends StatelessWidget {
 
                           const SizedBox(height: 10),
 
+                          const CartDeliveryAddressWidget(),
+
+                          const SizedBox(height: 10),
+
                           const DiscountCodeWidget(),
 
                           const SizedBox(height: 10),
@@ -194,34 +199,28 @@ class CartView extends StatelessWidget {
                           const SizedBox(height: 20),
 
                           SummaryRowWidget(
-                            "المجموع الفرعي",
-                            _formatPrice(controller.subtotal),
+                            "المجموع الكلي",
+                            _formatPrice(
+                              controller.subtotal +
+                                  controller.calculatedDeliveryFee,
+                            ),
                           ),
                           SummaryRowWidget(
-                            "رسوم التوصيل",
-                            _formatPrice(controller.calculatedDeliveryFee),
-                          ),
-                          SummaryRowWidget(
-                            "الخصم",
-                            _formatPrice(controller.calculatedDiscount),
+                            "قيمة الخصم",
+                            controller.calculatedDiscount > 0
+                                ? '- ${_formatPrice(controller.calculatedDiscount)}'
+                                : _formatPrice(0),
                           ),
                           if (controller.walletDeduction > 0)
                             SummaryRowWidget(
                               'خصم المحفظة',
                               '- ${_formatPrice(controller.walletDeduction)}',
                             ),
-                          if (controller.useWallet &&
-                              controller.walletDeduction > 0 &&
-                              controller.total > 0)
-                            SummaryRowWidget(
-                              'المتبقي عند التوصيل',
-                              _formatPrice(controller.total),
-                            ),
 
                           const Divider(),
 
                           SummaryRowWidget(
-                            "المجموع الإجمالي",
+                            "المجموع النهائي",
                             _formatPrice(controller.total),
                             isTotal: true,
                           ),

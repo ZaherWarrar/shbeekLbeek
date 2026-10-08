@@ -52,6 +52,9 @@ class OrderData {
   // ================================
   Future<Object> confirmOrderData(int orderId) async {
     final headers = _getHeaders();
+    if (!headers.containsKey("Authorization")) {
+      return StatusRequest.unauthorized;
+    }
 
     final response = await crud.getData(
       "${ApiLinks.confirmOrder}/$orderId",
@@ -67,6 +70,9 @@ class OrderData {
   // ================================
   Future<Object> cancelOrderData(int orderId) async {
     final headers = _getHeaders();
+    if (!headers.containsKey("Authorization")) {
+      return StatusRequest.unauthorized;
+    }
 
     final response = await crud.getData(
       "${ApiLinks.cancelOrder}/$orderId",
@@ -79,7 +85,10 @@ class OrderData {
 
 
   Future<Object> myOrdersData() async {
-    final headers =  _getHeaders();
+    final headers = _getHeaders();
+    if (!headers.containsKey("Authorization")) {
+      return StatusRequest.unauthorized;
+    }
     var response = await crud.getData(ApiLinks.myOrders, {}, headers: headers);
     return response.fold((l) => l, (r) => r);
   }

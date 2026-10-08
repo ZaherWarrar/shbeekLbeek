@@ -68,11 +68,13 @@ class HomeBody extends StatelessWidget {
                 );
           return CustomRefresh(
             statusRequest: controller.sliderStat,
-            fun: () async {
-              await controller.fetchSliders();
-              await controller.fetchMainCategores();
-              await controller.fetchAllItem();
-              await controller.fetchHomeSection();
+            fun: () {
+              return Future.wait([
+                controller.fetchSliders(),
+                controller.fetchMainCategores(),
+                controller.fetchAllItem(),
+                controller.fetchHomeSection(),
+              ]);
             },
             body: body,
             preferBodyWhenLoading: true,

@@ -9,7 +9,7 @@ class MainCategory extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomRefresh(
-      statusRequest: controller.finalSectionState,
+      statusRequest: controller.homeSectionState,
       fun: () => controller.fetchHomeSection(),
       body: SizedBox(
         height: 35,

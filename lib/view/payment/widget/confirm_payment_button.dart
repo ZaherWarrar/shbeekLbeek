@@ -10,14 +10,7 @@ class ConfirmPaymentButton extends GetView<PaymentController> {
   Widget build(BuildContext context) {
     return Obx(() {
       return ElevatedButton(
-        onPressed: controller.isSelected
-            ? () {
-                // 👉 هون بتبعت للباك
-                final selectedId = controller.selectedMethodId.value;
-                // ignore: avoid_print
-                print('Selected payment: $selectedId');
-              }
-            : null,
+        onPressed: controller.isSelected ? () {} : null,
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColor().primaryColor,
           minimumSize: const Size(double.infinity, 48),

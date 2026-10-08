@@ -1,5 +1,6 @@
 import 'package:app/controller/cart/cart_controller.dart';
 import 'package:app/controller/shop_details/shop_details_controller.dart';
+import 'package:app/core/constant/app_color.dart';
 import 'package:app/view/shopDetails/widgets/shop_category_tabs_row.dart';
 import 'package:app/view/shopDetails/widgets/shop_product_list_tile.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +19,17 @@ class CategoryWithItems extends StatelessWidget {
             final products = controller.displayedProducts;
 
             if (controller.filteredProducts.isEmpty) {
+              if (controller.productsLoading) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 28),
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      color: AppColor().primaryColor,
+                      strokeWidth: 2,
+                    ),
+                  ),
+                );
+              }
               return Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: Center(

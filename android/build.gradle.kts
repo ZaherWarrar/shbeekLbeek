@@ -11,6 +11,9 @@ buildscript {
 
 allprojects {
     repositories {
+        // dl.google.com returns 404 for some AndroidX files on this network.
+        maven { url = uri("https://maven.aliyun.com/repository/google") }
+        maven { url = uri("https://repo.huaweicloud.com/repository/maven/") }
         google()
         mavenCentral()
     }

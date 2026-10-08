@@ -27,7 +27,10 @@ class ProfileView extends StatelessWidget {
         elevation: 0,
         foregroundColor: AppColor().titleColor,
       ),
-      body: SingleChildScrollView(
+      body: GetBuilder<ProfileController>(
+        init: controller,
+        builder: (controller) {
+          return SingleChildScrollView(
         child: Column(
           children: [
             ProfileHeader(controller: controller),
@@ -60,11 +63,12 @@ class ProfileView extends StatelessWidget {
                   icon: Icons.account_balance_wallet_outlined,
                   route: AppRoutes.wallet,
                 ),
-                ProfileItemData(
-                  title: 'تغيير المدينة',
-                  icon: Icons.map_outlined,
-                  route: AppRoutes.chooseCity,
-                ),
+                if (controller.showChangeCity)
+                  ProfileItemData(
+                    title: 'تغيير المدينة',
+                    icon: Icons.map_outlined,
+                    route: AppRoutes.chooseCity,
+                  ),
               ],
             ),
 
@@ -105,6 +109,8 @@ class ProfileView extends StatelessWidget {
             const SizedBox(height: 30),
           ],
         ),
+      );
+        },
       ),
     );
   }

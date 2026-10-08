@@ -14,24 +14,41 @@ class ShopDetailsProductLoader {
     required List<InnerCategory> innerCategories,
     List<Products>? fallbackFromStore,
   }) async {
+    final categoryIds = innerCategories
+        .map((inner) => inner.id)
+        .whereType<int>()
+        .toList();
     final products = <Products>[];
 
-    for (final inner in innerCategories) {
-      final innerId = inner.id;
-      if (innerId == null) continue;
-
-      final endpoint = '${ApiLinks.baseUrl}/stores/$storeId/products/$innerId';
-      final eitherRes = await _crud.getData(endpoint, {});
-      final stat = handlingData(eitherRes);
-
-      if (stat != StatusRequest.success) continue;
-
-      final body = eitherRes.fold((l) => l, (r) => r);
-      products.addAll(_parseProductsBody(body));
+    const batchSize = 6;
+    for (var start = 0; start < categoryIds.length; start += batchSize) {
+      final end = start + batchSize > categoryIds.length
+          ? categoryIds.length
+          : start + batchSize;
+      final batch = await Future.wait(
+        categoryIds
+            .sublist(start, end)
+            .map((innerId) => _fetchCategoryProducts(storeId, innerId)),
+      );
+      for (final items in batch) {
+        products.addAll(items);
+      }
     }
 
     if (products.isNotEmpty) return products;
     return List<Products>.from(fallbackFromStore ?? []);
+  }
+
+  Future<List<Products>> _fetchCategoryProducts(
+    int storeId,
+    int innerId,
+  ) async {
+    final endpoint = '${ApiLinks.baseUrl}/stores/$storeId/products/$innerId';
+    final eitherRes = await _crud.getData(endpoint, {});
+    if (handlingData(eitherRes) != StatusRequest.success) return const [];
+
+    final body = eitherRes.fold((l) => l, (r) => r);
+    return _parseProductsBody(body);
   }
 
   static List<Products> _parseProductsBody(dynamic body) {

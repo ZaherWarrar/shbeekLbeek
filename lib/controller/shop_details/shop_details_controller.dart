@@ -27,11 +27,13 @@ class ShopDetailsController extends GetxController
 
   late TextEditingController searchController;
   StatusRequest statusRequest = StatusRequest.none;
+  bool productsLoading = false;
   List<Products> _allProducts = [];
   List<Products> filteredProducts = [];
   int? selectedInnerCategoryId;
 
   late final ShopDetailsProductLoader _productLoader;
+  int _loadGeneration = 0;
 
   @override
   void onInit() {
@@ -105,11 +107,14 @@ class ShopDetailsController extends GetxController
   }
 
   Future<void> fetchStoreDetails() async {
+    final generation = ++_loadGeneration;
     statusRequest = StatusRequest.loading;
+    productsLoading = true;
     update();
 
     final data = StoreDetailsData(Get.find<Crud>());
     final response = await data.storeDetails(storeId);
+    if (generation != _loadGeneration) return;
     statusRequest = handlingData(response);
 
     if (statusRequest == StatusRequest.success &&
@@ -117,18 +122,34 @@ class ShopDetailsController extends GetxController
       store = StoreModel.fromJson(response);
       shopCategoryName =
           _cleanCategory(store?.categoryName) ?? shopCategoryName;
-      final loaded = await _productLoader.loadForStore(
-        storeId: storeId,
-        innerCategories: store?.innerCategories ?? [],
-        fallbackFromStore: store?.products,
-      );
-      _allProducts = loaded;
-      _applySearchFilter();
-      await fetchReviews();
+      final preview = store?.products;
+      if (preview != null && preview.isNotEmpty) {
+        _allProducts = List<Products>.from(preview);
+        _applySearchFilter();
+      }
       update();
+
+      final reviewsFuture = fetchReviews();
+      try {
+        final loaded = await _productLoader.loadForStore(
+          storeId: storeId,
+          innerCategories: store?.innerCategories ?? [],
+          fallbackFromStore: store?.products,
+        );
+        if (generation != _loadGeneration) return;
+        _allProducts = loaded;
+        _applySearchFilter();
+      } finally {
+        if (generation == _loadGeneration) {
+          productsLoading = false;
+          update();
+        }
+      }
+      if (generation == _loadGeneration) await reviewsFuture;
       return;
     }
 
+    productsLoading = false;
     if (response is StatusRequest) {
       statusRequest = response;
     } else {

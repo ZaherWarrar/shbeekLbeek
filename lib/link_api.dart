@@ -27,4 +27,5 @@ class ApiLinks {
   static const String userBalance = '$baseUrl/user/balance';
   static const String notifications = '$baseUrl/notifications';
   static const String externalOrders = '$baseUrl/external-orders';
+  static const String settings = '$baseUrl/settings';
 }

@@ -1,5 +1,10 @@
+import 'package:app/controller/choose_city/choose_city_controller.dart';
+import 'package:app/core/class/statusrequest.dart';
 import 'package:app/core/constant/routes/app_routes.dart';
+import 'package:app/core/function/handling_data.dart';
 import 'package:app/core/services/session_service.dart';
+import 'package:app/data/datasource/model/city_model.dart';
+import 'package:app/data/datasource/remot/cities_data.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:app/core/function/app_snackbar.dart';
@@ -11,6 +16,7 @@ class ProfileController extends GetxController {
   final userRole = ''.obs;
   final userStatus = ''.obs;
   final isLoggedIn = false.obs;
+  bool showChangeCity = false;
 
   final SessionService session = Get.find<SessionService>();
 
@@ -19,6 +25,7 @@ class ProfileController extends GetxController {
     super.onInit();
     checkLoginStatus();
     loadUserData();
+    loadCities();
   }
 
   @override
@@ -38,6 +45,44 @@ class ProfileController extends GetxController {
   // ================================
   // تحميل بيانات المستخدم
   // ================================
+  Future<void> loadCities() async {
+    if (Get.isRegistered<ChooseCityController>()) {
+      final cities = Get.find<ChooseCityController>().cities;
+      if (cities.isNotEmpty) {
+        showChangeCity = cities.length > 1;
+        update();
+        return;
+      }
+    }
+
+    final response = await CitiesData(Get.find()).fetchCities();
+    if (handlingData(response) != StatusRequest.success) {
+      showChangeCity = false;
+      update();
+      return;
+    }
+
+    showChangeCity = _parseCities(response).length > 1;
+    update();
+  }
+
+  List<CityModel> _parseCities(Object response) {
+    if (response is List) {
+      return response
+          .whereType<Map>()
+          .map((item) => CityModel.fromJson(Map<String, dynamic>.from(item)))
+          .where((city) => city.id > 0 && city.name.isNotEmpty)
+          .toList();
+    }
+
+    if (response is Map) {
+      final data = response['data'] ?? response['cities'];
+      if (data is List) return _parseCities(data);
+    }
+
+    return [];
+  }
+
   void loadUserData() {
     userName.value = session.userName ?? 'مستخدم';
     email.value = session.userEmail ?? '';

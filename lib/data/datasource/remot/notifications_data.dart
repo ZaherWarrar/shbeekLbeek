@@ -3,6 +3,7 @@ import 'package:app/core/class/statusrequest.dart';
 import 'package:app/core/function/auth_headers.dart';
 import 'package:app/data/datasource/model/notification_model.dart';
 import 'package:app/link_api.dart';
+import 'package:flutter/foundation.dart';
 
 class NotificationsData {
   NotificationsData(this.crud);
@@ -79,6 +80,37 @@ class NotificationsData {
 
     final response = await crud.deleteData(
       '${ApiLinks.notifications}/$id',
+      headers: AuthHeaders.build(),
+    );
+
+    return response.fold((status) => status, (data) => data);
+  }
+
+  Future<Object> registerDeviceToken(String fcmToken) async {
+    if (!AuthHeaders.hasToken || fcmToken.isEmpty) {
+      return StatusRequest.unauthorized;
+    }
+
+    final response = await crud.postData(
+      ApiLinks.deviceTokens,
+      {
+        'fcm_token': fcmToken,
+        'platform': defaultTargetPlatform == TargetPlatform.iOS ? 'ios' : 'android',
+      },
+      headers: AuthHeaders.build(),
+    );
+
+    return response.fold((status) => status, (data) => data);
+  }
+
+  Future<Object> unregisterDeviceToken(String fcmToken) async {
+    if (!AuthHeaders.hasToken || fcmToken.isEmpty) {
+      return StatusRequest.unauthorized;
+    }
+
+    final response = await crud.postData(
+      '${ApiLinks.deviceTokens}/remove',
+      {'fcm_token': fcmToken},
       headers: AuthHeaders.build(),
     );
 

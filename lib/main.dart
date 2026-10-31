@@ -1,5 +1,9 @@
+import 'dart:async';
+
+import 'package:app/controller/notifications/notifications_controller.dart';
 import 'package:app/core/services/session_service.dart';
 import 'package:app/core/shared/notifications/notification_api.dart';
+import 'package:app/core/shared/notifications/notification_router.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -7,19 +11,12 @@ import 'package:app/binding/my_binding.dart';
 import 'package:app/core/constant/routes/app_routes.dart';
 import 'package:app/localization/changelocal.dart';
 import 'package:app/localization/translation.dart';
+import 'package:app/view/splash/startup_splash.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  //تفعيل الفاير بيز
-  await Firebase.initializeApp();
-
-  // 2. تشغيل كلاس الإشعارات (لا يوقف التطبيق إذا FCM غير متاح)
-  await NotificationApi().init();
-  //  تهيئة SessionService
   await Get.putAsync(() => SessionService().init());
-
-  //  تهيئة Changelocal مرة واحدة فقط
   Get.put(Changelocal());
 
   final session = Get.find<SessionService>();
@@ -35,6 +32,23 @@ void main() async {
     initialRoute = AppRoutes.login;
   }
   runApp(MyApp(initialRoute: initialRoute));
+  unawaited(_startPlatformServices());
+}
+
+Future<void> _startPlatformServices() async {
+  try {
+    await Firebase.initializeApp().timeout(const Duration(seconds: 8));
+  } catch (e) {
+    debugPrint('Firebase init skipped: $e');
+    return;
+  }
+
+  try {
+    await NotificationApi().init().timeout(const Duration(seconds: 8));
+    NotificationApi.syncDeviceToken();
+  } catch (e) {
+    debugPrint('Notification init skipped: $e');
+  }
 }
 
 late double w;
@@ -71,11 +85,28 @@ class MyApp extends StatelessWidget {
 
       getPages: AppRoutes.routes,
       builder: (context, child) {
-        return Directionality(
-          textDirection: TextDirection.rtl,
-          child: child ?? const SizedBox.shrink(),
+        _openPendingNotification();
+        return StartupSplash(
+          child: Directionality(
+            textDirection: TextDirection.rtl,
+            child: child ?? const SizedBox.shrink(),
+          ),
         );
       },
     );
   }
+}
+
+bool _pendingNotificationScheduled = false;
+
+void _openPendingNotification() {
+  if (_pendingNotificationScheduled) return;
+  _pendingNotificationScheduled = true;
+  WidgetsBinding.instance.addPostFrameCallback((_) async {
+    final pending = NotificationRouter.pending;
+    if (pending != null && Get.isRegistered<NotificationsController>()) {
+      await Get.find<NotificationsController>().markAsRead(pending.id);
+    }
+    await NotificationRouter.flushPending();
+  });
 }

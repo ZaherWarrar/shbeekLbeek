@@ -1,5 +1,4 @@
-import 'package:app/core/constant/app_color.dart';
-import 'package:app/core/function/fontsize.dart';
+import 'package:app/view/auth/widgets/auth_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_utils/get_utils.dart';
 
@@ -8,24 +7,27 @@ class GoToLogin extends StatelessWidget {
   final Function() onTap;
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
+    return Wrap(
+      alignment: WrapAlignment.center,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: 5,
       children: [
         Text(
           "17".tr,
-          style: TextStyle(
-            color: AppColor().descriptionColor,
-            fontSize: getResponsiveFontSize(context, fontSize: 16),
+          style: const TextStyle(
+            color: AuthColors.label,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
           ),
         ),
-        SizedBox(width: 5),
         GestureDetector(
           onTap: onTap,
           child: Text(
             "1".tr,
-            style: TextStyle(
-              color: AppColor().primaryColor,
-              fontSize: getResponsiveFontSize(context, fontSize: 16),
+            style: const TextStyle(
+              color: AuthColors.purple,
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
             ),
           ),
         ),

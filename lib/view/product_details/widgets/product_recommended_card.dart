@@ -83,7 +83,7 @@ class ProductRecommendedCard extends StatelessWidget {
                 ),
                 const Spacer(),
                 Align(
-                  alignment: Alignment.centerLeft,
+                  alignment: AlignmentDirectional.centerStart,
                   child: GestureDetector(
                     onTap: onAdd,
                     child: Container(

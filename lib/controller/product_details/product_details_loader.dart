@@ -34,14 +34,14 @@ class ProductDetailsLoader {
       );
     }
 
-    final product = ProductDetailsModel.fromJson(detailsRes);
-    final recommended = await _loadRecommended(productId);
-
     return ProductDetailsLoadResult(
       status: StatusRequest.success,
-      product: product,
-      recommended: recommended,
+      product: ProductDetailsModel.fromJson(detailsRes),
     );
+  }
+
+  Future<List<RecommendedProductModel>> loadRecommended(int productId) {
+    return _loadRecommended(productId);
   }
 
   Future<List<RecommendedProductModel>> _loadRecommended(int productId) async {

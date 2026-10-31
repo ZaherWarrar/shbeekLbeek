@@ -28,16 +28,7 @@ class AddressController extends GetxController {
     // 🔥 تهيئة SharedPreferences قبل أي استخدام
     _prefs = await AddressPreferences().init();
 
-    // 🔥 الآن آمن تحميل العناوين
     loadAddresses();
-    // الحصول على الموقع الحالي عند فتح الصفحة
-    _initializeLocation();
-  }
-
-  // تهيئة الموقع عند بدء التطبيق (بدون طلب إذن تلقائي)
-  Future<void> _initializeLocation() async {
-    if (selectedLat.value != 0.0 && selectedLng.value != 0.0) return;
-    _setDefaultLocation();
   }
 
   /// فتح الخريطة على الموقع الحالي (يُستدعى عند فتح صفحة إضافة عنوان).

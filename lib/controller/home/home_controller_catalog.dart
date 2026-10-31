@@ -25,12 +25,14 @@ extension HomeCatalogLogic on HomeControllerImp {
   }
 
   Future<void> runFetchAllItem() async {
+    final generation = homeLoadGeneration;
     if (items.isEmpty) {
       allItemState = StatusRequest.loading;
       update();
     }
     final response =
         await allItemData.allItemData(cityId, categoryId: selectedCategoryId);
+    if (generation != homeLoadGeneration) return;
     allItemState = handlingData(response);
     if (allItemState == StatusRequest.success) {
       List<dynamic> itemList = [];

@@ -12,11 +12,11 @@ class InitialBindings extends Bindings {
   void dependencies() {
     Get.put(Crud());
     Get.put(CartController(), permanent: true);
-    // تسجيل OrderController لضمان تحميل الطلب النشط عند بدء التطبيق
+    // الطلب النشط والعنوان المحفوظ ظاهرين أو لازمين من أول شاشة.
     Get.put(OrderController(), permanent: true);
-    // تسجيل AddressController لضمان توافره في الشريط العلوي
     Get.put(AddressController(), permanent: true);
-    Get.put(FavoritesController(), permanent: true);
+    // المفضلة تُحمَّل عند فتح المتجر أو تاب المفضلة، مو مع الرئيسية.
+    Get.lazyPut<FavoritesController>(() => FavoritesController(), fenix: true);
     Get.put(NotificationsController(), permanent: true);
     Get.put(AppSettingsController(), permanent: true);
   }

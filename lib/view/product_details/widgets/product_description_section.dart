@@ -18,28 +18,31 @@ class ProductDescriptionSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final description = product?.description?.trim() ?? '';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'الوصف',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w800,
-            color: AppColor().titleColor,
+        if (description.isNotEmpty) ...[
+          Text(
+            'الوصف',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              color: AppColor().titleColor,
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          product?.description ?? '',
-          style: TextStyle(
-            fontSize: 13,
-            height: 1.6,
-            color: AppColor().descriptionColor,
+          const SizedBox(height: 8),
+          Text(
+            description,
+            style: TextStyle(
+              fontSize: 14,
+              height: 1.6,
+              color: AppColor().descriptionColor,
+            ),
           ),
-        ),
+        ],
+        if (description.isNotEmpty && isVariable) const SizedBox(height: 18),
         if (isVariable) ...[
-          const SizedBox(height: 18),
           Text(
             'اختر خيار المنتج',
             style: TextStyle(
@@ -55,7 +58,7 @@ class ProductDescriptionSection extends StatelessWidget {
             onToggle: controller.toggleVariation,
           ),
         ],
-        const SizedBox(height: 18),
+        if (description.isNotEmpty || isVariable) const SizedBox(height: 18),
         Text(
           'ملاحظة على المنتج (اختياري)',
           style: TextStyle(
@@ -68,10 +71,15 @@ class ProductDescriptionSection extends StatelessWidget {
         TextField(
           controller: controller.itemNotesController,
           maxLines: 2,
+          textAlign: TextAlign.start,
           decoration: InputDecoration(
             hintText: 'مثال: بدون سكر / زيادة صوص...',
             filled: true,
             fillColor: Colors.white,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 12,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide: BorderSide(color: Colors.grey.shade300),

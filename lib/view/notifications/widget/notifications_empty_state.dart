@@ -36,7 +36,7 @@ class NotificationsEmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'ستظهر هنا إشعارات الطلبات والعروض عند وصولها',
+              'ستظهر هنا إشعارات الطلبات والعروض عند وصولها، وتبقى لمدة أسبوع',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,

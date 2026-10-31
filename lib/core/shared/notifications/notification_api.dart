@@ -1,18 +1,26 @@
+import 'dart:async';
 import 'dart:convert';
 
+import 'package:app/controller/notifications/notifications_controller.dart';
+import 'package:app/core/class/crud.dart';
+import 'package:app/core/function/auth_headers.dart';
+import 'package:app/core/services/session_service.dart';
 import 'package:app/core/shared/notifications/notification_inbox.dart';
+import 'package:app/core/shared/notifications/notification_router.dart';
+import 'package:app/data/datasource/model/notification_model.dart';
+import 'package:app/data/datasource/remot/notifications_data.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:get/get.dart';
 
-/// 🔴 HANDLER للخلفية (Android + iOS فقط)
-/// لازم يكون Top-Level
+/// لازم يكون Top-Level حتى يشتغل والإشعار بالتطبيق مغلق.
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  debugPrint('📩 BG Title: ${message.notification?.title}');
-  debugPrint('📩 BG Body: ${message.notification?.body}');
-  debugPrint('📩 BG Data: ${message.data}');
+  await NotificationInbox.rememberRemote(message);
 }
 
 class NotificationApi {
@@ -20,7 +28,6 @@ class NotificationApi {
   final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
 
-  /// 🔔 Android Channel
   static const AndroidNotificationChannel _androidChannel =
       AndroidNotificationChannel(
         'high_importance_channel',
@@ -30,32 +37,34 @@ class NotificationApi {
         playSound: true,
       );
 
-  /// 🔹 INIT (Android + iOS + Web)
   Future<void> init() async {
     try {
-      // 🔹 طلب الإذن (iOS + Web)
       await _firebaseMessaging.requestPermission(
         alert: true,
         badge: true,
         sound: true,
       );
 
-      // 🔹 Background handler (غير Web)
       if (!kIsWeb) {
-        FirebaseMessaging.onBackgroundMessage(
-          firebaseMessagingBackgroundHandler,
-        );
+        FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
       }
 
-      // 🔹 تهيئة Local Notifications (Android + iOS فقط)
       if (!kIsWeb) {
         await _initLocalNotifications();
       }
 
-      // 🔹 إعداد استقبال الإشعارات
       await _initFirebaseListeners();
 
-      // 🔹 Token (قد يفشل على محاكي بدون Google Play Services)
+      final initial = await _firebaseMessaging.getInitialMessage();
+      if (initial != null) {
+        await NotificationInbox.rememberRemote(initial);
+        NotificationRouter.hold(_modelFromRemote(initial));
+      }
+
+      _firebaseMessaging.onTokenRefresh.listen((_) {
+        syncDeviceToken();
+      });
+
       await getToken();
     } on FirebaseException catch (e, st) {
       debugPrint(
@@ -69,33 +78,22 @@ class NotificationApi {
     }
   }
 
-  /// 🔹 Firebase listeners
   Future<void> _initFirebaseListeners() async {
-    // iOS foreground
     await _firebaseMessaging.setForegroundNotificationPresentationOptions(
       alert: true,
       badge: true,
       sound: true,
     );
 
-    // 🔹 التطبيق مفتوح
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      debugPrint('📨 FG Message: ${message.notification?.title}');
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
+      final model = _modelFromRemote(message);
+      await NotificationInbox.remember(model);
+      if (kIsWeb || (model.title.isEmpty && model.body.isEmpty)) return;
 
-      if (kIsWeb) {
-        // Web → المتصفح يعرض الإشعار
-        return;
-      }
-
-      final notification = message.notification;
-      if (notification == null) return;
-
-      NotificationInbox.refreshFromApi();
-
-    _localNotifications.show(
-        id: notification.hashCode,
-        title: notification.title,
-        body: notification.body,
+      _localNotifications.show(
+        id: model.id.hashCode & 0x7fffffff,
+        title: model.title,
+        body: model.body,
         notificationDetails: NotificationDetails(
           android: AndroidNotificationDetails(
             _androidChannel.id,
@@ -107,55 +105,78 @@ class NotificationApi {
           ),
           iOS: const DarwinNotificationDetails(),
         ),
-        payload: jsonEncode(message.data),
+        payload: jsonEncode(model.toPayload()),
       );
     });
 
-    // 🔹 فتح التطبيق من إشعار
     FirebaseMessaging.onMessageOpenedApp.listen(_handleMessage);
   }
 
-  /// 🔹 Local Notifications Init (Android + iOS)
   Future<void> _initLocalNotifications() async {
     const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
-
     const iosInit = DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
       requestSoundPermission: true,
     );
-
     const settings = InitializationSettings(android: androidInit, iOS: iosInit);
 
     await _localNotifications.initialize(
+      settings: settings,
       onDidReceiveNotificationResponse: (response) {
-        if (response.payload == null) return;
-        final data = jsonDecode(response.payload!);
-        _handleMessage(RemoteMessage.fromMap({'data': data}));
-      }, settings: settings,
+        final payload = response.payload;
+        if (payload == null || payload.isEmpty) return;
+        final decoded = jsonDecode(payload);
+        if (decoded is! Map) return;
+        final model = NotificationModel.fromPush(
+          data: Map<String, dynamic>.from(decoded),
+        );
+        _open(model);
+      },
     );
 
     final androidPlugin = _localNotifications
         .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin
         >();
-
     await androidPlugin?.createNotificationChannel(_androidChannel);
   }
 
-  /// 🔹 Handle notification click
   void _handleMessage(RemoteMessage message) {
-    debugPrint('👉 Opened Notification');
-    debugPrint('Title: ${message.notification?.title}');
-    debugPrint('Body: ${message.notification?.body}');
-    debugPrint('Data: ${message.data}');
+    _open(_modelFromRemote(message));
   }
 
-  /// 🔹 FCM Token (مع إعادة محاولة عند SERVICE_NOT_AVAILABLE)
+  Future<void> _open(NotificationModel model) async {
+    await NotificationInbox.remember(model);
+    if (Get.isRegistered<NotificationsController>()) {
+      await Get.find<NotificationsController>().markAsRead(model.id);
+    }
+    await NotificationRouter.open(model);
+  }
+
+  NotificationModel _modelFromRemote(RemoteMessage message) {
+    return NotificationModel.fromPush(
+      id: message.messageId,
+      title: message.notification?.title,
+      body: message.notification?.body,
+      data: Map<String, dynamic>.from(message.data),
+      createdAt: message.sentTime,
+    );
+  }
+
   Future<String?> getToken({int maxAttempts = 3}) async {
     for (var attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
-        return await _firebaseMessaging.getToken();
+        final token = await _firebaseMessaging
+            .getToken()
+            .timeout(const Duration(seconds: 8));
+        if (kDebugMode && token != null) {
+          debugPrint('FCM token: $token');
+        }
+        return token;
+      } on TimeoutException {
+        debugPrint('⚠️ FCM getToken timed out');
+        return null;
       } on FirebaseException catch (e) {
         final isRetryable = e.code == 'unknown' &&
             (e.message?.contains('SERVICE_NOT_AVAILABLE') ?? false);
@@ -170,5 +191,34 @@ class NotificationApi {
       }
     }
     return null;
+  }
+
+  static Future<void> syncDeviceToken() async {
+    try {
+      if (!Get.isRegistered<SessionService>() || !Get.isRegistered<Crud>()) {
+        return;
+      }
+      if (!AuthHeaders.hasToken) return;
+      final token = await FirebaseMessaging.instance
+          .getToken()
+          .timeout(const Duration(seconds: 8));
+      if (token == null || token.isEmpty) return;
+      await NotificationsData(Get.find<Crud>()).registerDeviceToken(token);
+    } catch (e) {
+      debugPrint('⚠️ FCM token sync failed: $e');
+    }
+  }
+
+  static Future<void> unregisterDeviceToken() async {
+    try {
+      if (!Get.isRegistered<Crud>() || !AuthHeaders.hasToken) return;
+      final token = await FirebaseMessaging.instance
+          .getToken()
+          .timeout(const Duration(seconds: 8));
+      if (token == null || token.isEmpty) return;
+      await NotificationsData(Get.find<Crud>()).unregisterDeviceToken(token);
+    } catch (e) {
+      debugPrint('⚠️ FCM token remove failed: $e');
+    }
   }
 }

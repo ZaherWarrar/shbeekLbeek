@@ -1,3 +1,4 @@
+import 'package:app/controller/cart/cart_controller.dart';
 import 'package:app/core/constant/app_color.dart';
 import 'package:app/core/shared/custom_app_bar.dart';
 import 'package:app/core/shared/custom_refresh.dart';
@@ -26,18 +27,22 @@ class ShopDetailsView extends StatelessWidget {
             ),
             body: CustomRefresh(
               statusRequest: controller.statusRequest,
+              preferBodyWhenLoading: true,
               fun: () => controller.refreshPage(),
-              body: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: Column(
-                  children: const [
-                    ShopDetailsHeaderSection(),
-                    SizedBox(height: 10),
-                    ShopDetailsSearchField(),
-                    CategoryWithItems(),
-                    SizedBox(height: 30),
-                    ShopDetailsReviewsSection(),
-                    SizedBox(height: 20),
+              body: GetBuilder<CartController>(
+                builder: (_) => CustomScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  cacheExtent: 600,
+                  slivers: [
+                    const SliverToBoxAdapter(child: ShopDetailsHeaderSection()),
+                    const SliverToBoxAdapter(child: SizedBox(height: 10)),
+                    const SliverToBoxAdapter(child: ShopDetailsSearchField()),
+                    ...buildShopCatalogSlivers(controller),
+                    const SliverToBoxAdapter(child: SizedBox(height: 30)),
+                    const SliverToBoxAdapter(
+                      child: ShopDetailsReviewsSection(),
+                    ),
+                    const SliverToBoxAdapter(child: SizedBox(height: 20)),
                   ],
                 ),
               ),

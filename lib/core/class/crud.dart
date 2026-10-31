@@ -4,7 +4,9 @@ import 'dart:io';
 import 'package:path/path.dart';
 import 'package:app/core/class/statusrequest.dart';
 import 'package:app/core/function/checkinternet.dart';
+import 'package:app/core/services/session_service.dart';
 import 'package:dartz/dartz.dart';
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
 class Crud {
@@ -310,6 +312,9 @@ class Crud {
         return Right({"message": response.body, "status": response.statusCode});
       }
     } else if (response.statusCode == 401) {
+      if (Get.isRegistered<SessionService>()) {
+        Get.find<SessionService>().dropExpiredSession();
+      }
       return Left(StatusRequest.unauthorized);
     } else if (response.statusCode == 403) {
       return Left(StatusRequest.forbidden);

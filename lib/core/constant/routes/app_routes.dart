@@ -86,6 +86,9 @@ class AppRoutes {
       binding: ProductDetailsBinding(),
       name: productDetails,
       page: () => const ProductDetailsView(),
+      transition: Transition.cupertino,
+      transitionDuration: const Duration(milliseconds: 320),
+      curve: Curves.easeOutCubic,
     ),
     GetPage(
       binding: OrderBinding(),

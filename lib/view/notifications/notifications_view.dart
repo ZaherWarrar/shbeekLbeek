@@ -54,9 +54,10 @@ class _NotificationsViewState extends State<NotificationsView> {
                 ),
             ],
           ),
-          body: CustomRefresh(
+            body: CustomRefresh(
             statusRequest: controller.statusRequest,
             fun: () => controller.loadNotifications(requireAuth: true),
+            preferBodyWhenLoading: items.isNotEmpty,
             body: items.isEmpty
                 ? ListView(
                     physics: const AlwaysScrollableScrollPhysics(),
@@ -68,12 +69,25 @@ class _NotificationsViewState extends State<NotificationsView> {
                 : ListView.builder(
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                    itemCount: items.length,
+                    itemCount: items.length + 1,
                     itemBuilder: (context, index) {
-                      final item = items[index];
+                      if (index == 0) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Text(
+                            'تبقى الإشعارات لمدة أسبوع، ويمكنك حذف أي إشعار بالسحب أو من زر الحذف. اضغط الإشعار للانتقال إلى الصفحة المرتبطة به.',
+                            style: TextStyle(
+                              fontSize: 12,
+                              height: 1.5,
+                              color: AppColor().descriptionColor,
+                            ),
+                          ),
+                        );
+                      }
+                      final item = items[index - 1];
                       return NotificationCard(
                         notification: item,
-                        onTap: () => controller.markAsRead(item.id),
+                        onTap: () => controller.openNotification(item),
                         onMarkAsRead: () => controller.markAsRead(item.id),
                         onDelete: () => controller.deleteNotification(item.id),
                       );

@@ -16,14 +16,7 @@ class MainView extends StatelessWidget {
   MainView({super.key});
 
   final controller = Get.put(MainController());
-
-  final pages = [
-    HomePageView(),
-    const ExternalDeliveryView(),
-    OrderHistoryPage(),
-    FavoritesView(),
-    ProfileView(),
-  ];
+  final Map<int, Widget> _openedPages = {};
 
   DateTime? lastBackPressed;
 
@@ -78,7 +71,7 @@ class MainView extends StatelessWidget {
         },
         child: SafeArea(
           child: Scaffold(
-            body: pages[controller.currentIndex.value],
+            body: _pageFor(controller.currentIndex.value),
             bottomNavigationBar: CustomBottomNav(
               currentIndex: controller.currentIndex.value,
               onTap: controller.changeIndex,
@@ -87,5 +80,22 @@ class MainView extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _pageFor(int index) {
+    return _openedPages.putIfAbsent(index, () {
+      switch (index) {
+        case 1:
+          return const ExternalDeliveryView();
+        case 2:
+          return const OrderHistoryPage();
+        case 3:
+          return const FavoritesView();
+        case 4:
+          return ProfileView();
+        default:
+          return const HomePageView();
+      }
+    });
   }
 }

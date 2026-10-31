@@ -13,14 +13,24 @@ class ShopDetailsProductLoader {
     required int storeId,
     required List<InnerCategory> innerCategories,
     List<Products>? fallbackFromStore,
+    void Function(List<Products> loadedSoFar)? onBatch,
   }) async {
     final categoryIds = innerCategories
         .map((inner) => inner.id)
         .whereType<int>()
         .toList();
     final products = <Products>[];
+    final seenIds = <int>{};
 
-    const batchSize = 6;
+    void addUnique(List<Products> items) {
+      for (final item in items) {
+        final id = item.id;
+        if (id != null && !seenIds.add(id)) continue;
+        products.add(item);
+      }
+    }
+
+    const batchSize = 3;
     for (var start = 0; start < categoryIds.length; start += batchSize) {
       final end = start + batchSize > categoryIds.length
           ? categoryIds.length
@@ -31,7 +41,10 @@ class ShopDetailsProductLoader {
             .map((innerId) => _fetchCategoryProducts(storeId, innerId)),
       );
       for (final items in batch) {
-        products.addAll(items);
+        addUnique(items);
+      }
+      if (products.isNotEmpty) {
+        onBatch?.call(List<Products>.from(products));
       }
     }
 

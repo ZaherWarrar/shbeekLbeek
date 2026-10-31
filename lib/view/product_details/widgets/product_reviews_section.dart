@@ -33,7 +33,13 @@ class ProductReviewsSection extends StatelessWidget {
             TextButton(
               style: TextButton.styleFrom(
                 foregroundColor: AppColor().primaryColor,
-                textStyle: const TextStyle(fontWeight: FontWeight.w800),
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                textStyle: const TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 14,
+                ),
               ),
               onPressed: () => openAddProductReviewSheet(controller),
               child: const Text('إضافة تقييم'),

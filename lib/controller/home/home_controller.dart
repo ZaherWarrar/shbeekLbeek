@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:app/controller/home/home_controller_catalog.dart';
 import 'package:app/controller/home/home_controller_sections.dart';
 import 'package:app/controller/home/home_controller_slider.dart';
@@ -57,6 +59,7 @@ class HomeControllerImp extends HomeController {
   String sectionName = '';
 
   StatusRequest allItemState = StatusRequest.none;
+  int homeLoadGeneration = 0;
   AllItemData allItemData = AllItemData(Get.find());
   List<ItemModel> items = [];
 
@@ -81,22 +84,16 @@ class HomeControllerImp extends HomeController {
 
   void onPageChanged(int index) => runOnPageChanged(index);
 
-  /// الهيكل يغطي الصفحة فقط قبل وصول أي بيانات.
-  /// بعد أول قائمة ناجحة تبقى الأقسام الظاهرة ويُحمَّل الباقي مكانه.
+  /// الهيكل يغطي أعلى الصفحة فقط: السلايدر والأقسام.
+  /// المنتجات والمتاجر تكمل التحميل تحتها بدون ما تحبس أول رسم.
   bool get isInitialLoading {
-    final hasNoData =
-        slides.isEmpty &&
-        mainCat.isEmpty &&
-        items.isEmpty &&
-        homeSection.isEmpty;
-    if (!hasNoData) return false;
-    return sliderStat == StatusRequest.loading ||
-        mainCatStat == StatusRequest.loading ||
-        allItemState == StatusRequest.loading ||
-        homeSectionState == StatusRequest.loading;
+    if (mainCat.isNotEmpty || slides.isNotEmpty) return false;
+    return mainCatStat != StatusRequest.failure &&
+        sliderStat != StatusRequest.failure;
   }
 
   Future<void> selectCategory(int? categoryId) async {
+    homeLoadGeneration++;
     selectedCategoryId = categoryId;
     sliderStat = StatusRequest.loading;
     allItemState = StatusRequest.loading;
@@ -124,23 +121,24 @@ class HomeControllerImp extends HomeController {
       update();
       return;
     }
-    if (slides.isEmpty &&
-        mainCat.isEmpty &&
-        items.isEmpty &&
-        homeSection.isEmpty) {
+    if (slides.isEmpty && mainCat.isEmpty) {
       mainCatStat = StatusRequest.loading;
       sliderStat = StatusRequest.loading;
-      allItemState = StatusRequest.loading;
-      homeSectionState = StatusRequest.loading;
-      finalSectionState = StatusRequest.loading;
     }
     await fetchMainCategores();
     if (selectedCategoryId == null && mainCat.isNotEmpty) {
       selectedCategoryId = mainCat.first.id;
     }
-    await Future.wait([fetchSliders(), fetchAllItem(), fetchHomeSection()]);
+    await fetchSliders();
     setupSliderAfterLoad();
     update();
+    unawaited(_loadBelowTheFold());
+  }
+
+  Future<void> _loadBelowTheFold() async {
+    await fetchHomeSection();
+    if (isDisposedFlag) return;
+    await fetchAllItem();
   }
 
   @override

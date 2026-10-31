@@ -53,6 +53,9 @@ class CardItem extends StatelessWidget {
             'storeName': storeItem?.name,
             'storeImageUrl': storeItem?.imageUrl,
             'storeDeliveryFee': storeItem?.deliveryFee,
+            'productName': sectionItem.name,
+            'productImageUrl': sectionItem.imageUrl,
+            'productPrice': sectionItem.salePrice ?? sectionItem.regularPrice,
           },
         );
       },

@@ -39,7 +39,7 @@ class HomeSkeletonPlaceholder extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               SizedBox(
-                height: 95,
+                height: 102,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   physics: const NeverScrollableScrollPhysics(),

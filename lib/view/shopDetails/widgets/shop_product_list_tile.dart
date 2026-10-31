@@ -1,10 +1,10 @@
 import 'package:app/controller/shop_details/shop_details_controller.dart';
 import 'package:app/core/constant/app_color.dart';
-import 'package:app/core/constant/app_images.dart';
 import 'package:app/core/constant/routes/app_routes.dart';
 import 'package:app/data/datasource/model/item_model.dart';
 import 'package:app/controller/favorites/favorites_controller.dart';
 import 'package:app/view/favorites/widget/favorites_tabs/favorites_tabs_model.dart';
+import 'package:app/view/shopDetails/widgets/shop_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -42,6 +42,9 @@ class ShopProductListTile extends StatelessWidget {
                   'storeName': controller.store?.name,
                   'storeImageUrl': controller.store?.imageUrl,
                   'storeDeliveryFee': controller.store?.deliveryFee,
+                  'productName': product.name,
+                  'productImageUrl': product.imageUrl,
+                  'productPrice': price,
                 },
               ),
         borderRadius: BorderRadius.circular(20),
@@ -201,15 +204,9 @@ class ShopProductListTile extends StatelessWidget {
                   width: imageSize,
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(20),
-                    child: Image.network(
-                      product.imageUrl ?? '',
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Image.asset(
-                          Assets.imagesLogo,
-                          fit: BoxFit.cover,
-                        );
-                      },
+                    child: ShopNetworkImage(
+                      url: product.imageUrl,
+                      logicalWidth: imageSize,
                     ),
                   ),
                 ),

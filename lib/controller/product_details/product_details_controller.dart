@@ -20,32 +20,40 @@ class ProductDetailsController extends GetxController
 
   final ProductDetailsLoader _loader = productDetailsLoader();
 
-  StatusRequest statusRequest = StatusRequest.none;
+  StatusRequest statusRequest = StatusRequest.loading;
   ProductDetailsModel? product;
   List<RecommendedProductModel> recommended = [];
+  bool recommendedLoading = true;
   final List<ProductVariationModel> selectedVariations = [];
   final TextEditingController itemNotesController = TextEditingController();
 
   Future<void> fetchAll() async {
     statusRequest = StatusRequest.loading;
+    recommendedLoading = true;
     update();
 
     final result = await _loader.load(productId);
     if (result.status != StatusRequest.success || result.product == null) {
       statusRequest = result.status;
+      recommendedLoading = false;
       update();
       return;
     }
 
     product = result.product;
-    recommended = result.recommended;
     applyDefaultVariations(
       product: product,
       selectedVariations: selectedVariations,
     );
+    statusRequest = StatusRequest.success;
+    reviewsStatus = StatusRequest.loading;
+    update();
+
+    recommended = await _loader.loadRecommended(productId);
+    recommendedLoading = false;
+    update();
 
     await fetchReviews();
-    statusRequest = StatusRequest.success;
     update();
   }
 

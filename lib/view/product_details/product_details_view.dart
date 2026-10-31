@@ -1,10 +1,12 @@
 import 'package:app/binding/product_details_binding.dart';
 import 'package:app/controller/product_details/product_details_controller.dart';
+import 'package:app/core/class/statusrequest.dart';
 import 'package:app/core/constant/app_color.dart';
 import 'package:app/core/shared/custom_refresh.dart';
 import 'package:app/view/product_details/product_details_page_args.dart';
 import 'package:app/view/product_details/widgets/product_bottom_bar.dart';
 import 'package:app/view/product_details/widgets/product_description_section.dart';
+import 'package:app/view/product_details/widgets/product_details_skeleton.dart';
 import 'package:app/view/product_details/widgets/product_header_section.dart';
 import 'package:app/view/product_details/widgets/product_recommended_section.dart';
 import 'package:app/view/product_details/widgets/product_reviews_section.dart';
@@ -60,81 +62,104 @@ class _ProductDetailsViewState extends State<ProductDetailsView> {
       tag: _controllerTag,
       builder: (controller) {
         final product = controller.product;
+        final showSkeleton =
+            product == null &&
+            (controller.statusRequest == StatusRequest.loading ||
+                controller.statusRequest == StatusRequest.none);
         final isVariable =
             (product?.type ?? '').toLowerCase() == 'variable' &&
             (product?.variations.isNotEmpty ?? false);
         final effectiveStoreId = product?.storeId ?? args.storeId;
         final effectiveStoreName = product?.storeName ?? args.storeName;
-        final effectiveStoreImage = product?.storeImageUrl ?? args.storeImageUrl;
+        final effectiveStoreImage =
+            product?.storeImageUrl ?? args.storeImageUrl;
         final effectiveStoreDeliveryFee =
             product?.storeDeliveryFee ?? args.storeDeliveryFee;
 
-        return SafeArea(
-          child: Scaffold(
+        return Scaffold(
+          backgroundColor: AppColor().backgroundColor,
+          floatingActionButton: const CartFloatingButton(),
+          appBar: AppBar(
             backgroundColor: AppColor().backgroundColor,
-            floatingActionButton: const CartFloatingButton(),
-            appBar: AppBar(
-              backgroundColor: AppColor().backgroundColor,
-              surfaceTintColor: AppColor().backgroundColor,
-              elevation: 0,
-              centerTitle: true,
-              foregroundColor: AppColor().titleColor,
-              title: Text(
-                'تفاصيل المنتج',
-                style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  color: AppColor().primaryColor,
-                ),
+            surfaceTintColor: AppColor().backgroundColor,
+            elevation: 0,
+            centerTitle: true,
+            foregroundColor: AppColor().titleColor,
+            title: Text(
+              'تفاصيل المنتج',
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                color: AppColor().primaryColor,
               ),
-            ),
-            body: CustomRefresh(
-              statusRequest: controller.statusRequest,
-              preferBodyWhenLoading: true,
-              fun: () => controller.fetchAll(),
-              body: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 8),
-                      ProductHeaderSection(product: product),
-                      const SizedBox(height: 18),
-                      ProductDescriptionSection(
-                        product: product,
-                        controller: controller,
-                        isVariable: isVariable,
-                      ),
-                      const SizedBox(height: 18),
-                      ProductRecommendedSection(
-                        controller: controller,
-                        effectiveStoreId: effectiveStoreId,
-                        effectiveStoreName: effectiveStoreName,
-                        effectiveStoreImage: effectiveStoreImage,
-                        effectiveStoreDeliveryFee: effectiveStoreDeliveryFee,
-                      ),
-                      const SizedBox(height: 18),
-                      ProductReviewsSection(controller: controller),
-                      const SizedBox(height: 90),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            bottomNavigationBar: ProductBottomBar(
-              product: product,
-              productId: args.productId,
-              controller: controller,
-              isVariable: isVariable,
-              selectedVariationName:
-                  controller.selectedVariationNameCombined,
-              effectiveStoreId: effectiveStoreId,
-              effectiveStoreName: effectiveStoreName,
-              effectiveStoreImage: effectiveStoreImage,
-              effectiveStoreDeliveryFee: effectiveStoreDeliveryFee,
             ),
           ),
+          body: CustomRefresh(
+            statusRequest: controller.statusRequest,
+            preferBodyWhenLoading: true,
+            fun: () => controller.fetchAll(),
+            body: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 280),
+              switchInCurve: Curves.easeOut,
+              switchOutCurve: Curves.easeIn,
+              child: showSkeleton
+                  ? SingleChildScrollView(
+                      key: const ValueKey('product-skeleton'),
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: ProductDetailsSkeleton(
+                        imageUrl: args.productImageUrl,
+                        name: args.productName,
+                        price: args.productPrice,
+                      ),
+                    )
+                  : SingleChildScrollView(
+                      key: const ValueKey('product-content'),
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 8),
+                            ProductHeaderSection(product: product),
+                            const SizedBox(height: 40),
+                            ProductDescriptionSection(
+                              product: product,
+                              controller: controller,
+                              isVariable: isVariable,
+                            ),
+                            const SizedBox(height: 18),
+                            ProductRecommendedSection(
+                              controller: controller,
+                              effectiveStoreId: effectiveStoreId,
+                              effectiveStoreName: effectiveStoreName,
+                              effectiveStoreImage: effectiveStoreImage,
+                              effectiveStoreDeliveryFee:
+                                  effectiveStoreDeliveryFee,
+                            ),
+                            const SizedBox(height: 18),
+                            ProductReviewsSection(controller: controller),
+                            const SizedBox(height: 24),
+                          ],
+                        ),
+                      ),
+                    ),
+            ),
+          ),
+          bottomNavigationBar: showSkeleton
+              ? const ProductDetailsBottomSkeleton()
+              : ProductBottomBar(
+                  product: product,
+                  productId: args.productId,
+                  controller: controller,
+                  isVariable: isVariable,
+                  selectedVariationName:
+                      controller.selectedVariationNameCombined,
+                  effectiveStoreId: effectiveStoreId,
+                  effectiveStoreName: effectiveStoreName,
+                  effectiveStoreImage: effectiveStoreImage,
+                  effectiveStoreDeliveryFee: effectiveStoreDeliveryFee,
+                ),
         );
       },
     );

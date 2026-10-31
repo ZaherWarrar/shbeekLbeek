@@ -28,8 +28,7 @@ class ReviewDisplayCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = AppColor();
-    final displayName =
-        userName.trim().isNotEmpty ? userName.trim() : 'مستخدم';
+    final displayName = userName.trim().isNotEmpty ? userName.trim() : 'مستخدم';
     final clampedRating = rating.clamp(0, 5);
     final trimmedText = text.trim();
     final timeLabel = _formatReviewDate(createdAt);
@@ -219,6 +218,8 @@ class _RatingBadge extends StatelessWidget {
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
             rating.toString(),

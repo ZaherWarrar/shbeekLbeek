@@ -15,8 +15,22 @@ import 'package:app/core/shared/custom_app_bar.dart';
 import 'package:get/get.dart';
 
 
-class CartView extends StatelessWidget {
+class CartView extends StatefulWidget {
   const CartView({super.key});
+
+  @override
+  State<CartView> createState() => _CartViewState();
+}
+
+class _CartViewState extends State<CartView> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      Get.find<CartController>().warmCheckout();
+    });
+  }
 
   String _formatPrice(double price) {
     return "${price.toStringAsFixed(0)} ليرة";

@@ -68,7 +68,12 @@ class CartController extends GetxController with WalletPaymentMixin {
   void onInit() {
     super.onInit();
     _prefs.init().then((_) => _loadCart());
+  }
+
+  /// رصيد المحفظة والتحقق من الكوبون يشتغلان عند فتح السلة.
+  void warmCheckout() {
     fetchWalletBalance();
+    coupon.revalidateSavedCode();
   }
 
   void _loadCart() {
@@ -78,7 +83,6 @@ class CartController extends GetxController with WalletPaymentMixin {
     notes = _prefs.getNotes();
     if (notes != null) notesController.text = notes!;
     update();
-    coupon.revalidateSavedCode();
   }
 
   Future<void> _saveCart() async {

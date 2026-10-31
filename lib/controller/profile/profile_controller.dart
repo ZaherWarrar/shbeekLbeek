@@ -1,4 +1,5 @@
 import 'package:app/controller/choose_city/choose_city_controller.dart';
+import 'package:app/core/shared/notifications/notification_api.dart';
 import 'package:app/core/class/statusrequest.dart';
 import 'package:app/core/constant/routes/app_routes.dart';
 import 'package:app/core/function/handling_data.dart';
@@ -128,7 +129,7 @@ class ProfileController extends GetxController {
       );
 
       if (confirmed == true) {
-        // مسح بيانات الجلسة فقط
+        await NotificationApi.unregisterDeviceToken();
         await session.logout();
         await session.clearCity();
         await session.clearActiveOrder();

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
@@ -5,7 +6,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class SessionService extends GetxService {
   late final SharedPreferences prefs;
-  final FlutterSecureStorage _secure = const FlutterSecureStorage();
+  final FlutterSecureStorage _secure = const FlutterSecureStorage(
+    aOptions: AndroidOptions(resetOnError: true),
+  );
+  static const _secureIoTimeout = Duration(seconds: 3);
+  bool _droppingSession = false;
 
   String? _token;
   String? _userId;
@@ -35,28 +40,25 @@ class SessionService extends GetxService {
   }
 
   Future<void> _loadSecureSession() async {
-    try {
-      _token = await _secure.read(key: _secureTokenKey);
-      _userId = await _secure.read(key: _secureUserIdKey);
-    } catch (_) {
-      _token = null;
-      _userId = null;
-    }
+    final stored = await Future.wait<String?>([
+      _readSecure(_secureTokenKey),
+      _readSecure(_secureUserIdKey),
+    ]);
+    _token = stored[0];
+    _userId = stored[1];
 
     final legacyToken = prefs.getString(tokenKey);
     final legacyUserId = prefs.getString(userIdKey);
     final hasLegacyToken = legacyToken != null && legacyToken.isNotEmpty;
     if ((_token == null || _token!.isEmpty) && hasLegacyToken) {
-      try {
-        await _secure.write(key: _secureTokenKey, value: legacyToken);
-        if (legacyUserId != null && legacyUserId.isNotEmpty) {
-          await _secure.write(key: _secureUserIdKey, value: legacyUserId);
-          _userId = legacyUserId;
-        }
-        _token = legacyToken;
-        await prefs.remove(tokenKey);
-        await prefs.remove(userIdKey);
-      } catch (_) {}
+      final saved = await _writeSecure(_secureTokenKey, legacyToken);
+      if (saved) _token = legacyToken;
+      if (legacyUserId != null && legacyUserId.isNotEmpty) {
+        final savedId = await _writeSecure(_secureUserIdKey, legacyUserId);
+        if (savedId) _userId = legacyUserId;
+      }
+      await prefs.remove(tokenKey);
+      await prefs.remove(userIdKey);
       return;
     }
 
@@ -73,8 +75,8 @@ class SessionService extends GetxService {
   }) async {
     _token = token;
     _userId = userId;
-    await _secure.write(key: _secureTokenKey, value: token);
-    await _secure.write(key: _secureUserIdKey, value: userId);
+    await _writeSecure(_secureTokenKey, token);
+    await _writeSecure(_secureUserIdKey, userId);
     await prefs.setBool(guestKey, false);
     await prefs.remove(tokenKey);
     await prefs.remove(userIdKey);
@@ -87,8 +89,8 @@ class SessionService extends GetxService {
   Future<void> logout() async {
     _token = null;
     _userId = null;
-    await _secure.delete(key: _secureTokenKey);
-    await _secure.delete(key: _secureUserIdKey);
+    await _deleteSecure(_secureTokenKey);
+    await _deleteSecure(_secureUserIdKey);
     await prefs.remove(tokenKey);
     await prefs.remove(userIdKey);
     await prefs.remove(userNameKey);
@@ -144,11 +146,14 @@ class SessionService extends GetxService {
   }
 
   Map<String, dynamic>? get activeOrder {
-    final id = prefs.getString(activeOrderIdKey);
-    final created = prefs.getString(activeOrderCreatedAtKey);
-    if (id == null || created == null) return null;
-
-    return {"orderId": int.parse(id), "createdAt": DateTime.parse(created)};
+    try {
+      final id = prefs.getString(activeOrderIdKey);
+      final created = prefs.getString(activeOrderCreatedAtKey);
+      if (id == null || created == null) return null;
+      return {"orderId": int.parse(id), "createdAt": DateTime.parse(created)};
+    } catch (_) {
+      return null;
+    }
   }
 
   bool get hasActiveOrder => prefs.getString(activeOrderIdKey) != null;
@@ -250,8 +255,48 @@ class SessionService extends GetxService {
   Future<void> clearAll() async {
     _token = null;
     _userId = null;
-    await _secure.delete(key: _secureTokenKey);
-    await _secure.delete(key: _secureUserIdKey);
+    await _deleteSecure(_secureTokenKey);
+    await _deleteSecure(_secureUserIdKey);
     await prefs.clear();
+  }
+
+  /// تسجيل الدخول بيرجع access token فقط، وما في refresh token بالـ API.
+  /// إذا السيرفر رد 401 والتوكن موجود، الجلسة خلصت وما فينا نجددها.
+  void dropExpiredSession() {
+    if (_droppingSession || !isLoggedIn) return;
+    _droppingSession = true;
+    logout().whenComplete(() {
+      _droppingSession = false;
+      if (Get.currentRoute == '/') return;
+      Get.offAllNamed('/');
+      Get.snackbar(
+        'تنبيه',
+        'انتهت الجلسة، سجّل الدخول من جديد',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    });
+  }
+
+  Future<String?> _readSecure(String key) async {
+    try {
+      return await _secure.read(key: key).timeout(_secureIoTimeout);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<bool> _writeSecure(String key, String value) async {
+    try {
+      await _secure.write(key: key, value: value).timeout(_secureIoTimeout);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<void> _deleteSecure(String key) async {
+    try {
+      await _secure.delete(key: key).timeout(_secureIoTimeout);
+    } catch (_) {}
   }
 }

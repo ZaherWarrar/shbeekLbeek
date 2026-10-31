@@ -54,6 +54,13 @@ class Assets {
   /// assets/images/logo.png
   static const String imagesLogo = "assets/images/logo.png";
 
+  /// assets/images/logo.jpg
+  static const String imagesLogoSplash = "assets/images/logo.jpg";
+
+  /// assets/images/backgroundForAuth/auth_back.png
+  static const String imagesAuthBack =
+      "assets/images/backgroundForAuth/auth_back.png";
+
   /// Assets for imagesSlider1
   /// assets/images/slider1.png
   static const String imagesSlider1 = "assets/images/slider1.png";

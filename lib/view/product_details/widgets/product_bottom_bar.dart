@@ -75,9 +75,13 @@ class ProductBottomBar extends StatelessWidget {
                       child: SizedBox(
                         height: 52,
                         child: qty <= 0
-                            ? ElevatedButton.icon(
+                            ? ElevatedButton(
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppColor().primaryColor,
+                                  elevation: 0,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                  ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(28),
                                   ),
@@ -95,17 +99,28 @@ class ProductBottomBar extends StatelessWidget {
                                   effectiveStoreDeliveryFee:
                                       effectiveStoreDeliveryFee,
                                 ),
-                                icon: const Icon(
-                                  Icons.shopping_cart,
-                                  color: Colors.white,
-                                ),
-                                label: const Text(
-                                  'أضف إلى السلة',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15,
-                                  ),
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.shopping_cart,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                                    SizedBox(width: 8),
+                                    Flexible(
+                                      child: Text(
+                                        'أضف إلى السلة',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 15,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               )
                             : ProductQuantityBarControls(

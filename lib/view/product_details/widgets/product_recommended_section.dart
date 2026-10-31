@@ -41,7 +41,18 @@ class ProductRecommendedSection extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        if (controller.statusRequest == StatusRequest.success &&
+        if (controller.recommendedLoading)
+          const SizedBox(
+            height: 120,
+            child: Row(
+              children: [
+                _RecommendedBone(),
+                SizedBox(width: 12),
+                _RecommendedBone(),
+              ],
+            ),
+          )
+        else if (controller.statusRequest == StatusRequest.success &&
             controller.recommended.isEmpty)
           Text(
             'لا يوجد اقتراحات حالياً',
@@ -97,5 +108,21 @@ class ProductRecommendedSection extends StatelessWidget {
       regularPrice: rec.priceInt,
     );
     cart.addItem(p, shop, quantity: 1);
+  }
+}
+
+class _RecommendedBone extends StatelessWidget {
+  const _RecommendedBone();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 140,
+      height: 120,
+      decoration: BoxDecoration(
+        color: Colors.grey.shade300,
+        borderRadius: BorderRadius.circular(16),
+      ),
+    );
   }
 }

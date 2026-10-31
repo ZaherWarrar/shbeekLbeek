@@ -8,7 +8,7 @@ import 'package:app/data/datasource/remot/settings_data.dart';
 import 'package:app/view/settings/app_settings_notice_dialog.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
-import 'package:package_info_plus/package_info_plus.dart';
+import 'package:package_info_plus/package_info_plus.dart' show PackageInfo;
 import 'package:url_launcher/url_launcher.dart';
 
 class AppSettingsController extends GetxController {
@@ -33,7 +33,10 @@ class AppSettingsController extends GetxController {
   void onInit() {
     super.onInit();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      checkOnLaunch();
+      Future<void>.delayed(const Duration(seconds: 2), () {
+        if (isClosed) return;
+        checkOnLaunch();
+      });
     });
   }
 
@@ -121,10 +124,7 @@ class AppSettingsController extends GetxController {
     );
 
     try {
-      final opened = await launchUrl(
-        url,
-        mode: LaunchMode.externalApplication,
-      );
+      final opened = await launchUrl(url, mode: LaunchMode.externalApplication);
       if (!opened) {
         AppSnackbar.show('تنبيه', 'تعذر فتح رابط التحديث');
         return;

@@ -135,6 +135,12 @@ class ShopDetailsController extends GetxController
           storeId: storeId,
           innerCategories: store?.innerCategories ?? [],
           fallbackFromStore: store?.products,
+          onBatch: (soFar) {
+            if (generation != _loadGeneration) return;
+            _allProducts = soFar;
+            _applySearchFilter();
+            update();
+          },
         );
         if (generation != _loadGeneration) return;
         _allProducts = loaded;

@@ -119,6 +119,17 @@ class NotificationCard extends StatelessWidget {
                         color: AppColor().descriptionColor,
                       ),
                     ),
+                    if (notification.destinationLabel != null) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        notification.destinationLabel!,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColor().primaryColor,
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 8),
                     Text(
                       _formatDate(notification.createdAt),

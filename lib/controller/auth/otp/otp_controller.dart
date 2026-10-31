@@ -5,6 +5,7 @@ import 'package:app/core/class/statusrequest.dart';
 import 'package:app/core/constant/routes/app_routes.dart';
 import 'package:app/core/function/handling_data.dart';
 import 'package:app/controller/notifications/notifications_controller.dart';
+import 'package:app/core/shared/notifications/notification_api.dart';
 import 'package:app/core/services/session_service.dart';
 import 'package:app/data/datasource/remot/otp_data.dart';
 import 'package:flutter/widgets.dart';
@@ -104,6 +105,7 @@ class OtpController extends GetxController {
         if (Get.isRegistered<NotificationsController>()) {
           await Get.find<NotificationsController>().loadNotifications();
         }
+        NotificationApi.syncDeviceToken();
 
         AppSnackbar.show('نجاح', 'تم التحقق بنجاح');
         Get.offAllNamed(AppRoutes.start);

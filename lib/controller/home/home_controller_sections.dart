@@ -6,6 +6,7 @@ import 'package:app/data/datasource/model/section_model.dart';
 
 extension HomeSectionsLogic on HomeControllerImp {
   Future<void> runFetchHomeSection() async {
+    final generation = homeLoadGeneration;
     final keepTabs = homeSection.isNotEmpty;
     if (!keepTabs) {
       homeSectionState = StatusRequest.loading;
@@ -14,6 +15,7 @@ extension HomeSectionsLogic on HomeControllerImp {
     }
 
     final response = await homeSectionData.homeSectionData();
+    if (generation != homeLoadGeneration) return;
     final status = handlingData(response);
     if (status != StatusRequest.success || response is! Map<String, dynamic>) {
       if (homeSection.isEmpty) {
@@ -64,23 +66,26 @@ extension HomeSectionsLogic on HomeControllerImp {
       return;
     }
 
-    await Future.wait(
-      types.map((type) async {
-        final sections = await _loadSectionProducts(type);
-        finalSection[type] = sections;
-        if (type == sectionName) {
-          finalSectionState = sections.isNotEmpty
-              ? StatusRequest.success
-              : StatusRequest.failure;
-          update();
-        }
-      }),
-    );
-
-    final visible = finalSection[sectionName];
-    finalSectionState = visible != null && visible.isNotEmpty
+    final primary = types.contains(sectionName) ? sectionName : types.first;
+    final primaryProducts = await _loadSectionProducts(primary);
+    if (generation != homeLoadGeneration) return;
+    finalSection[primary] = primaryProducts;
+    finalSectionState = primaryProducts.isNotEmpty
         ? StatusRequest.success
         : StatusRequest.failure;
+    update();
+
+    final rest = [for (final type in types) if (type != primary) type];
+    if (rest.isEmpty) return;
+
+    await Future.wait(
+      rest.map((type) async {
+        final products = await _loadSectionProducts(type);
+        if (generation != homeLoadGeneration) return;
+        finalSection[type] = products;
+      }),
+    );
+    if (generation != homeLoadGeneration) return;
     update();
   }
 

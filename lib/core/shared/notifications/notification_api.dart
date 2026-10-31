@@ -170,9 +170,7 @@ class NotificationApi {
         final token = await _firebaseMessaging
             .getToken()
             .timeout(const Duration(seconds: 8));
-        if (kDebugMode && token != null) {
-          debugPrint('FCM token: $token');
-        }
+        logFcmToken(token);
         return token;
       } on TimeoutException {
         debugPrint('⚠️ FCM getToken timed out');
@@ -202,10 +200,34 @@ class NotificationApi {
       final token = await FirebaseMessaging.instance
           .getToken()
           .timeout(const Duration(seconds: 8));
+      logFcmToken(token);
       if (token == null || token.isEmpty) return;
       await NotificationsData(Get.find<Crud>()).registerDeviceToken(token);
     } catch (e) {
       debugPrint('⚠️ FCM token sync failed: $e');
+    }
+  }
+
+  static String? _loggedToken;
+
+  static void logFcmToken(String? token) {
+    if (token == null || token.isEmpty) {
+      debugPrint('FCM token: empty');
+      return;
+    }
+    if (_loggedToken == token) return;
+    _loggedToken = token;
+    debugPrint('FCM TOKEN: $token', wrapWidth: 4096);
+  }
+
+  static Future<void> printFcmToken() async {
+    try {
+      final token = await FirebaseMessaging.instance
+          .getToken()
+          .timeout(const Duration(seconds: 15));
+      logFcmToken(token);
+    } catch (e) {
+      debugPrint('FCM token failed: $e');
     }
   }
 

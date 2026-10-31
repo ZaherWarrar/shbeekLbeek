@@ -38,6 +38,7 @@ void main() async {
 Future<void> _startPlatformServices() async {
   try {
     await Firebase.initializeApp().timeout(const Duration(seconds: 8));
+    unawaited(NotificationApi.printFcmToken());
   } catch (e) {
     debugPrint('Firebase init skipped: $e');
     return;

@@ -30,6 +30,7 @@ class NotificationsController extends GetxController {
 
   Future<void> _showCachedThenRefresh() async {
     notifications = await NotificationsPreferences.load();
+    if (isClosed) return;
     statusRequest = notifications.isEmpty
         ? StatusRequest.none
         : StatusRequest.success;
@@ -41,6 +42,7 @@ class NotificationsController extends GetxController {
 
   Future<void> loadNotifications({bool requireAuth = false}) async {
     final local = await NotificationsPreferences.load();
+    if (isClosed) return;
     notifications = local;
     if (notifications.isEmpty) {
       statusRequest = AuthHeaders.hasToken
@@ -58,6 +60,7 @@ class NotificationsController extends GetxController {
     }
 
     final result = await _data.fetchNotifications();
+    if (isClosed) return;
     final status = handlingData(result);
 
     if (status != StatusRequest.success || result is! List<NotificationModel>) {
@@ -74,6 +77,7 @@ class NotificationsController extends GetxController {
     }
 
     notifications = await _merge(local, result);
+    if (isClosed) return;
     await NotificationsPreferences.saveAll(notifications);
     statusRequest = StatusRequest.success;
     update();
@@ -91,7 +95,9 @@ class NotificationsController extends GetxController {
       notifications.insert(0, item);
     } else {
       final previous = notifications[index];
-      notifications[index] = item.copyWith(isRead: previous.isRead || item.isRead);
+      notifications[index] = item.copyWith(
+        isRead: previous.isRead || item.isRead,
+      );
     }
     notifications.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     statusRequest = StatusRequest.success;

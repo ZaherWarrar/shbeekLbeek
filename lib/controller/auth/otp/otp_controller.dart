@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:app/controller/auth/otp/otp_sms_retriever.dart';
+import 'package:app/controller/profile/account_controller.dart';
+import 'package:app/core/constant/phone_auth_contract.dart';
 import 'package:app/core/class/statusrequest.dart';
 import 'package:app/core/constant/routes/app_routes.dart';
 import 'package:app/core/function/handling_data.dart';
@@ -23,7 +25,6 @@ class OtpController extends GetxController {
   final resendSecondsLeft = resendCooldownSeconds.obs;
 
   late String phoneNumber;
-  String userName = '';
   late StatusRequest statusRequest;
 
   final pinController = TextEditingController();
@@ -35,7 +36,10 @@ class OtpController extends GetxController {
   Timer? _resendTimer;
 
   bool get canResend =>
-      resendSecondsLeft.value == 0 && !isResending.value && !isLoading.value;
+      PhoneAuthContract.resendConfirmed &&
+      resendSecondsLeft.value == 0 &&
+      !isResending.value &&
+      !isLoading.value;
 
   String get resendCountdownText {
     final minutes = resendSecondsLeft.value ~/ 60;
@@ -48,12 +52,12 @@ class OtpController extends GetxController {
   void onInit() {
     final args = Get.arguments as Map?;
     phoneNumber = args?['phone_number']?.toString() ?? '';
-    userName = args?['name']?.toString() ?? '';
     super.onInit();
     _startResendCooldown();
   }
 
   Future<void> verifyOtp() async {
+    if (isLoading.value) return;
     if (otpCode.value.length != 6) {
       otpCode.value = pinController.text;
     }
@@ -65,36 +69,52 @@ class OtpController extends GetxController {
     isLoading.value = true;
 
     try {
-      final response = await otpData.otpData(otpCode.value, phoneNumber);
-      statusRequest = handlingData(response);
+      final reply = await otpData.otpData(otpCode.value, phoneNumber);
+      if (reply.failure != null) {
+        AppSnackbar.show('تعذر التحقق', reply.failure!);
+        return;
+      }
+      final response = reply.payload;
+      statusRequest = reply.httpSucceeded
+          ? StatusRequest.success
+          : StatusRequest.failure;
 
       if (statusRequest == StatusRequest.success &&
           response is Map<String, dynamic>) {
-        // ====== حفظ التوكن ======
-        if (response.containsKey('token')) {
-          await session.saveLogin(
-            token: response['token'].toString(),
-            userId: response['user']['id'].toString(),
-          );
+        final token = response['token'];
+        final userValue = response['user'];
+        final userId = userValue is Map<String, dynamic>
+            ? userValue['id']
+            : null;
+        final validId =
+            (userId is int && userId > 0) ||
+            (userId is String && userId.trim().isNotEmpty);
+        if (token is! String ||
+            token.trim().isEmpty ||
+            userValue is! Map<String, dynamic> ||
+            !validId ||
+            response['success'] == false ||
+            response['status'] == false ||
+            response['error'] != null ||
+            response['errors'] != null) {
+          AppSnackbar.show('خطأ', 'استجابة التحقق لا تتضمن بيانات جلسة صالحة');
+          return;
         }
+        final user = Map<String, dynamic>.from(userValue);
+        await session.saveLogin(token: token, userId: user['id'].toString());
+        await session.acceptVerifiedUser(user);
 
         // ====== حفظ بيانات المستخدم ======
         if (response.containsKey('user')) {
-          final user = response['user'] as Map<String, dynamic>;
-
-          if (user.containsKey('name')) {
-            await session.saveUserName(user['name']);
-          }
-
-          if (user.containsKey('email')) {
+          if (user['email'] is String) {
             await session.saveUserEmail(user['email']);
           }
 
-          if (user.containsKey('role')) {
+          if (user['role'] is String) {
             await session.saveUserRole(user['role']);
           }
 
-          if (user.containsKey('status')) {
+          if (user['status'] is String) {
             await session.saveUserStatus(user['status']);
           }
         }
@@ -108,15 +128,17 @@ class OtpController extends GetxController {
         NotificationApi.syncDeviceToken();
 
         AppSnackbar.show('نجاح', 'تم التحقق بنجاح');
-        Get.offAllNamed(AppRoutes.start);
+        if (await Get.find<AccountController>().ensureName()) {
+          Get.offAllNamed(AppRoutes.start);
+        }
       } else {
-        AppSnackbar.show('فشل', 'رمز غير صالح');
+        AppSnackbar.show('فشل', 'تعذر التحقق من الرمز. لم يتم تسجيل الدخول.');
       }
-    } catch (e) {
-      AppSnackbar.show('خطأ', 'حدث خطأ غير معروف: ${e.toString()}');
+    } catch (_) {
+      AppSnackbar.show('خطأ', 'تعذر التحقق. أعد المحاولة.');
+    } finally {
+      isLoading.value = false;
     }
-
-    isLoading.value = false;
   }
 
   void goToLogin() {
@@ -125,13 +147,14 @@ class OtpController extends GetxController {
 
   Future<void> resendOtp() async {
     if (!canResend) return;
+    if (!PhoneAuthContract.resendConfirmed) {
+      AppSnackbar.show('تنبيه', 'إعادة إرسال الرمز غير متاحة حالياً.');
+      return;
+    }
 
     isResending.value = true;
     try {
-      final response = await otpData.resendOtp(
-        phoneNumber,
-        name: userName,
-      );
+      final response = await otpData.resendOtp(phoneNumber);
       statusRequest = handlingData(response);
 
       if (statusRequest == StatusRequest.success) {
@@ -142,8 +165,8 @@ class OtpController extends GetxController {
       } else {
         AppSnackbar.show('فشل', 'تعذر إعادة إرسال الرمز، حاول مرة أخرى');
       }
-    } catch (e) {
-      AppSnackbar.show('خطأ', 'حدث خطأ غير معروف: ${e.toString()}');
+    } catch (_) {
+      AppSnackbar.show('خطأ', 'تعذر إرسال الرمز. أعد المحاولة لاحقاً.');
     } finally {
       isResending.value = false;
     }

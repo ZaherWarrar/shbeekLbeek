@@ -21,6 +21,8 @@ class SessionService extends GetxService {
   static const _secureTokenKey = "auth_token";
   static const _secureUserIdKey = "auth_user_id";
   static const userNameKey = "user_name";
+  static const _profileSnapshotKey = 'verified_account_name';
+  static const accountNotificationsKey = 'accept_account_notifications';
   static const userEmailKey = "user_email";
   static const userRoleKey = "user_role";
   static const userStatusKey = "user_status";
@@ -36,6 +38,7 @@ class SessionService extends GetxService {
   Future<SessionService> init() async {
     prefs = await SharedPreferences.getInstance();
     await _loadSecureSession();
+    if (isLoggedIn) await prefs.setBool(accountNotificationsKey, true);
     return this;
   }
 
@@ -78,6 +81,7 @@ class SessionService extends GetxService {
     await _writeSecure(_secureTokenKey, token);
     await _writeSecure(_secureUserIdKey, userId);
     await prefs.setBool(guestKey, false);
+    await prefs.setBool(accountNotificationsKey, true);
     await prefs.remove(tokenKey);
     await prefs.remove(userIdKey);
   }
@@ -97,6 +101,8 @@ class SessionService extends GetxService {
     await prefs.remove(userEmailKey);
     await prefs.remove(userRoleKey);
     await prefs.remove(userStatusKey);
+    await prefs.remove(_profileSnapshotKey);
+    await prefs.remove(accountNotificationsKey);
   }
 
   String? get token => _token;
@@ -109,6 +115,59 @@ class SessionService extends GetxService {
       await prefs.setString(userNameKey, name);
 
   String? get userName => prefs.getString(userNameKey);
+
+  /// A verified user's absent/null name requires completion. Bind the snapshot
+  /// to the user; never use a legacy cached name from another login.
+  Map<String, dynamic>? get verifiedNameSnapshot {
+    try {
+      final raw = prefs.getString(_profileSnapshotKey);
+      if (raw == null) return null;
+      final value = jsonDecode(raw);
+      if (value is Map<String, dynamic> &&
+          value['id'] == userId &&
+          value.containsKey('name')) {
+        return value;
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  bool get isNameKnown => verifiedNameSnapshot != null;
+  bool get hasCompletedName {
+    final name = verifiedNameSnapshot?['name'];
+    return name is String && name.trim().isNotEmpty;
+  }
+
+  Future<void> acceptVerifiedUser(Map<String, dynamic> user) async {
+    await prefs.remove(_profileSnapshotKey);
+    await prefs.remove(userNameKey);
+    if (user['id']?.toString() != userId) return;
+    final name = user['name'];
+    if (name != null && name is! String) return;
+    await saveVerifiedName(name as String?);
+  }
+
+  Future<void> saveVerifiedName(String? name) async {
+    final trimmed = name?.trim();
+    await prefs.setString(
+      _profileSnapshotKey,
+      jsonEncode({'id': userId, 'name': trimmed}),
+    );
+    if (trimmed == null) {
+      await prefs.remove(userNameKey);
+    } else {
+      await saveUserName(trimmed);
+    }
+  }
+
+  /// Remove account data, retaining only non-account presentation choices.
+  Future<void> clearAccountData() async {
+    final lang = language;
+    final onboarding = isOnboardingDone;
+    await clearAll();
+    if (lang != null) await saveLanguage(lang);
+    await setOnboardingDone(onboarding);
+  }
 
   Future<void> saveUserEmail(String email) async =>
       await prefs.setString(userEmailKey, email);
@@ -172,11 +231,10 @@ class SessionService extends GetxService {
   // ====== ONBOARDING ======
   Future<void> setOnboardingDone(bool value) async =>
       await prefs.setBool(onboardingDoneKey, value);
-  
+
   bool get isOnboardingDone => prefs.getBool(onboardingDoneKey) ?? false;
-  
-  Future<void> restOnboarding() async => 
-        await prefs.remove(onboardingDoneKey);
+
+  Future<void> restOnboarding() async => await prefs.remove(onboardingDoneKey);
 
   // ====== HEADERS ======
   Map<String, String> get headers {

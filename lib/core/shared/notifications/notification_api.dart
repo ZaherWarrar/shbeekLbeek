@@ -46,7 +46,9 @@ class NotificationApi {
       );
 
       if (!kIsWeb) {
-        FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+        FirebaseMessaging.onBackgroundMessage(
+          firebaseMessagingBackgroundHandler,
+        );
       }
 
       if (!kIsWeb) {
@@ -87,7 +89,7 @@ class NotificationApi {
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
       final model = _modelFromRemote(message);
-      await NotificationInbox.remember(model);
+      if (!await NotificationInbox.remember(model)) return;
       if (kIsWeb || (model.title.isEmpty && model.body.isEmpty)) return;
 
       _localNotifications.show(
@@ -147,7 +149,7 @@ class NotificationApi {
   }
 
   Future<void> _open(NotificationModel model) async {
-    await NotificationInbox.remember(model);
+    if (!await NotificationInbox.remember(model)) return;
     if (Get.isRegistered<NotificationsController>()) {
       await Get.find<NotificationsController>().markAsRead(model.id);
     }
@@ -167,16 +169,17 @@ class NotificationApi {
   Future<String?> getToken({int maxAttempts = 3}) async {
     for (var attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
-        final token = await _firebaseMessaging
-            .getToken()
-            .timeout(const Duration(seconds: 8));
+        final token = await _firebaseMessaging.getToken().timeout(
+          const Duration(seconds: 8),
+        );
         logFcmToken(token);
         return token;
       } on TimeoutException {
         debugPrint('⚠️ FCM getToken timed out');
         return null;
       } on FirebaseException catch (e) {
-        final isRetryable = e.code == 'unknown' &&
+        final isRetryable =
+            e.code == 'unknown' &&
             (e.message?.contains('SERVICE_NOT_AVAILABLE') ?? false);
         if (!isRetryable || attempt == maxAttempts) {
           debugPrint('⚠️ FCM getToken failed (${e.code}): ${e.message}');
@@ -197,9 +200,9 @@ class NotificationApi {
         return;
       }
       if (!AuthHeaders.hasToken) return;
-      final token = await FirebaseMessaging.instance
-          .getToken()
-          .timeout(const Duration(seconds: 8));
+      final token = await FirebaseMessaging.instance.getToken().timeout(
+        const Duration(seconds: 8),
+      );
       logFcmToken(token);
       if (token == null || token.isEmpty) return;
       await NotificationsData(Get.find<Crud>()).registerDeviceToken(token);
@@ -222,9 +225,9 @@ class NotificationApi {
 
   static Future<void> printFcmToken() async {
     try {
-      final token = await FirebaseMessaging.instance
-          .getToken()
-          .timeout(const Duration(seconds: 15));
+      final token = await FirebaseMessaging.instance.getToken().timeout(
+        const Duration(seconds: 15),
+      );
       logFcmToken(token);
     } catch (e) {
       debugPrint('FCM token failed: $e');
@@ -234,13 +237,23 @@ class NotificationApi {
   static Future<void> unregisterDeviceToken() async {
     try {
       if (!Get.isRegistered<Crud>() || !AuthHeaders.hasToken) return;
-      final token = await FirebaseMessaging.instance
-          .getToken()
-          .timeout(const Duration(seconds: 8));
+      final token = await FirebaseMessaging.instance.getToken().timeout(
+        const Duration(seconds: 8),
+      );
       if (token == null || token.isEmpty) return;
       await NotificationsData(Get.find<Crud>()).unregisterDeviceToken(token);
     } catch (e) {
       debugPrint('⚠️ FCM token remove failed: $e');
+    }
+  }
+
+  static Future<void> clearDisplayedNotifications() async {
+    try {
+      await FlutterLocalNotificationsPlugin().cancelAll().timeout(
+        const Duration(seconds: 2),
+      );
+    } catch (_) {
+      /* Local cleanup must continue without platform services. */
     }
   }
 }

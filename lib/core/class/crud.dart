@@ -8,8 +8,132 @@ import 'package:app/core/services/session_service.dart';
 import 'package:dartz/dartz.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:app/data/datasource/model/auth_reply.dart';
 
 class Crud {
+  Crud({http.Client? authClient}) : _authClient = authClient ?? http.Client();
+  final http.Client _authClient;
+
+  /// Auth needs the actual status and JSON object, not the legacy fallback
+  /// that treats arbitrary text as a successful response. Never logs payloads.
+  Future<AuthReply> authPost(String url, Map<String, dynamic> body) =>
+      _authRequest(url, body);
+
+  /// Login alone uses the form-data contract observed in Postman. Do not set
+  /// Content-Type: MultipartRequest owns its boundary and generated header.
+  Future<AuthReply> loginMultipart(String url, String phoneNumber) =>
+      _authRequest(url, {'phone_number': phoneNumber}, multipart: true);
+
+  Future<http.Response> _sendLoginMultipart(
+    String url,
+    String phoneNumber,
+  ) async {
+    final request = http.MultipartRequest('POST', Uri.parse(url))
+      ..headers['Accept'] = 'application/json'
+      ..fields['phone_number'] = phoneNumber;
+    return http.Response.fromStream(await _authClient.send(request));
+  }
+
+  Future<AuthReply> _authRequest(
+    String url,
+    Map<String, dynamic> body, {
+    bool multipart = false,
+  }) async {
+    AuthReply reply;
+    try {
+      final response = multipart
+          ? await _sendLoginMultipart(
+              url,
+              body['phone_number'] as String,
+            ).timeout(_defaultTimeout)
+          : await _authClient
+                .post(
+                  Uri.parse(url),
+                  headers: const {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                  },
+                  body: jsonEncode(body),
+                )
+                .timeout(_defaultTimeout);
+      Map<String, dynamic>? payload;
+      try {
+        final decoded = jsonDecode(utf8.decode(response.bodyBytes));
+        if (decoded is Map<String, dynamic>) payload = decoded;
+      } catch (_) {
+        /* Non-JSON is not an auth success envelope. */
+      }
+      reply = AuthReply(statusCode: response.statusCode, payload: payload);
+    } catch (_) {
+      reply = const AuthReply(
+        failure: 'تعذر الاتصال. لم تُعد المحاولة تلقائياً.',
+      );
+    }
+    return reply;
+  }
+
+  /// Strict response access for the two account operations only. Existing
+  /// endpoint response contracts remain unchanged.
+  Future<AccountHttpReply> accountRequest(
+    String method,
+    String url, {
+    required Map<String, String> headers,
+    Map<String, dynamic>? body,
+  }) async {
+    try {
+      if (!await checkInternet()) {
+        return const AccountHttpReply(errorMessage: 'لا يوجد اتصال بالإنترنت');
+      }
+      final response = method == 'DELETE'
+          ? await http
+                .delete(Uri.parse(url), headers: headers)
+                .timeout(_defaultTimeout)
+          : await _authClient
+                .put(Uri.parse(url), headers: headers, body: jsonEncode(body))
+                .timeout(_defaultTimeout);
+      return decodeAccountReply(response);
+    } catch (_) {
+      return const AccountHttpReply(
+        errorMessage: 'تعذر الاتصال بالخادم. تحقق من الاتصال وأعد المحاولة.',
+      );
+    }
+  }
+
+  AccountHttpReply decodeAccountReply(http.Response response) {
+    Map<String, dynamic>? json;
+    try {
+      final value = jsonDecode(utf8.decode(response.bodyBytes));
+      if (value is Map<String, dynamic>) json = value;
+    } catch (_) {
+      /* Empty 204 and non-JSON are distinguished by HTTP status. */
+    }
+    if (response.statusCode == 401) {
+      if (Get.isRegistered<SessionService>()) {
+        Get.find<SessionService>().dropExpiredSession();
+      }
+      return const AccountHttpReply(
+        statusCode: 401,
+        errorMessage: 'انتهت الجلسة. سجّل الدخول من جديد.',
+      );
+    }
+    String? message;
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      final errors = json?['errors'];
+      final nameErrors = errors is Map ? errors['name'] : null;
+      if (nameErrors is List && nameErrors.isNotEmpty) {
+        message = nameErrors.first.toString();
+      } else if (json?['message'] is String) {
+        message = json!['message'] as String;
+      }
+      message ??= 'تعذر تنفيذ العملية. أعد المحاولة.';
+    }
+    return AccountHttpReply(
+      statusCode: response.statusCode,
+      json: json,
+      errorMessage: message,
+    );
+  }
+
   // إعدادات افتراضية
   static const Duration _defaultTimeout = Duration(seconds: 30);
   static const Map<String, String> _defaultHeaders = {
@@ -344,4 +468,11 @@ class Crud {
   Future<bool> isConnected() async {
     return await checkInternet();
   }
+}
+
+class AccountHttpReply {
+  const AccountHttpReply({this.statusCode, this.json, this.errorMessage});
+  final int? statusCode;
+  final Map<String, dynamic>? json;
+  final String? errorMessage;
 }

@@ -1,8 +1,6 @@
 import 'package:app/controller/auth/login/login_controller.dart';
 import 'package:app/core/class/statusrequest.dart';
 import 'package:app/core/constant/routes/app_routes.dart';
-import 'package:app/core/function/valid_function.dart';
-import 'package:app/view/auth/login/widgets/go_to_register.dart';
 import 'package:app/view/auth/widgets/auth_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -13,10 +11,9 @@ class LoginView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (Get.isRegistered<LoginControllerImb>()) {
-      Get.delete<LoginControllerImb>();
+    if (!Get.isRegistered<LoginControllerImb>()) {
+      Get.put(LoginControllerImb());
     }
-    Get.put(LoginControllerImb());
 
     return GetBuilder<LoginControllerImb>(
       builder: (controller) {
@@ -27,13 +24,9 @@ class LoginView extends StatelessWidget {
               key: controller.formStat,
               child: Column(
                 children: [
-                  AuthField(
-                    label: '3'.tr,
-                    hint: '2'.tr,
-                    icon: Icons.mail_outline,
-                    controller: controller.email,
-                    validator: (val) =>
-                        validTextForm(val ?? '', 'email', 100, 3),
+                  Text(
+                    'الدخول أو إنشاء حساب',
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
                   SizedBox(height: AuthMetrics.gap(context, 25)),
                   AuthField(
@@ -43,21 +36,49 @@ class LoginView extends StatelessWidget {
                     controller: controller.phoneNumber,
                     keyboardType: TextInputType.number,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    validator: (val) =>
-                        validTextForm(val ?? '', 'name', 100, 3),
+                    validator: controller.validatePhone,
+                    maxLength: 10,
                   ),
                   SizedBox(height: AuthMetrics.gap(context, 18)),
-                  GoToRegister(onTap: () => controller.goRegister()),
+                  CheckboxListTile(
+                    value: controller.agreed,
+                    onChanged: loading
+                        ? null
+                        : (value) => controller.setAgreement(value ?? false),
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text(
+                      'أوافق على سياسة الخصوصية والشروط والأحكام',
+                    ),
+                  ),
+                  Wrap(
+                    children: [
+                      TextButton(
+                        onPressed: () => Get.toNamed(AppRoutes.privacy),
+                        child: const Text('سياسة الخصوصية'),
+                      ),
+                      TextButton(
+                        onPressed: () => Get.toNamed(AppRoutes.terms),
+                        child: const Text('الشروط والأحكام'),
+                      ),
+                    ],
+                  ),
+                  if (controller.error != null)
+                    Text(
+                      controller.error!,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
                   SizedBox(height: AuthMetrics.gap(context, 25)),
                   AuthPrimaryButton(
-                    title: '1'.tr,
+                    title: 'إرسال رمز التحقق',
                     loading: loading,
                     onTap: () => controller.login(),
                   ),
                   SizedBox(height: AuthMetrics.gap(context, 12)),
                   AuthOutlineButton(
                     title: 'الدخول كضيف',
-                    onTap: () => Get.toNamed(AppRoutes.chooseCity),
+                    onTap: controller.continueAsGuest,
                   ),
                 ],
               ),

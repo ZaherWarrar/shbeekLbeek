@@ -1,4 +1,5 @@
 # Miscellaneous
+/.local-api-check/
 *.class
 *.log
 *.pyc

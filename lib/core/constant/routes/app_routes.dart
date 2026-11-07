@@ -12,7 +12,6 @@ import 'package:app/binding/address_binding.dart';
 import 'package:app/view/address/address_page.dart';
 import 'package:app/view/allShops/all_shops_view.dart';
 import 'package:app/view/auth/login/login_view.dart';
-import 'package:app/view/auth/register/register_view.dart';
 import 'package:app/view/auth/verification/otp_view.dart';
 import 'package:app/view/bottomNavBar/main_view.dart';
 import 'package:app/view/city/choose_city.dart';
@@ -63,7 +62,7 @@ class AppRoutes {
       middlewares: [AppMiddleware()],
     ),
 
-    GetPage(name: register, page: () => const RegisterView()),
+    GetPage(name: register, page: () => const LoginView()),
     GetPage(binding: OtpBinding(), name: otp, page: () => const OtpView()),
     GetPage(name: login, page: () => LoginView()),
     GetPage(name: chooseCity, page: () => ChooseCity()),
@@ -114,7 +113,6 @@ class AppRoutes {
       page: () => const NotificationsView(),
       binding: NotificationsBinding(),
     ),
-     GetPage(name: onboarding, page: () => OnboardingView()),
-    
+    GetPage(name: onboarding, page: () => OnboardingView()),
   ];
 }

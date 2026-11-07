@@ -1,4 +1,5 @@
 import 'package:app/controller/profile/profile_controller.dart';
+import 'package:app/controller/profile/account_controller.dart';
 import 'package:app/core/constant/app_color.dart';
 import 'package:app/core/constant/routes/app_routes.dart';
 import 'package:app/view/profile/widget/logout_button.dart';
@@ -31,85 +32,125 @@ class ProfileView extends StatelessWidget {
         init: controller,
         builder: (controller) {
           return SingleChildScrollView(
-        child: Column(
-          children: [
-            ProfileHeader(controller: controller),
+            child: Column(
+              children: [
+                ProfileHeader(controller: controller),
 
-            ProfileSection(
-              title: 'الحساب',
-              items: [
-                // ProfileItemData(
-                //   title: 'سجل الطلبات',
-                //   icon: Icons.history,
-                //   route: AppRoutes.ordhis,
+                ProfileSection(
+                  title: 'الحساب',
+                  items: [
+                    // ProfileItemData(
+                    //   title: 'سجل الطلبات',
+                    //   icon: Icons.history,
+                    //   route: AppRoutes.ordhis,
+                    // ),
+                    ProfileItemData(
+                      title: 'الإشعارات',
+                      icon: Icons.notifications_outlined,
+                      route: AppRoutes.notifications,
+                    ),
+                    ProfileItemData(
+                      title: 'العناوين المحفوظة',
+                      icon: Icons.location_on_outlined,
+                      route: AppRoutes.addrslis,
+                    ),
+                    ProfileItemData(
+                      title: 'طرق الدفع',
+                      icon: Icons.credit_card,
+                      route: AppRoutes.paympa,
+                    ),
+                    ProfileItemData(
+                      title: 'المحفظة',
+                      icon: Icons.account_balance_wallet_outlined,
+                      route: AppRoutes.wallet,
+                    ),
+                    if (controller.showChangeCity)
+                      ProfileItemData(
+                        title: 'تغيير المدينة',
+                        icon: Icons.map_outlined,
+                        route: AppRoutes.chooseCity,
+                      ),
+                  ],
+                ),
+
+                // ProfileSection(
+                //   title: 'عام',
+                //   items: [
+                //     ProfileItemData(title: 'الإعدادات', icon: Icons.settings),
+                //   ],
                 // ),
-                ProfileItemData(
-                  title: 'الإشعارات',
-                  icon: Icons.notifications_outlined,
-                  route: AppRoutes.notifications,
+                ProfileSection(
+                  title: 'الدعم والمعلومات',
+                  items: [
+                    ProfileItemData(
+                      title: 'سياسة الخصوصية',
+                      icon: Icons.privacy_tip_outlined,
+                      route: AppRoutes.privacy,
+                    ),
+                    ProfileItemData(
+                      title: 'الشروط والأحكام',
+                      icon: Icons.description_outlined,
+                      route: AppRoutes.terms,
+                    ),
+                    ProfileItemData(
+                      title: 'تواصل معنا',
+                      icon: Icons.support_agent,
+                      route: AppRoutes.contact,
+                    ),
+                    ProfileItemData(
+                      title: 'عن التطبيق',
+                      icon: Icons.info_outline,
+                      route: AppRoutes.about,
+                    ),
+                  ],
                 ),
-                ProfileItemData(
-                  title: 'العناوين المحفوظة',
-                  icon: Icons.location_on_outlined,
-                  route: AppRoutes.addrslis,
+
+                const SizedBox(height: 20),
+                GetBuilder<AccountController>(
+                  builder: (account) {
+                    if (!account.session.isLoggedIn) {
+                      return const SizedBox.shrink();
+                    }
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Column(
+                        children: [
+                          ListTile(
+                            leading: Icon(
+                              Icons.delete_outline,
+                              color: Colors.red.shade700,
+                            ),
+                            title: const Text('حذف الحساب'),
+                            onTap: account.deleting || account.leaving
+                                ? null
+                                : () => account.requestDeletion(),
+                            trailing: account.deleting || account.leaving
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : null,
+                          ),
+                          if (account.deleteError != null)
+                            Text(
+                              account.deleteError!,
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.error,
+                              ),
+                            ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
-                ProfileItemData(
-                  title: 'طرق الدفع',
-                  icon: Icons.credit_card,
-                  route: AppRoutes.paympa,
-                ),
-                ProfileItemData(
-                  title: 'المحفظة',
-                  icon: Icons.account_balance_wallet_outlined,
-                  route: AppRoutes.wallet,
-                ),
-                if (controller.showChangeCity)
-                  ProfileItemData(
-                    title: 'تغيير المدينة',
-                    icon: Icons.map_outlined,
-                    route: AppRoutes.chooseCity,
-                  ),
+                LogoutButton(onTap: controller.handleAuthAction),
+                const SizedBox(height: 30),
               ],
             ),
-
-            // ProfileSection(
-            //   title: 'عام',
-            //   items: [
-            //     ProfileItemData(title: 'الإعدادات', icon: Icons.settings),
-            //   ],
-            // ),
-            ProfileSection(
-              title: 'الدعم والمعلومات',
-              items: [
-                ProfileItemData(
-                  title: 'سياسة الخصوصية',
-                  icon: Icons.privacy_tip_outlined,
-                  route: AppRoutes.privacy,
-                ),
-                ProfileItemData(
-                  title: 'الشروط والأحكام',
-                  icon: Icons.description_outlined,
-                  route: AppRoutes.terms,
-                ),
-                ProfileItemData(
-                  title: 'تواصل معنا',
-                  icon: Icons.support_agent,
-                  route: AppRoutes.contact,
-                ),
-                ProfileItemData(
-                  title: 'عن التطبيق',
-                  icon: Icons.info_outline,
-                  route: AppRoutes.about,
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 20),
-            LogoutButton(onTap: controller.handleAuthAction),
-            const SizedBox(height: 30),
-          ],
-        ),
-      );
+          );
         },
       ),
     );

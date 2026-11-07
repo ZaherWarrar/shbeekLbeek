@@ -8,6 +8,8 @@ class ApiLinks {
   static const String login = '$baseUrl/login';
   static const String createAccount = '$baseUrl/register';
   static const String verifyCode = '$baseUrl/verify';
+  static const String userProfile = '$baseUrl/user/profile';
+  static const String userAccount = '$baseUrl/user/account';
   // home page Endpoints
   static const String cities = '$baseUrl/cities';
   static const String home = '$baseUrl/home/';

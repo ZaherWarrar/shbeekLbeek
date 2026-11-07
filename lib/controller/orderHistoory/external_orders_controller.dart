@@ -18,9 +18,11 @@ class ExternalOrdersController extends GetxController {
     update();
 
     final result = await _data.fetchExternalOrders();
+    if (isClosed) return;
     final status = handlingData(result);
 
-    if (status != StatusRequest.success || result is! List<ExternalOrderModel>) {
+    if (status != StatusRequest.success ||
+        result is! List<ExternalOrderModel>) {
       orderState = result is StatusRequest ? result : StatusRequest.failure;
       orders = [];
       update();

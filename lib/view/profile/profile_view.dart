@@ -55,11 +55,6 @@ class ProfileView extends StatelessWidget {
                       route: AppRoutes.addrslis,
                     ),
                     ProfileItemData(
-                      title: 'طرق الدفع',
-                      icon: Icons.credit_card,
-                      route: AppRoutes.paympa,
-                    ),
-                    ProfileItemData(
                       title: 'المحفظة',
                       icon: Icons.account_balance_wallet_outlined,
                       route: AppRoutes.wallet,
@@ -108,45 +103,77 @@ class ProfileView extends StatelessWidget {
                 const SizedBox(height: 20),
                 GetBuilder<AccountController>(
                   builder: (account) {
+                    final busy = account.deleting || account.leaving;
                     if (!account.session.isLoggedIn) {
-                      return const SizedBox.shrink();
+                      return LogoutButton(onTap: controller.handleAuthAction);
                     }
                     return Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Column(
                         children: [
-                          ListTile(
-                            leading: Icon(
-                              Icons.delete_outline,
-                              color: Colors.red.shade700,
-                            ),
-                            title: const Text('حذف الحساب'),
-                            onTap: account.deleting || account.leaving
-                                ? null
-                                : () => account.requestDeletion(),
-                            trailing: account.deleting || account.leaving
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
+                          Row(
+                            children: [
+                              Expanded(
+                                child: ElevatedButton.icon(
+                                  onPressed: busy
+                                      ? null
+                                      : () => account.requestDeletion(),
+                                  icon: busy
+                                      ? const SizedBox(
+                                          width: 18,
+                                          height: 18,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                          ),
+                                        )
+                                      : const Icon(
+                                          Icons.delete_outline,
+                                          size: 18,
+                                        ),
+                                  label: const Text(
+                                    'حذف الحساب',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.red.shade700,
+                                    foregroundColor: Colors.white,
+                                    disabledBackgroundColor: Colors.red.shade200,
+                                    elevation: 0,
+                                    minimumSize: const Size(0, 48),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
                                     ),
-                                  )
-                                : null,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: LogoutButton(
+                                  onTap: controller.handleAuthAction,
+                                  padded: false,
+                                  enabled: !busy,
+                                ),
+                              ),
+                            ],
                           ),
-                          if (account.deleteError != null)
+                          if (account.deleteError != null) ...[
+                            const SizedBox(height: 8),
                             Text(
                               account.deleteError!,
                               style: TextStyle(
                                 color: Theme.of(context).colorScheme.error,
                               ),
                             ),
+                          ],
                         ],
                       ),
                     );
                   },
                 ),
-                LogoutButton(onTap: controller.handleAuthAction),
                 const SizedBox(height: 30),
               ],
             ),

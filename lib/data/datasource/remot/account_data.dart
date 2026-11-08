@@ -52,9 +52,19 @@ class AccountData {
       ApiLinks.userAccount,
       headers: session.headers,
     );
-    // 204 is an unambiguous HTTP acknowledgement with no representation.
-    // No JSON success envelope for 200/202 is documented in this repository.
-    if (reply.statusCode == 204) return const AccountResult(deleted: true);
+    // The live endpoint deletes the account and returns HTTP 200, not only 204.
+    // An explicit failure flag still blocks local logout.
+    final code = reply.statusCode;
+    final json = reply.json;
+    final succeeded = code == 204 ||
+        (code != null &&
+            code >= 200 &&
+            code < 300 &&
+            json?['success'] != false &&
+            json?['status'] != false &&
+            json?['error'] == null &&
+            json?['errors'] == null);
+    if (succeeded) return const AccountResult(deleted: true);
     return AccountResult(
       error:
           reply.errorMessage ??

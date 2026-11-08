@@ -119,6 +119,14 @@ class OtpController extends GetxController {
           }
         }
 
+        final phoneFromUser = user['phone_number'] ?? user['phone'];
+        final phone = phoneFromUser is String && phoneFromUser.trim().isNotEmpty
+            ? phoneFromUser.trim()
+            : phoneNumber.trim();
+        if (phone.isNotEmpty) {
+          await session.saveUserPhone(phone);
+        }
+
         // المستخدم لم يعد ضيف
         await session.setGuest(false);
 

@@ -11,6 +11,7 @@ class SessionService extends GetxService {
   );
   static const _secureIoTimeout = Duration(seconds: 3);
   bool _droppingSession = false;
+  bool ignoreExpiredSession = false;
 
   String? _token;
   String? _userId;
@@ -24,6 +25,7 @@ class SessionService extends GetxService {
   static const _profileSnapshotKey = 'verified_account_name';
   static const accountNotificationsKey = 'accept_account_notifications';
   static const userEmailKey = "user_email";
+  static const userPhoneKey = "user_phone";
   static const userRoleKey = "user_role";
   static const userStatusKey = "user_status";
   static const guestKey = "is_guest";
@@ -99,6 +101,7 @@ class SessionService extends GetxService {
     await prefs.remove(userIdKey);
     await prefs.remove(userNameKey);
     await prefs.remove(userEmailKey);
+    await prefs.remove(userPhoneKey);
     await prefs.remove(userRoleKey);
     await prefs.remove(userStatusKey);
     await prefs.remove(_profileSnapshotKey);
@@ -173,6 +176,11 @@ class SessionService extends GetxService {
       await prefs.setString(userEmailKey, email);
 
   String? get userEmail => prefs.getString(userEmailKey);
+
+  Future<void> saveUserPhone(String phone) async =>
+      await prefs.setString(userPhoneKey, phone);
+
+  String? get userPhone => prefs.getString(userPhoneKey);
 
   Future<void> saveUserRole(String role) async =>
       await prefs.setString(userRoleKey, role);
@@ -321,7 +329,7 @@ class SessionService extends GetxService {
   /// تسجيل الدخول بيرجع access token فقط، وما في refresh token بالـ API.
   /// إذا السيرفر رد 401 والتوكن موجود، الجلسة خلصت وما فينا نجددها.
   void dropExpiredSession() {
-    if (_droppingSession || !isLoggedIn) return;
+    if (_droppingSession || !isLoggedIn || ignoreExpiredSession) return;
     _droppingSession = true;
     logout().whenComplete(() {
       _droppingSession = false;

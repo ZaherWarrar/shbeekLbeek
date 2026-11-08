@@ -1,3 +1,4 @@
+import 'package:app/core/function/app_snackbar.dart';
 import 'package:app/core/services/session_service.dart';
 import 'package:app/data/datasource/remot/account_data.dart';
 import 'package:get/get.dart';
@@ -132,6 +133,11 @@ class AccountController extends GetxController {
         return false;
       }
       await leaveAccount();
+      AppSnackbar.show(
+        'تم حذف الحساب',
+        'تم حذف الحساب وتسجيل الخروج',
+        snackPosition: SnackPosition.BOTTOM,
+      );
       return true;
     } catch (_) {
       deleteError = 'تعذر تأكيد حذف الحساب. تحقق من الاتصال وأعد المحاولة.';
@@ -145,6 +151,7 @@ class AccountController extends GetxController {
   Future<void> leaveAccount() async {
     if (leaving) return;
     leaving = true;
+    session.ignoreExpiredSession = true;
     update();
     try {
       // Best effort only, including after deletion invalidates the token.
@@ -152,10 +159,11 @@ class AccountController extends GetxController {
         await unlinkNotifications().timeout(const Duration(seconds: 3));
       } catch (_) {}
       await session.clearAccountData();
-      await clearLocalAccount();
-      refreshProfile();
       await goToLogin();
+      await Future<void>.delayed(Duration.zero);
+      await clearLocalAccount();
     } finally {
+      session.ignoreExpiredSession = false;
       leaving = false;
       update();
     }

@@ -1,6 +1,9 @@
 import 'package:app/controller/address/address_controller.dart';
 import 'package:app/controller/auth/otp/otp_controller.dart';
+import 'package:app/controller/bottomNavBar/main_controller.dart';
 import 'package:app/controller/cart/cart_controller.dart';
+import 'package:app/controller/choose_city/choose_city_controller.dart';
+import 'package:app/controller/home/home_controller.dart';
 import 'package:app/controller/external_delivery/external_delivery_controller.dart';
 import 'package:app/controller/favorites/favorites_controller.dart';
 import 'package:app/controller/notifications/notifications_controller.dart';
@@ -27,6 +30,9 @@ Future<void> clearAccountControllers() async {
   await Get.delete<OrderController>(force: true);
   await Get.delete<AddressController>(force: true);
   await Get.delete<NotificationsController>(force: true);
+  await Get.delete<HomeControllerImp>(force: true);
+  await Get.delete<ChooseCityController>(force: true);
+  await Get.delete<MainController>(force: true);
   await NotificationApi.clearDisplayedNotifications();
   // Recreate empty permanent dependencies required by the existing app shell.
   Get.put(CartController(), permanent: true);

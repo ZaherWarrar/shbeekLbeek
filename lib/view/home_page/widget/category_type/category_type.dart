@@ -11,13 +11,17 @@ class CategoryType extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetBuilder<HomeControllerImp>(
       builder: (controller) {
+        if (!controller.hasSectionItemsForCategory) {
+          return const SizedBox.shrink();
+        }
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
             MainCategory(controller: controller),
-            SizedBox(height: 10),
-            CategoryItems(),
+            const SizedBox(height: 10),
+            const CategoryItems(),
+            const SizedBox(height: 16),
           ],
         );
       },

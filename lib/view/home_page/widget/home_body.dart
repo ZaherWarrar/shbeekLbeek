@@ -60,9 +60,8 @@ class HomeBody extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
                     CategorySlider(controller: controller),
-                    const SizedBox(height: 25),
-                    CategoryType(),
-                    const SizedBox(height: 25),
+                    const SizedBox(height: 16),
+                    const CategoryType(),
                     AllShops(),
                   ],
                 );

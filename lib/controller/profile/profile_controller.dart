@@ -1,4 +1,5 @@
 import 'package:app/controller/choose_city/choose_city_controller.dart';
+import 'package:app/core/services/account_local_cleanup.dart';
 import 'package:app/core/shared/notifications/notification_api.dart';
 import 'package:app/core/class/statusrequest.dart';
 import 'package:app/core/constant/routes/app_routes.dart';
@@ -12,6 +13,7 @@ import 'package:app/core/function/app_snackbar.dart';
 
 class ProfileController extends GetxController {
   final userName = ''.obs;
+  final phone = ''.obs;
   final email = ''.obs;
   final userId = ''.obs;
   final userRole = ''.obs;
@@ -86,6 +88,7 @@ class ProfileController extends GetxController {
 
   void loadUserData() {
     userName.value = session.userName ?? 'مستخدم';
+    phone.value = session.userPhone ?? '';
     email.value = session.userEmail ?? '';
     userId.value = session.userId ?? '';
     userRole.value = session.userRole ?? '';
@@ -130,13 +133,11 @@ class ProfileController extends GetxController {
 
       if (confirmed == true) {
         await NotificationApi.unregisterDeviceToken();
-        await session.logout();
-        await session.clearCity();
-        await session.clearActiveOrder();
-
+        await session.clearAccountData();
         isLoggedIn.value = false;
-
         Get.offAllNamed(AppRoutes.login);
+        await Future<void>.delayed(Duration.zero);
+        await clearAccountControllers();
 
         AppSnackbar.show(
           'تسجيل الخروج',

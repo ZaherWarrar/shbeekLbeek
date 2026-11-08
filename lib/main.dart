@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:app/controller/notifications/notifications_controller.dart';
 import 'package:app/core/services/session_service.dart';
 import 'package:app/core/shared/notifications/notification_api.dart';

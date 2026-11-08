@@ -1,6 +1,7 @@
 import 'package:app/controller/auth/login/login_controller.dart';
 import 'package:app/core/class/statusrequest.dart';
 import 'package:app/core/constant/routes/app_routes.dart';
+import 'package:app/core/services/session_service.dart';
 import 'package:app/core/function/valid_function.dart';
 import 'package:app/view/auth/login/widgets/go_to_register.dart';
 import 'package:app/view/auth/widgets/auth_screen.dart';
@@ -57,7 +58,13 @@ class LoginView extends StatelessWidget {
                   SizedBox(height: AuthMetrics.gap(context, 12)),
                   AuthOutlineButton(
                     title: 'الدخول كضيف',
-                    onTap: () => Get.toNamed(AppRoutes.chooseCity),
+                    onTap: () async {
+                      final session = Get.find<SessionService>();
+                      if (!session.isLoggedIn) {
+                        await session.setGuest(true);
+                      }
+                      Get.toNamed(AppRoutes.chooseCity);
+                    },
                   ),
                 ],
               ),

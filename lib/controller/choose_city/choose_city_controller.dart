@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:app/controller/home/home_controller.dart';
 import 'package:app/core/class/crud.dart';
 import 'package:app/core/class/statusrequest.dart';
@@ -41,14 +43,15 @@ class ChooseCityController extends GetxController {
 
     if (citiesStatus == StatusRequest.success) {
       cities = _parseCities(response);
-      if (cities.isEmpty) {
-        citiesStatus = StatusRequest.failure;
-      }
     } else {
       cities = [];
     }
 
     update();
+
+    if (citiesStatus == StatusRequest.success && cities.isEmpty) {
+      await _continueWithoutCities();
+    }
   }
 
   List<CityModel> _parseCities(Object response) {
@@ -95,20 +98,29 @@ class ChooseCityController extends GetxController {
     update();
     try {
       await selectCity(id: id, name: name);
+      Get.offAllNamed(AppRoutes.start);
       if (Get.isRegistered<HomeControllerImp>()) {
         final home = Get.find<HomeControllerImp>();
-        await Future.wait([
-          home.fetchSliders(),
-          home.fetchMainCategores(),
-          home.fetchAllItem(),
-          home.fetchHomeSection(),
-        ]);
+        unawaited(
+          Future.wait([
+            home.fetchSliders(),
+            home.fetchMainCategores(),
+            home.fetchAllItem(),
+            home.fetchHomeSection(),
+          ]),
+        );
       }
-      Get.offAllNamed(AppRoutes.start);
     } finally {
       isSelectingCity.value = false;
       update();
     }
+  }
+
+  Future<void> _continueWithoutCities() async {
+    if (!session.isLoggedIn) {
+      await session.setGuest(true);
+    }
+    Get.offAllNamed(AppRoutes.home);
   }
 
   Future<void> clearSelection() async {

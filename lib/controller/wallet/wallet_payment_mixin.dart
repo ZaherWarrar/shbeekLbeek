@@ -15,13 +15,10 @@ mixin WalletPaymentMixin on GetxController {
   SessionService get walletSession => Get.find<SessionService>();
   WalletData get _walletData => WalletData(Get.find<Crud>());
 
-  bool get isLoggedIn =>
-      walletSession.isLoggedIn && !walletSession.isGuest;
+  bool get isLoggedIn => walletSession.isLoggedIn && !walletSession.isGuest;
 
   bool get canUseWallet =>
-      isLoggedIn &&
-      walletStatus == StatusRequest.success &&
-      walletBalance > 0;
+      isLoggedIn && walletStatus == StatusRequest.success && walletBalance > 0;
 
   String get paymentMethod => PaymentMethod.fromUseWallet(useWallet);
 
@@ -54,6 +51,7 @@ mixin WalletPaymentMixin on GetxController {
     update();
 
     final response = await _walletData.fetchBalance();
+    if (isClosed) return;
     walletStatus = handlingData(response);
 
     if (walletStatus == StatusRequest.success && response is Map) {

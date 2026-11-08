@@ -58,6 +58,32 @@ class HomeControllerImp extends HomeController {
   int selectedType = 0;
   String sectionName = '';
 
+  /// Section products follow the selected category's stores.
+  /// The section endpoint currently returns the same list for every category.
+  List<SectionModel> sectionItemsFor(String key) {
+    final all = finalSection[key] ?? const <SectionModel>[];
+    if (allItemState != StatusRequest.success) return const [];
+    final storeIds = <int>{
+      for (final shop in items)
+        if (shop.id != null) shop.id!,
+    };
+    return [
+      for (final item in all)
+        if (item.storeId != null && storeIds.contains(item.storeId)) item,
+    ];
+  }
+
+  List<SectionModel> get currentSectionItems => sectionItemsFor(sectionName);
+
+  bool get hasSectionItemsForCategory {
+    if (allItemState != StatusRequest.success) return false;
+    if (homeSection.isEmpty) return currentSectionItems.isNotEmpty;
+    return homeSection.any((section) {
+      final key = section.type ?? section.name ?? '';
+      return key.isNotEmpty && sectionItemsFor(key).isNotEmpty;
+    });
+  }
+
   StatusRequest allItemState = StatusRequest.none;
   int homeLoadGeneration = 0;
   AllItemData allItemData = AllItemData(Get.find());

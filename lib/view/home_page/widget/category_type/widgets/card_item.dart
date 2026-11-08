@@ -17,7 +17,8 @@ class CardItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final items = controller.finalSection[controller.sectionName] ?? [];
+    final items = controller.currentSectionItems;
+    if (index < 0 || index >= items.length) return const SizedBox.shrink();
     final sectionItem = items[index];
 
     ItemModel? storeItem;

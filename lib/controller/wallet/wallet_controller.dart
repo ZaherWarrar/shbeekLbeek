@@ -17,6 +17,7 @@ class WalletController extends GetxController {
     update();
 
     final res = await _data.fetchBalance();
+    if (isClosed) return;
     final stat = handlingData(res);
     if (stat != StatusRequest.success || res is! Map<String, dynamic>) {
       final s = res is StatusRequest ? res : StatusRequest.failure;
@@ -43,4 +44,3 @@ class WalletController extends GetxController {
     fetchBalance();
   }
 }
-

@@ -21,10 +21,7 @@ class OtpView extends GetView<OtpController> {
       },
       child: Scaffold(
         backgroundColor: AppColor().backgroundColor,
-        appBar: CustomAppBar(
-          title: "18".tr,
-          onBack: controller.goToLogin,
-        ),
+        appBar: CustomAppBar(title: "18".tr, onBack: controller.goToLogin),
         body: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(

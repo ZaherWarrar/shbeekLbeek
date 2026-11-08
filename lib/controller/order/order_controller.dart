@@ -1,4 +1,5 @@
 import 'package:app/controller/cart/cart_controller.dart';
+import 'package:app/controller/profile/account_controller.dart';
 import 'package:app/controller/order/order_active_session.dart';
 import 'package:app/controller/order/order_error_handler.dart';
 import 'package:app/controller/order/order_payload_builder.dart';
@@ -28,11 +29,14 @@ class OrderController extends GetxController {
     if (isCreatingOrder) return;
 
     final token = session.token;
-    if (token == null || token.isEmpty) {
+    if (token == null || token.isEmpty || session.isGuest) {
       AppSnackbar.show('تنبيه', 'يجب تسجيل الدخول أولاً');
       Get.toNamed(AppRoutes.login);
       return;
     }
+
+    if (!await Get.find<AccountController>().ensureName()) return;
+    if (isCreatingOrder || !session.isLoggedIn) return;
 
     final cartController = Get.find<CartController>();
     if (cartController.isEmpty) {
@@ -45,8 +49,12 @@ class OrderController extends GetxController {
     update();
 
     try {
-      final orderDataMap = buildOrderPayload(cart: cartController, notes: notes);
+      final orderDataMap = buildOrderPayload(
+        cart: cartController,
+        notes: notes,
+      );
       final response = await orderData.createOrderData(orderDataMap);
+      if (isClosed) return;
       orderState = handlingData(response);
 
       if (response is StatusRequest) {

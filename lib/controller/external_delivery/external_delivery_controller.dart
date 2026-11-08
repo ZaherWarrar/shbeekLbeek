@@ -1,4 +1,5 @@
 import 'package:app/controller/wallet/wallet_payment_mixin.dart';
+import 'package:app/controller/profile/account_controller.dart';
 import 'package:app/core/class/crud.dart';
 import 'package:app/core/constant/google_maps_config.dart';
 import 'package:app/core/class/statusrequest.dart';
@@ -19,8 +20,9 @@ enum PickMode { from, to }
 class ExternalDeliveryController extends GetxController
     with WalletPaymentMixin {
   final RoutingData _routingData = RoutingData();
-  final ExternalOrdersData _externalOrdersData =
-      ExternalOrdersData(Get.find<Crud>());
+  final ExternalOrdersData _externalOrdersData = ExternalOrdersData(
+    Get.find<Crud>(),
+  );
   final SessionService _session = Get.find<SessionService>();
 
   final pickMode = PickMode.from.obs;
@@ -166,9 +168,7 @@ class ExternalDeliveryController extends GetxController
 
       if (result != null && result.points.isNotEmpty) {
         routePoints.assignAll(
-          result.points.map(
-            (point) => LatLng(point.latitude, point.longitude),
-          ),
+          result.points.map((point) => LatLng(point.latitude, point.longitude)),
         );
         routeDistanceKm.value = result.distanceKm;
         routeDurationMin.value = result.durationMinutes;
@@ -234,6 +234,9 @@ class ExternalDeliveryController extends GetxController
       return;
     }
 
+    if (!await Get.find<AccountController>().ensureName()) return;
+    if (isSubmitting.value || !_session.isLoggedIn) return;
+
     isSubmitting.value = true;
     try {
       final payload = {
@@ -248,6 +251,7 @@ class ExternalDeliveryController extends GetxController
       };
 
       final response = await _externalOrdersData.createExternalOrder(payload);
+      if (isClosed) return;
       final status = handlingData(response);
 
       if (status != StatusRequest.success || response is! Map) {

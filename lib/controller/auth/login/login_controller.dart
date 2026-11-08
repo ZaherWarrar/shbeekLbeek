@@ -1,78 +1,77 @@
 import 'package:app/core/class/statusrequest.dart';
+import 'package:app/core/constant/phone_auth_contract.dart';
 import 'package:app/core/constant/routes/app_routes.dart';
-import 'package:app/core/function/handling_data.dart';
+import 'package:app/core/services/session_service.dart';
 import 'package:app/data/datasource/remot/login_data.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-abstract class LoginController extends GetxController {
-  dynamic login();
-  dynamic goRegister();
-}
+class LoginControllerImb extends GetxController {
+  final formStat = GlobalKey<FormState>();
+  final phoneNumber = TextEditingController();
+  final LoginData loginData = LoginData(Get.find());
+  StatusRequest statusRequest = StatusRequest.none;
+  bool agreed = false;
+  String? error;
 
-class LoginControllerImb extends LoginController {
-  // =================     Text form fild var    ===============================
-  GlobalKey<FormState> formStat = GlobalKey<FormState>();
-  late TextEditingController email;
-  late TextEditingController phoneNumber;
-  bool showpassword = true;
-  // =================     Data response var ===================================
-  LoginData loginData = LoginData(Get.find());
-  StatusRequest? statusRequest;
-  List data = [];
-  // ================     login function =======================================
-  @override
-  login() async {
-    var formData = formStat.currentState;
-    // ==============       status valid =======================================
-    if ((formData?.validate() ?? false)) {
-      statusRequest = StatusRequest.loading;
+  String? validatePhone(String? value) {
+    if (!RegExp(r'^09[0-9]{8}$').hasMatch(value?.trim() ?? '')) {
+      return 'أدخل رقم هاتف صحيحاً من 10 أرقام يبدأ بـ 09';
+    }
+    return null;
+  }
+
+  void setAgreement(bool value) {
+    agreed = value;
+    error = null;
+    update();
+  }
+
+  Future<void> login() async {
+    if (statusRequest == StatusRequest.loading) return;
+    if (!(formStat.currentState?.validate() ?? false)) return;
+    if (!agreed) {
+      error = 'يجب الموافقة على سياسة الخصوصية والشروط والأحكام';
       update();
-      var response = await loginData.loginData(
-        email.text,
-        phoneNumber.text,
-      );
-      statusRequest = handlingData(response);
-
-      if (StatusRequest.success == statusRequest) {
+      return;
+    }
+    if (!PhoneAuthContract.confirmed) {
+      error = PhoneAuthContract.unavailableMessage;
+      update();
+      return;
+    }
+    statusRequest = StatusRequest.loading;
+    error = null;
+    update();
+    try {
+      final reply = await loginData.loginData(phoneNumber.text.trim());
+      if (PhoneAuthContract.loginReplyConfirmed && reply.loginSucceeded) {
         Get.offAllNamed(
           AppRoutes.otp,
-          arguments: {
-            "phone_number": phoneNumber.text,
-            "name": email.text,
-          },
+          arguments: {'phone_number': phoneNumber.text.trim()},
         );
       } else {
-        statusRequest = StatusRequest.failure;
-        Get.defaultDialog(
-          title: "فشل تسجيل الدخول",
-          content: Text("الحساب أو كلمة المرور غير صحيحان!"),
-        );
+        error =
+            reply.failure ??
+            'تعذر إرسال الرمز. لم يؤكد الخادم إمكانية المتابعة بهذا الرقم.';
       }
+    } catch (_) {
+      error = 'تعذر إرسال الرمز. تحقق من الاتصال وأعد المحاولة.';
+    } finally {
+      statusRequest = StatusRequest.none;
       update();
     }
   }
 
-
-
-  @override
-  goRegister() {
-    Get.offAllNamed(AppRoutes.register);
+  Future<void> continueAsGuest() async {
+    if (statusRequest == StatusRequest.loading) return;
+    await Get.find<SessionService>().setGuest(true);
+    Get.offAllNamed(AppRoutes.start);
   }
 
-  // ===============  on init function =========================================
   @override
-  void onInit() async {
-    email = TextEditingController();
-    phoneNumber = TextEditingController();
-    super.onInit();
-  }
-
-  //  =============   dispose function =========================================
-  @override
-  void dispose() {
-    email.dispose();
+  void onClose() {
     phoneNumber.dispose();
-    super.dispose();
+    super.onClose();
   }
 }

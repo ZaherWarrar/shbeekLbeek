@@ -12,8 +12,9 @@ class FavoritesController extends GetxController {
   final FavoritesData favoritesData = FavoritesData(Get.find());
   final SessionService _session = Get.find();
 
-  late final FavoritesLocalRepository _local =
-      FavoritesLocalRepository(_session);
+  late final FavoritesLocalRepository _local = FavoritesLocalRepository(
+    _session,
+  );
   late final FavoritesRemoteSync _sync = FavoritesRemoteSync(
     favoritesData: favoritesData,
     session: _session,
@@ -36,6 +37,7 @@ class FavoritesController extends GetxController {
 
   Future<void> fetchFavorites() async {
     await _loadLocalFavorites();
+    if (isClosed) return;
     await syncWithServer();
   }
 
@@ -58,6 +60,7 @@ class FavoritesController extends GetxController {
     }
 
     final serverFavorites = await _sync.fetchServerFavorites();
+    if (isClosed) return;
     if (serverFavorites != null) {
       final merged = await _local.mergeWithServer(
         userId: userId,
@@ -117,12 +120,7 @@ class FavoritesController extends GetxController {
       removedItem.isFavorite.value = false;
       update();
       await _local.save(userId, restaurants);
-      await _local.enqueuePending(
-        userId,
-        favoritesActionRemove,
-        type,
-        id,
-      );
+      await _local.enqueuePending(userId, favoritesActionRemove, type, id);
 
       if (isLoggedIn) {
         final success = await _sync.removeOnServer(type, id);

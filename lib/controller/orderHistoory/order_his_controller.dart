@@ -15,11 +15,11 @@ class OrderHisController extends GetxController {
     update();
 
     var response = await orderData.myOrdersData();
+    if (isClosed) return;
     orderState = handlingData(response);
     if (orderState == StatusRequest.success) {
       final orderList = _extractOrders(response);
-      orders =
-          orderList.map((item) => OrderHisModel.fromJson(item)).toList();
+      orders = orderList.map((item) => OrderHisModel.fromJson(item)).toList();
     } else {
       orders = [];
     }

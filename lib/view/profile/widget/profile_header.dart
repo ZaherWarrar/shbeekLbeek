@@ -33,27 +33,32 @@ class ProfileHeader extends StatelessWidget {
                 ),
               )),
 
-          Obx(() => Text(
-                controller.email.value,
-                style: TextStyle(
-                  color: Colors.grey.shade600,
-                ),
-              )),
-
-          const SizedBox(height: 12),
-
-          ElevatedButton(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFF1F1F1),
-              foregroundColor: Colors.black,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+          Obx(() {
+            final phone = controller.phone.value.trim();
+            if (phone.isEmpty) return const SizedBox.shrink();
+            return Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.phone_outlined,
+                    size: 16,
+                    color: Colors.grey.shade600,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    phone,
+                    textDirection: TextDirection.ltr,
+                    style: TextStyle(
+                      color: Colors.grey.shade600,
+                      fontSize: 15,
+                    ),
+                  ),
+                ],
               ),
-            ),
-            child: const Text('تعديل الملف الشخصي'),
-          ),
+            );
+          }),
         ],
       ),
     );

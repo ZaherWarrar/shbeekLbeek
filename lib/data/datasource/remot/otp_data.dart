@@ -1,22 +1,25 @@
 import 'package:app/core/class/crud.dart';
 import 'package:app/link_api.dart';
+import 'package:app/core/class/statusrequest.dart';
+import 'package:app/core/constant/phone_auth_contract.dart';
+import 'package:app/data/datasource/model/auth_reply.dart';
 
 class OtpData {
   Crud crud;
 
   OtpData(this.crud);
 
-  // ignore: strict_top_level_inference
-  otpData(String otpCode, String phoneNumber ) async {
-    var response = await crud
-        .postData(ApiLinks.verifyCode, {"otp": otpCode, "phone_number": phoneNumber, });
-    return response.fold((l) => l, (r) => r);
+  Future<AuthReply> otpData(String otpCode, String phoneNumber) async {
+    return crud.authPost(ApiLinks.verifyCode, {
+      "otp": otpCode,
+      "phone_number": phoneNumber,
+    });
   }
 
-  /// Reuses login to send a new OTP — there is no dedicated resend endpoint.
-  Future<Object> resendOtp(String phoneNumber, {String name = ''}) async {
+  /// Existing implementation reuses login. Resend semantics are NOT confirmed.
+  Future<Object> resendOtp(String phoneNumber) async {
+    if (!PhoneAuthContract.resendConfirmed) return StatusRequest.failure;
     var response = await crud.postData(ApiLinks.login, {
-      "name": name,
       "phone_number": phoneNumber,
     });
     return response.fold((l) => l, (r) => r);

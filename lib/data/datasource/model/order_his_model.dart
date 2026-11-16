@@ -62,7 +62,11 @@ class OrderHisModel {
     }
     total = _calculateTotal(items);
     restaurantName = _firstProductName(items) ?? _buildFallbackName(id);
-    status = OrderStatusType.fromApi(json['status']?.toString());
+    status = OrderStatusType.resolve(
+      rawStatus: _readStatus(json['status'] ?? json['order_status'] ?? json['state']),
+      address: address,
+      deliveredAt: delvierdDatetime,
+    );
     date = _parseDate(createdAt) ?? _parseDate(updatedAt);
   }
 
@@ -113,6 +117,19 @@ class OrderHisModel {
       return 'طلب';
     }
     return 'طلب #$id';
+  }
+
+  static String? _readStatus(dynamic value) {
+    if (value == null) return null;
+    if (value is Map) {
+      return (value['name'] ??
+              value['status'] ??
+              value['label'] ??
+              value['title'] ??
+              value['value'])
+          ?.toString();
+    }
+    return value.toString();
   }
 
   static DateTime? _parseDate(String? value) {

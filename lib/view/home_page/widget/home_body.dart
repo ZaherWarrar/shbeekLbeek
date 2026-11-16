@@ -50,7 +50,7 @@ class HomeBody extends StatelessWidget {
                 )
               : ListView(
                   children: [
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 16),
                     SliderWidget(
                       controller: controller,
                       imageWidth: 310,
@@ -58,7 +58,7 @@ class HomeBody extends StatelessWidget {
                       borderRadius: 20,
                       interval: const Duration(seconds: 5),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 2),
                     CategorySlider(controller: controller),
                     const SizedBox(height: 16),
                     const CategoryType(),

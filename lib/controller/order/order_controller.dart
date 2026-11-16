@@ -44,26 +44,47 @@ class OrderController extends GetxController {
       return;
     }
 
+    final orderDataMap = buildOrderPayload(
+      cart: cartController,
+      notes: notes,
+    );
+    final items = (orderDataMap['cart'] as Map)['items'];
+    if (items is! List || items.isEmpty) {
+      AppSnackbar.show('تنبيه', 'تعذر تجهيز منتجات السلة. أعد إضافتها');
+      return;
+    }
+    final latitude = orderDataMap['latitude'];
+    final longitude = orderDataMap['longitude'];
+    final address = orderDataMap['address']?.toString().trim() ?? '';
+    if (latitude is! num ||
+        longitude is! num ||
+        latitude == 0 ||
+        longitude == 0 ||
+        address.isEmpty) {
+      AppSnackbar.show('تنبيه', 'الرجاء اختيار عنوان توصيل بموقع صالح');
+      return;
+    }
+
     isCreatingOrder = true;
     orderState = StatusRequest.loading;
     update();
 
     try {
-      final orderDataMap = buildOrderPayload(
-        cart: cartController,
-        notes: notes,
-      );
       final response = await orderData.createOrderData(orderDataMap);
       if (isClosed) return;
       orderState = handlingData(response);
 
-      if (response is StatusRequest) {
+      if (response is OrderRequestFailure) {
+        orderState = response.status;
+        showOrderError(orderState, detail: response.message);
+      } else if (response is StatusRequest) {
         orderState = response;
         showOrderError(orderState);
-      } else if (response is Map<String, dynamic>) {
+      } else if (response is Map) {
         orderState = StatusRequest.success;
+        final orderBody = Map<String, dynamic>.from(response);
 
-        final orderId = response['order_id'] as int?;
+        final orderId = _readOrderId(orderBody);
         if (orderId != null) {
           await _active.persist(orderId, DateTime.now());
           Get.toNamed(AppRoutes.orderConfirmation, arguments: orderId);
@@ -80,9 +101,7 @@ class OrderController extends GetxController {
       orderState = StatusRequest.failure;
       AppSnackbar.show('خطأ', 'حدث خطأ: ${e.toString()}');
     } finally {
-      if (orderState != StatusRequest.success) {
-        isCreatingOrder = false;
-      }
+      isCreatingOrder = false;
       update();
     }
   }
@@ -95,6 +114,7 @@ class OrderController extends GetxController {
       return;
     }
 
+    isCreatingOrder = false;
     orderState = StatusRequest.loading;
     update();
 
@@ -127,6 +147,7 @@ class OrderController extends GetxController {
       return;
     }
 
+    isCreatingOrder = false;
     orderState = StatusRequest.loading;
     update();
 
@@ -165,6 +186,31 @@ class OrderController extends GetxController {
   bool hasActiveOrder() => _active.hasActive;
 
   int getRemainingCancelSeconds() => _active.remainingCancelSeconds();
+
+  int? _readOrderId(Map<String, dynamic> body) {
+    final direct = _asOrderId(body['order_id'] ?? body['id']);
+    if (direct != null) return direct;
+
+    final data = body['data'];
+    if (data is Map) {
+      final nested = _asOrderId(data['order_id'] ?? data['id']);
+      if (nested != null) return nested;
+    }
+
+    final order = body['order'];
+    if (order is Map) {
+      return _asOrderId(order['order_id'] ?? order['id']);
+    }
+    return null;
+  }
+
+  int? _asOrderId(dynamic value) {
+    if (value is int && value > 0) return value;
+    if (value is num && value > 0) return value.toInt();
+    final parsed = int.tryParse(value?.toString() ?? '');
+    if (parsed == null || parsed <= 0) return null;
+    return parsed;
+  }
 
   @override
   void onInit() {

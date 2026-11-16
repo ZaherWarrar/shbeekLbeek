@@ -13,12 +13,15 @@ class CategoryItems extends StatelessWidget {
         final items = controller.currentSectionItems;
         if (items.isEmpty) return const SizedBox.shrink();
         return SizedBox(
-          height: CardItem.listHeight,
+          height: CardItem.listHeightOf(context),
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            padding: EdgeInsets.symmetric(
+              horizontal: CardItem.unit(context, 12),
+            ),
             itemCount: items.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 10),
+            separatorBuilder: (_, __) =>
+                SizedBox(width: CardItem.unit(context, 10)),
             itemBuilder: (context, index) {
               return CardItem(controller: controller, index: index);
             },

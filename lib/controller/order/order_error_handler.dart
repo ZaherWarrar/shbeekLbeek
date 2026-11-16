@@ -3,20 +3,31 @@ import 'package:app/core/constant/routes/app_routes.dart';
 import 'package:get/get.dart';
 import 'package:app/core/function/app_snackbar.dart';
 
-void showOrderError(StatusRequest status) {
+void showOrderError(StatusRequest status, {String? detail}) {
+  final serverDetail = detail?.trim();
   switch (status) {
     case StatusRequest.unauthorized:
       AppSnackbar.show('خطأ', 'غير مصرح لك. يرجى تسجيل الدخول');
       Get.toNamed(AppRoutes.login);
       break;
     case StatusRequest.forbidden:
-      AppSnackbar.show('خطأ', 'غير مسموح لك بهذا الإجراء');
+      AppSnackbar.show(
+        'خطأ',
+        (serverDetail != null && serverDetail.isNotEmpty)
+            ? serverDetail
+            : 'غير مسموح لك بهذا الإجراء',
+      );
       break;
     case StatusRequest.notFound:
       AppSnackbar.show('خطأ', 'الطلب غير موجود');
       break;
     case StatusRequest.serverfailure:
-      AppSnackbar.show('خطأ', 'خطأ في الخادم');
+      AppSnackbar.show(
+        'خطأ',
+        (serverDetail != null && serverDetail.isNotEmpty)
+            ? serverDetail
+            : 'خطأ في الخادم',
+      );
       break;
     case StatusRequest.offlinefailure:
       AppSnackbar.show('خطأ', 'لا يوجد اتصال بالإنترنت');

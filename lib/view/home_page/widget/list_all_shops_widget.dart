@@ -2,8 +2,8 @@ import 'dart:math';
 
 import 'package:app/controller/home/home_controller.dart';
 import 'package:app/core/constant/app_color.dart';
-import 'package:app/core/constant/app_images.dart';
 import 'package:app/core/constant/routes/app_routes.dart';
+import 'package:app/view/shopDetails/widgets/shop_network_image.dart';
 import 'package:app/core/function/fontsize.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -18,6 +18,7 @@ class ListAllShopsWidget extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            SizedBox(height: 16),
             FittedBox(
               fit: BoxFit.scaleDown,
               child: Padding(
@@ -58,15 +59,10 @@ class ListAllShopsWidget extends StatelessWidget {
                           height: 108,
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(14),
-                            child: Image.network(
-                              item.imageUrl ?? " ",
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Image.asset(
-                                  Assets.imagesLogo,
-                                  fit: BoxFit.cover,
-                                );
-                              },
+                            child: ShopNetworkImage(
+                              url: item.imageUrl,
+                              width: 108,
+                              height: 108,
                             ),
                           ),
                         ),
@@ -75,61 +71,56 @@ class ListAllShopsWidget extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  item.name ?? '',
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontSize: getResponsiveFontSize(
-                                      context,
-                                      fontSize: 18,
-                                    ),
-                                    fontWeight: FontWeight.w600,
-                                    height: 1.25,
+                            children: [
+                              Text(
+                                item.name ?? '',
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: getResponsiveFontSize(
+                                    context,
+                                    fontSize: 18,
                                   ),
+                                  fontWeight: FontWeight.w600,
+                                  height: 1.25,
                                 ),
-                                const SizedBox(height: 6),
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.star_border_purple500_outlined,
-                                      color: AppColor().primaryColor,
+                              ),
+                              const SizedBox(height: 6),
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.star_border_purple500_outlined,
+                                    color: AppColor().primaryColor,
+                                  ),
+                                  const SizedBox(width: 5),
+                                  const Text("4.5"),
+                                  const SizedBox(width: 5),
+                                  Text(
+                                    "(200)",
+                                    style: TextStyle(
+                                      color: AppColor().descriptionColor,
                                     ),
-                                    const SizedBox(width: 5),
-                                    const Text("4.5"),
-                                    const SizedBox(width: 5),
-                                    Text(
-                                      "(200)",
-                                      style: TextStyle(
-                                        color: AppColor().descriptionColor,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 4),
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.alarm,
-                                      color: Colors.grey[700],
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      "15-25 دقيقة",
-                                      style: TextStyle(
-                                        color: Colors.grey[700],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  Icon(Icons.alarm, color: Colors.grey[700]),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    "15-25 دقيقة",
+                                    style: TextStyle(color: Colors.grey[700]),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  );
+                  ),
+                );
               },
             ),
             // زر عرض الكل

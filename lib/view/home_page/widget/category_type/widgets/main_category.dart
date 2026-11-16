@@ -28,7 +28,7 @@ class MainCategory extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 5.0),
                 child: Container(
                   height: 30,
-                  width: 100,
+                  width: 90,
                   decoration: BoxDecoration(
                     color: controller.selectedType == index
                         ? AppColor().primaryColor
@@ -41,6 +41,11 @@ class MainCategory extends StatelessWidget {
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
                         child: Text(
+                          style: TextStyle(
+                            fontFamily: 'Sukar',
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                          ),
                           controller.homeSection[index].name.toString(),
                         ),
                       ),

@@ -15,7 +15,7 @@ class SliderWidget extends StatelessWidget {
 
   const SliderWidget({
     super.key,
-    this.height = 200,
+    this.height = 140,
     this.width = double.infinity,
     this.borderRadius = 16,
     this.interval,
@@ -66,7 +66,7 @@ class SliderWidget extends StatelessWidget {
                     // حساب index الحقيقي داخل القائمة الأصلية
 
                     return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(borderRadius),
                         child: _SlideImage(slide: slide),
@@ -87,7 +87,11 @@ class _SlideImage extends StatelessWidget {
 
   final SliderModel slide;
 
-  static Widget _errorPlaceholder(BuildContext context, Object error, StackTrace? stackTrace) {
+  static Widget _errorPlaceholder(
+    BuildContext context,
+    Object error,
+    StackTrace? stackTrace,
+  ) {
     return Container(
       color: Colors.grey.shade300,
       alignment: Alignment.center,

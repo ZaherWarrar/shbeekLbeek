@@ -62,7 +62,11 @@ class CartCheckoutSection extends StatelessWidget {
 
   Future<void> _onCheckoutPressed() async {
     if (controller.isEmpty) {
-      AppSnackbar.show("تنبيه", "السلة فارغة", snackPosition: SnackPosition.BOTTOM);
+      AppSnackbar.show(
+        "تنبيه",
+        "السلة فارغة",
+        snackPosition: SnackPosition.BOTTOM,
+      );
       return;
     }
 

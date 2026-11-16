@@ -17,10 +17,14 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 
 /// لازم يكون Top-Level حتى يشتغل والإشعار بالتطبيق مغلق.
+@pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   await NotificationInbox.rememberRemote(message);
+  // رسالة فيها notification يعرضها النظام. العرض المحلي هنا يكررها.
+  if (message.notification != null) return;
+  await NotificationApi.presentDataOnly(message);
 }
 
 class NotificationApi {
@@ -44,12 +48,6 @@ class NotificationApi {
         badge: true,
         sound: true,
       );
-
-      if (!kIsWeb) {
-        FirebaseMessaging.onBackgroundMessage(
-          firebaseMessagingBackgroundHandler,
-        );
-      }
 
       if (!kIsWeb) {
         await _initLocalNotifications();
@@ -89,29 +87,87 @@ class NotificationApi {
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
       final model = _modelFromRemote(message);
-      if (!await NotificationInbox.remember(model)) return;
-      if (kIsWeb || (model.title.isEmpty && model.body.isEmpty)) return;
-
-      _localNotifications.show(
-        id: model.id.hashCode & 0x7fffffff,
-        title: model.title,
-        body: model.body,
-        notificationDetails: NotificationDetails(
-          android: AndroidNotificationDetails(
-            _androidChannel.id,
-            _androidChannel.name,
-            channelDescription: _androidChannel.description,
-            importance: Importance.high,
-            priority: Priority.high,
-            icon: '@mipmap/ic_launcher',
-          ),
-          iOS: const DarwinNotificationDetails(),
-        ),
-        payload: jsonEncode(model.toPayload()),
-      );
+      await NotificationInbox.remember(model);
+      if (kIsWeb) return;
+      // iOS يعرض بلوك notification بنفسه بسبب presentation options.
+      if (defaultTargetPlatform == TargetPlatform.iOS &&
+          message.notification != null) {
+        return;
+      }
+      await _showLocal(model);
     });
 
     FirebaseMessaging.onMessageOpenedApp.listen(_handleMessage);
+  }
+
+  /// ينشئ القناة نفسها قبل runApp حتى تصل رسائل FCM التي تستخدمها.
+  static Future<void> ensureAndroidChannel() async {
+    if (kIsWeb) return;
+    final plugin = FlutterLocalNotificationsPlugin();
+    const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
+    await plugin.initialize(
+      settings: const InitializationSettings(android: androidInit),
+    );
+    final androidPlugin = plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    await androidPlugin?.createNotificationChannel(_androidChannel);
+  }
+
+  /// رسالة data فقط: النظام لا يرسمها، فنعرضها على نفس القناة.
+  static Future<void> presentDataOnly(RemoteMessage message) async {
+    final model = NotificationModel.fromPush(
+      id: message.messageId,
+      title: message.notification?.title,
+      body: message.notification?.body,
+      data: Map<String, dynamic>.from(message.data),
+      createdAt: message.sentTime,
+    );
+    if (model.title.isEmpty && model.body.isEmpty) return;
+
+    final plugin = FlutterLocalNotificationsPlugin();
+    const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
+    await plugin.initialize(
+      settings: const InitializationSettings(android: androidInit),
+    );
+    final androidPlugin = plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    await androidPlugin?.createNotificationChannel(_androidChannel);
+    await plugin.show(
+      id: model.id.hashCode & 0x7fffffff,
+      title: model.title,
+      body: model.body,
+      notificationDetails: _channelDetails(),
+      payload: jsonEncode(model.toPayload()),
+    );
+  }
+
+  static NotificationDetails _channelDetails() {
+    return NotificationDetails(
+      android: AndroidNotificationDetails(
+        _androidChannel.id,
+        _androidChannel.name,
+        channelDescription: _androidChannel.description,
+        importance: Importance.high,
+        priority: Priority.high,
+        icon: '@mipmap/ic_launcher',
+      ),
+      iOS: const DarwinNotificationDetails(),
+    );
+  }
+
+  Future<void> _showLocal(NotificationModel model) {
+    if (model.title.isEmpty && model.body.isEmpty) return Future.value();
+    return _localNotifications.show(
+      id: model.id.hashCode & 0x7fffffff,
+      title: model.title,
+      body: model.body,
+      notificationDetails: _channelDetails(),
+      payload: jsonEncode(model.toPayload()),
+    );
   }
 
   Future<void> _initLocalNotifications() async {

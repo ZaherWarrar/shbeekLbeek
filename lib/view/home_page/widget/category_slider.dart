@@ -3,6 +3,7 @@ import 'package:app/core/constant/app_color.dart';
 import 'package:app/core/function/fontsize.dart';
 import 'package:app/data/datasource/model/main_categores.dart';
 import 'package:app/main.dart';
+import 'package:app/view/shopDetails/widgets/shop_network_image.dart';
 import 'package:flutter/material.dart';
 
 class CategorySlider extends StatelessWidget {
@@ -55,15 +56,10 @@ class CategorySlider extends StatelessWidget {
                                 height: 80,
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(60),
-                                  child: Image.network(
-                                    data.imageUrl ?? '',
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return const Icon(
-                                        Icons.image_not_supported_outlined,
-                                        size: 40,
-                                      );
-                                    },
+                                  child: ShopNetworkImage(
+                                    url: data.imageUrl,
+                                    width: 80,
+                                    height: 80,
                                   ),
                                 ),
                               ),

@@ -4,6 +4,7 @@ import 'package:app/core/shared/custom_app_bar.dart';
 import 'package:app/data/datasource/model/order_his_model.dart';
 import 'package:app/view/orderDetails/order_details_actions.dart';
 import 'package:app/view/orderDetails/order_details_shop_section.dart';
+import 'package:app/view/orderHistoory/widget/status_chip.dart';
 import 'package:flutter/material.dart';
 
 class OrderDetailsView extends StatelessWidget {
@@ -20,17 +21,34 @@ class OrderDetailsView extends StatelessWidget {
     return Scaffold(
       backgroundColor: colors.backgroundColor,
       appBar: const CustomAppBar(title: 'تفاصيل الطلب'),
-      body: items.isEmpty
-          ? Center(
-              child: Text(
-                'لا توجد أصناف في هذا الطلب',
-                style: TextStyle(color: colors.descriptionColor),
-              ),
-            )
-          : Column(
+      body: Column(
               children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                  child: Row(
+                    children: [
+                      Text(
+                        'حالة الطلب',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: colors.titleColor,
+                        ),
+                      ),
+                      const Spacer(),
+                      StatusChip(status: order.status),
+                    ],
+                  ),
+                ),
                 Expanded(
-                  child: ListView.builder(
+                  child: items.isEmpty
+                      ? Center(
+                          child: Text(
+                            'لا توجد أصناف في هذا الطلب',
+                            style: TextStyle(color: colors.descriptionColor),
+                          ),
+                        )
+                      : ListView.builder(
                     padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
                     itemCount: groups.length,
                     itemBuilder: (context, index) {

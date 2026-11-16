@@ -118,6 +118,17 @@ class _ActiveOrderWidgetState extends State<ActiveOrderWidget> {
                           color: Colors.grey[700],
                         ),
                       ),
+                      SizedBox(height: isSmallScreen ? 8 : 10),
+                      Text(
+                        canCancel
+                            ? "حالة الطلب: بانتظار التأكيد"
+                            : "حالة الطلب: قيد التأكيد",
+                        style: TextStyle(
+                          fontSize: isSmallScreen ? 14 : 16,
+                          fontWeight: FontWeight.w700,
+                          color: canCancel ? Colors.orange : Colors.green,
+                        ),
+                      ),
                       SizedBox(height: isSmallScreen ? 12 : 16),
 
                       // العداد التنازلي

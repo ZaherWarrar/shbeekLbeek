@@ -206,7 +206,8 @@ class ShopProductListTile extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                     child: ShopNetworkImage(
                       url: product.imageUrl,
-                      logicalWidth: imageSize,
+                      width: imageSize,
+                      height: imageSize,
                     ),
                   ),
                 ),

@@ -1,27 +1,23 @@
 import 'package:app/core/constant/app_images.dart';
 import 'package:flutter/material.dart';
 
-const _shopImagePlaceholder = Color(0xFFF1F1F1);
 final Set<String> _scheduledShopImages = {};
 
 bool isUnavailableShopImage(String? url) {
   final imageUrl = url?.trim() ?? '';
   if (imageUrl.isEmpty) return true;
-  final path = Uri.tryParse(imageUrl)?.path.toLowerCase() ?? imageUrl.toLowerCase();
-  return path.endsWith('/default.png');
+  return imageUrl.toLowerCase().endsWith('/default.png');
 }
 
-void precacheShopImage(BuildContext context, String? url, double logicalWidth) {
+void precacheShopImage(BuildContext context, String? url) {
   final imageUrl = url?.trim() ?? '';
   if (isUnavailableShopImage(imageUrl)) return;
-  final cacheWidth = _shopCacheWidth(context, logicalWidth);
-  final token = '$imageUrl@$cacheWidth';
-  if (!_scheduledShopImages.add(token)) return;
+  if (!_scheduledShopImages.add(imageUrl)) return;
   precacheImage(
-    ResizeImage(NetworkImage(imageUrl), width: cacheWidth),
+    NetworkImage(imageUrl),
     context,
     onError: (_, _) {
-      _scheduledShopImages.remove(token);
+      _scheduledShopImages.remove(imageUrl);
     },
   );
 }
@@ -30,40 +26,35 @@ class ShopNetworkImage extends StatelessWidget {
   const ShopNetworkImage({
     super.key,
     required this.url,
-    this.logicalWidth,
+    this.width,
+    this.height,
     this.fit = BoxFit.cover,
   });
 
   final String? url;
-  final double? logicalWidth;
+  final double? width;
+  final double? height;
   final BoxFit fit;
 
   @override
   Widget build(BuildContext context) {
     final imageUrl = url?.trim() ?? '';
-    if (isUnavailableShopImage(imageUrl)) {
-      return Image.asset(Assets.imagesLogo, fit: fit);
-    }
-
-    final width = logicalWidth ?? MediaQuery.sizeOf(context).width;
-    return Image.network(
-      imageUrl,
+    final fallback = Image.asset(
+      Assets.imagesLogo,
+      width: width,
+      height: height,
       fit: fit,
-      cacheWidth: _shopCacheWidth(context, width),
-      gaplessPlayback: true,
-      filterQuality: FilterQuality.medium,
-      loadingBuilder: (context, child, progress) {
-        if (progress == null) return child;
-        return const ColoredBox(color: _shopImagePlaceholder);
-      },
-      errorBuilder: (context, error, stackTrace) {
-        return Image.asset(Assets.imagesLogo, fit: fit);
-      },
+    );
+    if (isUnavailableShopImage(imageUrl)) return fallback;
+
+    return SizedBox(
+      width: width,
+      height: height,
+      child: Image.network(
+        imageUrl,
+        fit: fit,
+        errorBuilder: (_, _, _) => fallback,
+      ),
     );
   }
-}
-
-int _shopCacheWidth(BuildContext context, double logicalWidth) {
-  final pixels = logicalWidth * MediaQuery.devicePixelRatioOf(context);
-  return pixels.round().clamp(96, 900);
 }

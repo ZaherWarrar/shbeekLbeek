@@ -19,9 +19,8 @@ class CategoryType extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             MainCategory(controller: controller),
-            const SizedBox(height: 10),
+            const SizedBox(height: 15),
             const CategoryItems(),
-            const SizedBox(height: 16),
           ],
         );
       },

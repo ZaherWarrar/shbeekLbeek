@@ -4,6 +4,39 @@ import 'package:app/core/class/statusrequest.dart';
 import 'package:app/link_api.dart';
 import 'package:get/get.dart';
 
+class OrderRequestFailure {
+  const OrderRequestFailure(this.status, {this.message});
+
+  final StatusRequest status;
+  final String? message;
+}
+
+/// أول رسالة تحقق من `errors`، وإلا `message` إذا لم تكن صفحة الخطأ العامة.
+String? readOrderErrorMessage(dynamic body) {
+  if (body is! Map) return null;
+
+  final errors = body['errors'];
+  if (errors is Map) {
+    for (final value in errors.values) {
+      if (value is List && value.isNotEmpty) {
+        return _shortServerText(value.first.toString());
+      }
+      final text = value?.toString().trim() ?? '';
+      if (text.isNotEmpty) return _shortServerText(text);
+    }
+  }
+
+  final message = body['message']?.toString().trim() ?? '';
+  if (message.isEmpty || message == 'Server Error') return null;
+  return _shortServerText(message);
+}
+
+String _shortServerText(String value) {
+  final line = value.split('\n').first.trim();
+  if (line.length <= 180) return line;
+  return '${line.substring(0, 177)}...';
+}
+
 class OrderData {
   final Crud crud;
   final SessionService session = Get.find<SessionService>();
@@ -37,14 +70,19 @@ class OrderData {
     if (!headers.containsKey("Authorization")) {
       return StatusRequest.unauthorized;
     }
-    var response = await crud.postData(
-
+    final response = await crud.postJson(
       ApiLinks.createOrder,
       orderData,
       headers: headers,
     );
 
-    return response.fold((l) => l, (r) => r);
+    if (response.failure != null) {
+      return OrderRequestFailure(
+        response.failure!,
+        message: readOrderErrorMessage(response.body),
+      );
+    }
+    return response.body ?? StatusRequest.failure;
   }
 
   // ================================

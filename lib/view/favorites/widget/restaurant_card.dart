@@ -1,7 +1,7 @@
 import 'package:app/controller/favorites/favorites_controller.dart';
 import 'package:app/core/constant/app_color.dart';
-import 'package:app/core/constant/app_images.dart';
 import 'package:app/core/constant/routes/app_routes.dart';
+import 'package:app/view/shopDetails/widgets/shop_network_image.dart';
 import 'package:app/view/favorites/widget/favorites_tabs/favorites_tabs_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -43,21 +43,10 @@ class RestaurantCard extends StatelessWidget {
                     borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(18),
                     ),
-                    child: SizedBox(
+                    child: ShopNetworkImage(
+                      url: item.image,
                       height: imageHeight,
                       width: double.infinity,
-                      child: item.image.isNotEmpty
-                          ? Image.network(
-                              item.image,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Image.asset(
-                                  Assets.imagesLogo,
-                                  fit: BoxFit.cover,
-                                );
-                              },
-                            )
-                          : Image.asset(Assets.imagesLogo, fit: BoxFit.cover),
                     ),
                   ),
                   Positioned(

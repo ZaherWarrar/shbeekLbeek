@@ -8,18 +8,81 @@ enum OrderStatusType {
   unknown;
 
   static OrderStatusType fromApi(String? raw) {
-    switch (raw?.toLowerCase().trim()) {
+    final value = raw?.trim() ?? '';
+    switch (value.toLowerCase()) {
       case 'pending':
+      case 'new':
+      case 'created':
+      case 'waiting':
+      case 'unconfirmed':
+      case 'طلب جديد':
+      case 'جديد':
         return OrderStatusType.pending;
       case 'accepted':
+      case 'confirmed':
+      case 'confirm':
+      case 'processing':
+      case 'preparing':
+      case 'طلب مؤكد':
+      case 'مؤكد':
+      case 'قيد التنفيذ':
+      case 'قيد التحضير':
         return OrderStatusType.accepted;
       case 'rejected':
+      case 'canceled':
+      case 'cancelled':
+      case 'cancel':
+      case 'طلب ملغي':
+      case 'طلب ملغى':
+      case 'ملغي':
+      case 'ملغى':
         return OrderStatusType.rejected;
       case 'delivered':
+      case 'completed':
+      case 'complete':
+      case 'done':
+      case 'تم التوصيل':
+      case 'تم التسليم':
+      case 'مكتمل':
         return OrderStatusType.delivered;
       default:
         return OrderStatusType.unknown;
     }
+  }
+
+  /// حقل status غالباً يبقى pending. التأكيد والإلغاء يُكتبان داخل العنوان،
+  /// والتوصيل يُعرف من delvierd_datetime.
+  static OrderStatusType resolve({
+    String? rawStatus,
+    String? address,
+    String? deliveredAt,
+  }) {
+    final fromField = fromApi(rawStatus);
+    if (fromField == OrderStatusType.accepted ||
+        fromField == OrderStatusType.rejected ||
+        fromField == OrderStatusType.delivered) {
+      return fromField;
+    }
+
+    final addressValue = address ?? '';
+    if (addressValue.contains('طلب ملغي') ||
+        addressValue.contains('طلب ملغى')) {
+      return OrderStatusType.rejected;
+    }
+
+    final delivered = deliveredAt?.trim() ?? '';
+    if (delivered.isNotEmpty && delivered.toLowerCase() != 'null') {
+      return OrderStatusType.delivered;
+    }
+
+    if (addressValue.contains('طلب مؤكد')) {
+      return OrderStatusType.accepted;
+    }
+
+    if (fromField == OrderStatusType.pending) {
+      return OrderStatusType.pending;
+    }
+    return OrderStatusType.unknown;
   }
 
   String get label {

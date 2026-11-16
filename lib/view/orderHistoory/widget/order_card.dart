@@ -95,16 +95,17 @@ class OrderCard extends StatelessWidget {
               ],
             ),
             SizedBox(height: 8),
-            Container(
-              alignment: Alignment.centerRight,
-              child: Text(
-                "تاريخ الطلب: ${order.date!.year}-${order.date!.month.toString().padLeft(2, '0')}-${order.date!.day.toString().padLeft(2, '0')}",
-                style: TextStyle(
-                  fontSize: 13,
-                  color: AppColor().descriptionColor,
+            if (order.date != null)
+              Container(
+                alignment: Alignment.centerRight,
+                child: Text(
+                  "تاريخ الطلب: ${order.date!.year}-${order.date!.month.toString().padLeft(2, '0')}-${order.date!.day.toString().padLeft(2, '0')}",
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: AppColor().descriptionColor,
+                  ),
                 ),
               ),
-            ),
           ],
         ),
       ),

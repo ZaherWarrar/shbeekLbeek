@@ -4,6 +4,7 @@ import 'package:app/core/services/session_service.dart';
 import 'package:app/core/shared/notifications/notification_api.dart';
 import 'package:app/core/shared/notifications/notification_router.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:app/binding/my_binding.dart';
@@ -14,6 +15,12 @@ import 'package:app/view/splash/startup_splash.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+  try {
+    await NotificationApi.ensureAndroidChannel();
+  } catch (e) {
+    debugPrint('Notification channel skipped: $e');
+  }
 
   await Get.putAsync(() => SessionService().init());
   Get.put(Changelocal());
@@ -36,7 +43,7 @@ void main() async {
 
 Future<void> _startPlatformServices() async {
   try {
-    await Firebase.initializeApp().timeout(const Duration(seconds: 8));
+    await Firebase.initializeApp();
     unawaited(NotificationApi.printFcmToken());
   } catch (e) {
     debugPrint('Firebase init skipped: $e');
@@ -44,8 +51,8 @@ Future<void> _startPlatformServices() async {
   }
 
   try {
-    await NotificationApi().init().timeout(const Duration(seconds: 8));
-    NotificationApi.syncDeviceToken();
+    await NotificationApi().init();
+    unawaited(NotificationApi.syncDeviceToken());
   } catch (e) {
     debugPrint('Notification init skipped: $e');
   }

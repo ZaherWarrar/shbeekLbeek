@@ -180,6 +180,19 @@ class _OrderConfirmationViewState extends State<OrderConfirmationView> {
                               color: Colors.grey[700],
                             ),
                           ),
+                          SizedBox(height: isSmallScreen ? 10 : 12),
+                          Text(
+                            canCancel
+                                ? "حالة الطلب: بانتظار التأكيد"
+                                : "حالة الطلب: قيد التأكيد",
+                            style: TextStyle(
+                              fontSize: isSmallScreen ? 14 : 16,
+                              fontWeight: FontWeight.w700,
+                              color: canCancel
+                                  ? Colors.orange.shade800
+                                  : Colors.green.shade800,
+                            ),
+                          ),
                         ],
                       ),
                     ),

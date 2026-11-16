@@ -89,12 +89,10 @@ void _precacheUpcoming(
   List<Products> products,
   int index,
 ) {
-  final width = MediaQuery.sizeOf(context).width;
-  final logical = width < 400 ? 80.0 : 120.0;
   for (var step = 1; step <= 3; step++) {
     final next = index + step;
     if (next >= products.length) return;
-    precacheShopImage(context, products[next].imageUrl, logical);
+    precacheShopImage(context, products[next].imageUrl);
   }
 }
 

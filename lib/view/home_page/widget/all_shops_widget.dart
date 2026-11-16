@@ -9,8 +9,7 @@ class AllShops extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    //مشان التحكم بحجم العنصر اذا كان الجوال بالطول
-
+ 
     return GetBuilder<HomeControllerImp>(
       builder: (controller) {
         return CustomRefresh(

@@ -59,7 +59,9 @@ class Crud {
       Map<String, dynamic>? payload;
       try {
         final decoded = jsonDecode(utf8.decode(response.bodyBytes));
-        if (decoded is Map<String, dynamic>) payload = decoded;
+        if (decoded is Map) {
+          payload = Map<String, dynamic>.from(decoded);
+        }
       } catch (_) {
         /* Non-JSON is not an auth success envelope. */
       }
@@ -168,6 +170,31 @@ class Crud {
       }
     } catch (e) {
       return Left(_handleException(e));
+    }
+  }
+
+  /// مثل [postData] مع الإبقاء على جسم الخطأ حتى تظهر رسالة التحقق أو الاستثناء.
+  Future<JsonHttpResult> postJson(
+    String linkurl,
+    Map data, {
+    Map<String, String>? headers,
+    Duration? timeout,
+  }) async {
+    try {
+      if (await checkInternet()) {
+        final requestHeaders = {..._defaultHeaders, ...?headers};
+        final response = await http
+            .post(
+              Uri.parse(linkurl),
+              headers: requestHeaders,
+              body: jsonEncode(data),
+            )
+            .timeout(timeout ?? _defaultTimeout);
+        return _toJsonResult(response);
+      }
+      return const JsonHttpResult(failure: StatusRequest.offlinefailure);
+    } catch (e) {
+      return JsonHttpResult(failure: _handleException(e));
     }
   }
 
@@ -451,6 +478,39 @@ class Crud {
     }
   }
 
+  JsonHttpResult _toJsonResult(http.Response response) {
+    dynamic body;
+    try {
+      body = jsonDecode(utf8.decode(response.bodyBytes));
+    } catch (_) {
+      body = null;
+    }
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return JsonHttpResult(
+        statusCode: response.statusCode,
+        body: body ?? {'message': response.body, 'status': response.statusCode},
+      );
+    }
+
+    if (response.statusCode == 401 && Get.isRegistered<SessionService>()) {
+      Get.find<SessionService>().dropExpiredSession();
+    }
+
+    return JsonHttpResult(
+      statusCode: response.statusCode,
+      body: body,
+      failure: _statusForCode(response.statusCode),
+    );
+  }
+
+  StatusRequest _statusForCode(int statusCode) {
+    if (statusCode == 401) return StatusRequest.unauthorized;
+    if (statusCode == 403) return StatusRequest.forbidden;
+    if (statusCode == 404) return StatusRequest.notFound;
+    return StatusRequest.serverfailure;
+  }
+
   // دالة مساعدة لمعالجة الاستثناءات
   StatusRequest _handleException(dynamic exception) {
     if (exception is SocketException || exception is http.ClientException) {
@@ -468,6 +528,14 @@ class Crud {
   Future<bool> isConnected() async {
     return await checkInternet();
   }
+}
+
+class JsonHttpResult {
+  const JsonHttpResult({this.statusCode, this.body, this.failure});
+
+  final int? statusCode;
+  final dynamic body;
+  final StatusRequest? failure;
 }
 
 class AccountHttpReply {

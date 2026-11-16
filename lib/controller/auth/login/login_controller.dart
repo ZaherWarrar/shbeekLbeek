@@ -52,7 +52,7 @@ class LoginControllerImb extends GetxController {
         );
       } else {
         error =
-            reply.failure ??
+            reply.loginRejection ??
             'تعذر إرسال الرمز. لم يؤكد الخادم إمكانية المتابعة بهذا الرقم.';
       }
     } catch (_) {
